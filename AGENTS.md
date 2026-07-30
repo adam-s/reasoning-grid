@@ -178,6 +178,13 @@ keeping, write it to the right file before the session ends.
 Formats for skills, hooks, sub-agents, rules, and settings are in
 [.agents/reference/anthropic-conventions.md](.agents/reference/anthropic-conventions.md).
 
+Visualization approaches already in use across the surrounding projects — the
+charting stack, the 3D-to-2D projection, and the raw → reduced → rendered
+pipeline — are surveyed in
+[.agents/reference/dataviz/](.agents/reference/dataviz/). Read it before
+building any chart, so a technique that already exists is reused rather than
+reinvented.
+
 Everything shared across coding agents lives in `.agents/`. `.claude/` holds
 only what is Claude Code specific, plus symlinks so auto-discovery resolves. The
 test that a change respects this: an agent that has never heard of `.claude/`
