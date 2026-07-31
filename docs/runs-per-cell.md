@@ -186,14 +186,47 @@ and [Springer](https://link.springer.com/chapter/10.1007/978-3-7908-1952-6_12)).
 The shoulders of the curve carry more joint information about slope and
 intercept than the steepest point does.
 
-That is a real tension and it is not resolved here. Neyman puts the peak at 50%;
-D-optimality puts it at 18% and 82%. They disagree because they answer different
-questions — *how accurate is each cell* versus *how accurate is the curve*. The
-allocation above chooses the first, because the deliverable is a heatmap where
-every cell is read individually. If the deliverable were the boundary number,
-the allocation should be re-derived. Note also that D-optimality is *local*: it
-depends on the parameters you are trying to estimate, so it can only be used for
-a second pass after a pilot, never the first.
+**Resolved, and in favour of the grid.** The two-point result is the *locally*
+optimal design — it assumes you already know the parameters. Once parameter
+uncertainty is admitted, the optimal number of support points grows, and for
+this exact model it grows into a grid.
+
+Sitter (1992), reproduced as Example 2 in
+[Khuri et al.](https://arxiv.org/pdf/math/0701088): a logistic with initial
+estimates gives a 2-point locally D-optimal design at x = 38.28, 41.72. Widen
+the parameter region and the **minimax D-optimal design becomes seven equally
+spaced points**, equal allocation. Robustness converts the two-point optimum
+into a uniform grid.
+
+The mechanism is Chaloner & Larntz (1989), via Khuri et al. Table 1: the number
+of support points grows as the prior disperses, and it is uncertainty in the
+**location** of the 50% crossing that drives it, not the slope.
+
+| uncertainty in the crossing | support points |
+| --- | --- |
+| point prior (parameters known) | 2 |
+| narrow | 3 |
+| wide | 6-8 |
+
+**Our boundary interval is [7.77, 9.62] — nearly two digits wide.** That is the
+dispersed case, so many cells is what the theory prescribes, not a concession to
+making a nice picture.
+
+The cost of getting it wrong is asymmetric and severe. From Atkinson & Woods
+Table 1, D-efficiency of a two-point design when the slope is misspecified:
+
+| true slope vs assumed | efficiency |
+| --- | --- |
+| factor of 2 too steep | 74.5% |
+| factor of 2 too shallow | 57.6% |
+| factor of 4 too shallow | **5.7%** |
+
+Two further reasons the minimal design is the wrong target here, both stated
+directly in the literature: a design with only p support points "provides no
+means of model checking" (Atkinson & Woods §3.1), and on a *bounded* design
+space the locally optimal design collapses onto the endpoints rather than
+spreading (Stufken & Yang, Thm 4.5) — so a two-point design on our grid would
+sit at 1x1 and 14x14 and measure nothing in between.
 
 **It answers cell rates, not cell structure.** No allocation of *distinct*
 problems can distinguish "every problem is a 50% coin" from "half the problems
