@@ -463,12 +463,37 @@ error *rate* under different tokenizations.
 
 ---
 
+## 9b. Harness validation, 2026-07-31
+
+The `grid` entrypoint had never executed before today. First real run, 36
+generations over a 3x3 block of cells, verified against the saved records:
+
+| check | result |
+| --- | --- |
+| every required field present | pass |
+| any field always null | none — `submit_index` now populates |
+| `n_in_cell` matches the actual cell count | pass (previously counted the batch) |
+| `submit_index` distinct across the sweep | 36/36, range 0-35 |
+| `prompt_text` matches its own operands | pass (loop-variable leak gone) |
+| seeds distinct | 36/36 |
+| both triangles present | (2,3) and (3,2) both drawn |
+
+Four previously-recorded defects confirmed fixed in one run: D-5 (prompt leak),
+D-11 (dead seed parameter), O-2 (`n_in_cell`), and the null `submit_index`.
+
+`budget_mode="max"` validated the same day — see RESULTS §1. Truncation fell
+from 13 of 48 to 2 of 46 and the boundary moved from 7.54 to 8.77 digits.
+
 ## 10. Gates before spending
 
 1. Parser validated against real completions from **both** models.
 2. Manifest written, including model revision SHAs.
 3. Reference and candidates measured at the same `n`, `n >= 32`.
 4. `n_lo`/`n_hi` re-derived from a reasoning-ON scan.
-5. Token ceiling validated at the boundary in reasoning mode.
-6. One chunk proven to finish inside the RPC timeout, with checkpointing live.
+5. ~~Token ceiling validated at the boundary in reasoning mode.~~ **Done** —
+   `budget_mode="max"`, see §9b.
+6. ~~One chunk proven to finish inside the RPC timeout~~ **Partly done** — the
+   `grid` entrypoint runs and its records verify (§9b). Checkpointing to
+   `results_vol` is still not wired (O-4); `_save` writes per chunk to local
+   disk, so a dropped local process still loses the chunk in flight.
 7. Condition keys raise on absence rather than defaulting.

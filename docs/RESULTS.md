@@ -19,7 +19,28 @@ generations excluded.
 | condition | boundary `d*` | 95% CI | N at 50% | generations |
 | --- | --- | --- | --- | --- |
 | reasoning **off** | 4.57 digits | [4.00, 5.24] | 21 | 31 |
-| reasoning **on** | 7.54 digits | [6.12, 8.77] | 57 | 70 |
+| reasoning on, formula ceiling (SUPERSEDED) | 7.54 digits | [6.12, 8.77] | 57 | 70 |
+| **reasoning on, full context** | **8.77 digits** | **[7.77, 9.62]** | **77** | 46 |
+
+**The 7.54 figure was suppressed by truncation and should not be used.** Rerun
+with `budget_mode="max"`, granting the engine's full 32,136 tokens instead of
+the `2000 + 200N` formula, on the same seeded problems:
+
+| cell | formula mode | max mode |
+| --- | --- | --- |
+| 8x8 | 6/12, 1 truncated | **8/12, 0 truncated** |
+| 10x10 | 3/12, 4 truncated | **4/12, 0 truncated** |
+| 12x12 | 0/12, 3 truncated | 0/11, 1 truncated |
+| 14x14 | 0/12, 5 truncated | 0/11, 1 truncated |
+| **total truncated** | **13** | **2** |
+
+The old estimate sat on the bottom edge of the new interval. Generations were
+being cut off mid-work and scored as failures. This is the `grind` outcome
+class earning its place: had truncation been folded into "wrong", the boundary
+would have been quietly wrong with no signal that anything was off.
+
+**Max mode costs 1.3-1.5x more** — given more room, generations use it (8x8 went
+from 10,209 to 15,257 mean tokens). Budget accordingly.
 
 **Reasoning buys 2.7× the chain length** (N 21 → 57) for **35× the tokens**
 (4.2 → 150 per unit of N). The intervals do not overlap, so the direction is
@@ -182,6 +203,20 @@ when generations are long.** For small cells the L40S is cheaper — but a grid
 must not be split across cards, because GPU would then be confounded with cell
 size.
 
+**Throughput scales steeply with batch size** — measured on one H100 container,
+identical cells, reasoning on:
+
+| batch | wall s | output tokens | tok/s | $/1k generations |
+| --- | --- | --- | --- | --- |
+| 48 | 95 | 242,903 | 2,552 | $2.18 |
+| 128 | 158 | 635,425 | 4,032 | $1.35 |
+
+The earlier 1,131 tok/s figure came from a single batch of large-N cells where
+KV cache throttled concurrency. Applying it to the whole grid overestimated
+every cost by ~3.6x. **Cost per generation falls 38% from batch 48 to 128**, and
+the grid submits 256. This one $0.36 measurement cut the projected programme
+from $57 to $15.
+
 **Token cost declines with problem size:** `tokens_per_N = 452 · N^-0.240`.
 226 at N=16, 137 at N=144. So the measurable ceiling on a 32K context is
 **N ≈ 276, or 16.6 digits on the diagonal.** 17x17 does not fit. Asymmetric
@@ -221,7 +256,9 @@ answer; see methods §7b.
 - Any second model. Every number above is Qwen3-4B.
 - Operand order (`3x12` vs `12x3`). Test was launched, killed on cost, pre-registered in [PREREGISTRATION-order-symmetry.md](PREREGISTRATION-order-symmetry.md).
 - Per-cell ICC. Without it the grid cannot distinguish "every problem is a 0.778 coin" from "78% deterministic passes, 22% deterministic fails" — those give *identical* binomial distributions at any n.
-- Any cell that passes the truncation validity rule.
+- ~~Any cell that passes the truncation validity rule.~~ **Fixed** — max mode
+  brings truncation to 2 of 46, and all but the two largest cells clear the 5%
+  rule.
 - Cross-GPU determinism at temperature 0.
 - Whether higher temperature rescues very hard cells (run in progress at time of writing).
 

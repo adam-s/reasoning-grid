@@ -706,3 +706,48 @@ def symmetry(model: str = "Qwen/Qwen3-4B", gpu: str = "l40s",
         print(f"{a:>4}x{b:<5}{(n11+n10)/max(tot,1):>7.2f}{(n11+n01)/max(tot,1):>7.2f}"
               f"{n11:>6}{n10:>10}{n01:>10}{pv:>11.3f}")
     print("\nSmall p = order matters = the grid CANNOT be folded.")
+
+
+@app.local_entrypoint()
+def throughput(model: str = "Qwen/Qwen3-4B", gpu: str = "h100",
+               chunks: str = "48,128,256", thinking: str = "true",
+               temperature: float = 0.7):
+    """Does throughput scale with batch size? The whole budget rests on this.
+
+    Every cost projection so far uses 1131 tok/s, measured from ONE batch of 48
+    on an H100. The grid submits chunks of 256. If larger batches reach 2000+
+    tok/s the two-model reasoning-on grid becomes affordable; if they do not,
+    the plan has to change. One container, several batch sizes, same cells.
+
+    Cells are drawn across the live band so the mix of short and long
+    generations matches what the real grid would submit.
+    """
+    # smaller cells keep the test inside $1 while still spanning the mix of
+    # short and long generations the real grid submits
+    sizes = [(3, 4), (4, 5), (5, 6), (6, 6)]
+    p = PROBES[gpu](model=model)
+    think = thinking.lower() == "true"
+    print(f"\n{'batch':>7}{'gens':>7}{'wall s':>9}{'out tok':>10}"
+          f"{'tok/s':>9}{'s/gen':>8}{'$/1k gens':>11}")
+    usd_s = 0.001097 if gpu == "h100" else 0.000542
+    recs = []
+    for c in [int(x) for x in chunks.split(",")]:
+        jobs = []
+        i = 0
+        while len(jobs) < c:                       # cycle the cells to fill
+            a, b = sizes[i % len(sizes)]
+            jobs += make_problems(a, b, 1)[:1]
+            jobs[-1]["instance_id"] = i
+            i += 1
+        random.Random(f"tp-{c}").shuffle(jobs)
+        for k, j in enumerate(jobs):
+            j["_pos"] = k
+        out = p.run.remote(jobs, temperature=temperature, top_p=1.0,
+                           thinking=think, sweep_id=f"tp{c}")
+        w = out["batch_wall_seconds"]; t = out["total_completion_tokens"]
+        recs += out["records"]
+        print(f"{c:>7}{len(out['records']):>7}{w:>9.0f}{t:>10,}"
+              f"{t / max(w, 1):>9.0f}{w / max(len(out['records']), 1):>8.1f}"
+              f"{w / max(len(out['records']), 1) * 1000 * usd_s:>11.2f}")
+    _save(recs, f"throughput-{model.split('/')[-1]}-{gpu}")
+    print("\nIf tok/s rises with batch size, the grid is cheaper than projected.")
