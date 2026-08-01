@@ -22,6 +22,7 @@ Usage:
   modal run probe/bakeoff.py::boundary --model "Qwen/Qwen3-8B" --gpu l40s
 """
 
+import hashlib
 import json
 import random
 import time
@@ -71,7 +72,13 @@ def make_problems(a: int, b: int, n: int, seed: int = 20260730):
         x = rng.randrange(10 ** (a - 1), 10**a)
         y = rng.randrange(10 ** (b - 1), 10**b)
         if i < n:
-            out.append({"instance_id": i, "a": a, "b": b, "x": x, "y": y,
+            # content-addressed id: two records refer to the same problem iff
+            # this matches. instance_id is a positional index and can silently
+            # mean different problems across runs; the uid cannot.
+            uid = hashlib.sha256(
+                f"{seed}|{a}|{b}|{x}|{y}".encode()).hexdigest()[:16]
+            out.append({"instance_id": i, "instance_uid": uid,
+                        "a": a, "b": b, "x": x, "y": y,
                         "truth": str(x * y), "problem_seed": seed})
     return out
 
@@ -311,6 +318,7 @@ def _run_batch(self, gpu_name, jobs, temperature, top_p, thinking,
                 "a": j["a"],
                 "b": j["b"],
                 "instance_id": j["instance_id"],
+                "instance_uid": j.get("instance_uid"),
                 "x": str(j["x"]),
                 "y": str(j["y"]),
                 "truth": j["truth"],
@@ -577,7 +585,7 @@ def grid(model: str = "Qwen/Qwen3-4B", gpu: str = "l40s", thinking: str = "true"
          lo: int = 2, hi: int = 12, n_live: int = 45, n_saturated: int = 10,
          temperature: float = 0.7, top_p: float = 1.0,
          n_lo: int = 10, n_hi: int = 50, chunk: int = 256,
-         sweep_id: str = "grid"):
+         sweep_id: str = "grid", axes: str = "", budget_mode: str = "max"):
     """The deliverable: x = digits of A, y = digits of B, z = P(exactly correct).
 
     Two things this does that the earlier entrypoints got wrong.
@@ -600,7 +608,12 @@ def grid(model: str = "Qwen/Qwen3-4B", gpu: str = "l40s", thinking: str = "true"
     # on an assumed symmetry would erase the asymmetry it is meant to measure,
     # and the asymmetry across the diagonal is visible in the heatmap itself.
     # Not a flag: an option to fold is an option to get this wrong.
-    cells = [(a, b) for a in range(lo, hi + 1) for b in range(lo, hi + 1)]
+    # `axes` gives an explicit sparse axis list, e.g. "2,5,8,11" -> 16 cells.
+    # Without it, lo..hi builds the dense square. The dense default is what a
+    # sparse plan would silently get, so the plan must pass axes explicitly.
+    vals = ([int(v) for v in axes.split(",")] if axes.strip()
+            else list(range(lo, hi + 1)))
+    cells = [(a, b) for a in vals for b in vals]
 
     jobs = []
     for (a, b) in cells:
@@ -618,25 +631,45 @@ def grid(model: str = "Qwen/Qwen3-4B", gpu: str = "l40s", thinking: str = "true"
     for i, j in enumerate(jobs):
         j["_pos"] = i
 
+    est_tok = sum(505.2 * (j["a"] * j["b"]) ** 0.714 for j in jobs)
+    mpath = write_manifest(
+        sweep_id, model=model, gpu=gpu, thinking=thinking,
+        budget_mode=budget_mode, temperature=temperature, top_p=top_p,
+        axes=vals, cells=[list(c) for c in cells], n_live=n_live,
+        n_saturated=n_saturated, n_lo=n_lo, n_hi=n_hi, chunk=chunk,
+        n_planned=len(jobs),
+        cost={"est_output_tokens": round(est_tok),
+              "est_usd": round(est_tok / 4032 * (0.001097 if gpu == "h100"
+                                                 else 0.000542), 3),
+              "actual_usd": None})
     print(f"{len(cells)} cells, {len(jobs)} generations, "
           f"chunks of {chunk} -> {(len(jobs) + chunk - 1) // chunk} batches")
+    print(f"manifest: {mpath}   est {est_tok/1e6:.2f}M tok")
 
     p = PROBES[gpu](model=model)
-    total, tok = [], 0
+    total, tok, batches = [], 0, []
     for i in range(0, len(jobs), chunk):
         part = jobs[i:i + chunk]
         out = p.run.remote(part, temperature=temperature, top_p=top_p,
                            thinking=thinking.lower() == "true",
-                           sweep_id=sweep_id, sample_idx=0)
+                           sweep_id=sweep_id, sample_idx=0,
+                           budget_mode=budget_mode)
         total += out["records"]
         tok += out["total_completion_tokens"]
         # save每 chunk: a stop costs one batch, not the sweep
         _save(out["records"], f"{sweep_id}-{model.split('/')[-1]}-part{i // chunk:03d}")
         done = min(i + chunk, len(jobs))
+        batches.append({"batch": i // chunk, "n": len(out["records"]),
+                        "wall_s": out["batch_wall_seconds"],
+                        "tokens": out["total_completion_tokens"]})
         rate = out["total_completion_tokens"] / max(out["batch_wall_seconds"], 1)
         print(f"  {done}/{len(jobs)}  {out['batch_wall_seconds']:.0f}s  "
               f"{rate:.0f} tok/s  {out['total_completion_tokens']} tok")
+    wall = sum(m for m in [0])  # placeholder; batches carry their own timing
+    close_manifest(mpath, n_actual=len(total), actual_output_tokens=tok,
+                   batches=batches)
     print(f"\ntotal {len(total)} generations, {tok} output tokens")
+    print(f"manifest closed: {mpath}")
     return total
 
 
@@ -751,3 +784,48 @@ def throughput(model: str = "Qwen/Qwen3-4B", gpu: str = "h100",
               f"{w / max(len(out['records']), 1) * 1000 * usd_s:>11.2f}")
     _save(recs, f"throughput-{model.split('/')[-1]}-{gpu}")
     print("\nIf tok/s rises with batch size, the grid is cheaper than projected.")
+
+
+# --------------------------------------------------------------------------
+# Manifest. AGENTS.md: "analysis reads a manifest, never a filename", and
+# "estimate cost before launching, record actual cost after".
+# --------------------------------------------------------------------------
+def write_manifest(sweep_id, **fields):
+    """Written BEFORE the first generation. status='open' until closed.
+
+    A run whose parameters live only in its filename is an anecdote: the
+    predecessor project had to replay an RNG to recover which problem produced
+    which trace. Everything needed to reconstruct this run goes here.
+    """
+    import pathlib
+    import subprocess
+
+    d = pathlib.Path(__file__).resolve().parent.parent / "sweeps" / sweep_id
+    d.mkdir(parents=True, exist_ok=True)
+    try:
+        sha = subprocess.run(["git", "rev-parse", "HEAD"], capture_output=True,
+                             text=True, cwd=d).stdout.strip()
+        dirty = bool(subprocess.run(["git", "status", "--porcelain"],
+                                    capture_output=True, text=True,
+                                    cwd=d).stdout.strip())
+    except Exception:
+        sha, dirty = "unknown", None
+    m = {"sweep_id": sweep_id, "status": "open", "schema_version": 1,
+         "code_git_sha": sha, "code_git_dirty": dirty,
+         "prompt_text": PROMPT,
+         "prompt_sha256": hashlib.sha256(PROMPT.encode()).hexdigest()[:16],
+         "problem_pool_size": POOL, "problem_seed": 20260730,
+         "engine": {"vllm": "0.11.0", "transformers": "4.57.0"},
+         "batches": [], **fields}
+    (d / "manifest.json").write_text(json.dumps(m, indent=2))
+    return d / "manifest.json"
+
+
+def close_manifest(path, **fields):
+    """Called after the last batch. Records what ACTUALLY happened."""
+    import pathlib
+
+    p = pathlib.Path(path)
+    m = json.loads(p.read_text())
+    m.update(status="closed", **fields)
+    p.write_text(json.dumps(m, indent=2))
