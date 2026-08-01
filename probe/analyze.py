@@ -16,6 +16,26 @@ import sys
 from collections import defaultdict
 
 
+def infer_budget_mode(rec):
+    """Records predating the `budget_mode` field are still distinguishable.
+
+    Max mode grants the same ceiling to every cell (context minus a margin);
+    formula mode grants 2000 + 200*a*b. Two runs of the same cell under
+    different modes are different conditions, and without this they collide on
+    every key -- 48 such collisions existed across the boundary runs.
+    """
+    if "budget_mode" in rec:
+        return rec["budget_mode"]
+    formula = 2000 + 200 * rec["a"] * rec["b"]
+    # Use tokens_wanted, not max_tokens. At cells where the formula exceeds the
+    # context it is CLIPPED to the same ceiling max mode grants, so the granted
+    # value cannot tell them apart -- that was true for every 14x14 record.
+    # tokens_wanted keeps the formula's ask before clipping.
+    if rec.get("tokens_wanted") is not None:
+        return "formula" if rec["tokens_wanted"] == formula else "max"
+    return "formula" if rec.get("max_tokens") == formula else "max"
+
+
 def _cond(rec, key):
     """Condition variables are never defaulted. A missing key means the record
     predates the field, and silently calling that False is how a thinking-ON
@@ -67,13 +87,16 @@ def main(paths):
         return
     groups = defaultdict(list)
     for r in recs:
-        groups[(r["model"], r["gpu"], r["temperature"], _cond(r, "thinking_requested"))].append(r)
+        groups[(r["model"], r["gpu"], r["temperature"],
+                _cond(r, "thinking_requested"), r.get("top_p"),
+                infer_budget_mode(r), r.get("sweep_id"))].append(r)
 
-    for key in sorted(groups):
-        model, gpu, temp, think = key
+    for key in sorted(groups, key=str):
+        model, gpu, temp, think, topp, bmode, sweep = key
         rs = groups[key]
         print(f"\n{'=' * 74}")
-        print(f"{model}  gpu={gpu}  temp={temp}  thinking={think}   n={len(rs)}")
+        print(f"{model}  gpu={gpu}  T={temp}  top_p={topp}  thinking={think}  "
+              f"budget={bmode}  sweep={sweep}   n={len(rs)}")
         print(f"{'=' * 74}")
         print(f"{'size':>7} {'pass':>7} {'95% CI':>16} {'avg tok':>9} "
               f"{'tok/N':>7} {'trunc':>6} {'errwidth':>9}")
@@ -124,7 +147,14 @@ def main(paths):
     print(f"\n{'=' * 74}\npaired disagreement (same seeded instances)\n{'=' * 74}")
     byinst = defaultdict(dict)
     for r in recs:
-        byinst[(r["a"], r["b"], r["instance_id"], r["temperature"])][r["model"]] = r["correct"]
+        # key on every condition AND on instance_uid where present: two records
+        # are the same trial only if all of these agree. Omitting gpu or
+        # budget_mode silently merged a formula-mode run with a max-mode one.
+        pk = (r["a"], r["b"], r.get("instance_uid") or r["instance_id"],
+              r.get("sample_idx", 0), r["temperature"], r.get("top_p"),
+              _cond(r, "thinking_requested"), infer_budget_mode(r),
+              r["gpu"])
+        byinst[pk][r["model"]] = r["correct"]
     models = sorted({r["model"] for r in recs})
     for i, m1 in enumerate(models):
         for m2 in models[i + 1:]:

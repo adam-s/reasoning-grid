@@ -474,7 +474,7 @@ def smoke(model: str = "Qwen/Qwen3-4B", gpu: str = "l40s"):
 def boundary(model: str = "Qwen/Qwen3-8B", gpu: str = "l40s",
              sizes: str = "3,4,5,6,7,8,9,10", n: int = 6,
              temps: str = "0.7", thinking: str = "true",
-             budget_mode: str = "formula"):
+             budget_mode: str = "formula", sweep_id: str = ""):
     """Diagonal sweep: find where the model stops converging. Same seeded
     instances for every model, so results are paired."""
     size_list = [int(s) for s in sizes.split(",")]
@@ -488,7 +488,8 @@ def boundary(model: str = "Qwen/Qwen3-8B", gpu: str = "l40s",
         for s in size_list:
             jobs += make_problems(s, s, n)
         out = p.run.remote(jobs, temperature=temp, thinking=think,
-                           budget_mode=budget_mode)
+                           budget_mode=budget_mode,
+                           sweep_id=sweep_id or f"boundary-{gpu}-{budget_mode}")
         all_recs += out["records"]
         meta.append(out)
         print(f"\n=== {model} @ {out['gpu']} temp={temp} thinking={think} "
@@ -611,7 +612,8 @@ def grid(model: str = "Qwen/Qwen3-4B", gpu: str = "l40s", thinking: str = "true"
          temperature: float = 0.7, top_p: float = 1.0,
          n_lo: int = 10, n_hi: int = 50, chunk: int = 256,
          sweep_id: str = "grid", axes: str = "", budget_mode: str = "max",
-         cells_spec: str = "", order_seed: str = "", dry_run: str = "false"):
+         cells_spec: str = "", order_seed: str = "", dry_run: str = "false",
+         n_from: int = 0):
     """The deliverable: x = digits of A, y = digits of B, z = P(exactly correct).
 
     Two things this does that the earlier entrypoints got wrong.
@@ -637,9 +639,18 @@ def grid(model: str = "Qwen/Qwen3-4B", gpu: str = "l40s", thinking: str = "true"
     # `axes` gives an explicit sparse axis list, e.g. "2,5,8,11" -> 16 cells.
     # Without it, lo..hi builds the dense square. The dense default is what a
     # sparse plan would silently get, so the plan must pass axes explicitly.
+    # "8x8" uses the n_live/n_saturated rule; "8x8:24" pins n for that cell.
+    # Per-cell n is what Neyman allocation requires -- a two-level rule cannot
+    # express "45 near the 50% band, 6 at the corners".
+    per_cell_n = {}
     if cells_spec.strip():
-        cells = [tuple(int(v) for v in c.split("x"))
-                 for c in cells_spec.split(",")]
+        cells = []
+        for c in cells_spec.split(","):
+            spec, _, nspec = c.strip().partition(":")
+            cell = tuple(int(v) for v in spec.split("x"))
+            cells.append(cell)
+            if nspec:
+                per_cell_n[cell] = int(nspec)
         vals = sorted({v for c in cells for v in c})
     else:
         vals = ([int(v) for v in axes.split(",")] if axes.strip()
@@ -649,10 +660,14 @@ def grid(model: str = "Qwen/Qwen3-4B", gpu: str = "l40s", thinking: str = "true"
     jobs = []
     for (a, b) in cells:
         N = a * b
-        n = n_live if n_lo <= N <= n_hi else n_saturated
+        n = per_cell_n.get((a, b), n_live if n_lo <= N <= n_hi else n_saturated)
         got = make_problems(a, b, n)
+        # n_from skips instances already on disk. The pool is a fixed prefix, so
+        # instances 0..n_from-1 are the SAME problems as a previous run at that
+        # n -- topping up costs only the difference, never a re-run.
+        got = [j for j in got if j["instance_id"] >= n_from]
         for j in got:
-            j["_n_in_cell"] = n      # the CELL's n, not the batch's count
+            j["_n_in_cell"] = n      # the CELL's total n, not this run's slice
         jobs += got
     # Seeded shuffle, NOT a systematic sort. Submission position measurably
     # affects output (the odd repeat was sample_idx 0 in 11 of 11 cases), so a
@@ -669,15 +684,29 @@ def grid(model: str = "Qwen/Qwen3-4B", gpu: str = "l40s", thinking: str = "true"
     for i, j in enumerate(jobs):
         j["_pos"] = i
 
-    est_tok = sum(505.2 * (j["a"] * j["b"]) ** 0.714 for j in jobs)
+    # Per-model token model, refit on max-room reasoning-on data.
+    _tokf = ((lambda N: 52 * N ** 0.913) if "gpt-oss" in model
+             else (lambda N: 400 * N ** 0.838))
+    est_tok = sum(_tokf(j["a"] * j["b"]) for j in jobs)
+
+    # Throughput is a function of MEAN CELL SIZE, not a constant. Long
+    # generations hold KV cache for minutes, so concurrency collapses and the
+    # aggregate rate falls. Measured on this hardware:
+    #     N <= 16    ~2700 tok/s        N <= 121   ~1260 tok/s
+    #     mixed 8-14 ~1610 tok/s        all N>=144  ~300 tok/s
+    # Using the small-cell number on large cells understated one run by 7x.
+    _meanN = sum(j["a"] * j["b"] for j in jobs) / max(len(jobs), 1)
+    _tps = 2700 if _meanN <= 20 else 1610 if _meanN <= 90 else 700
     if dry_run.lower() == "true":
-        usd = est_tok / 4032 * (0.001097 if gpu == "h100" else 0.000542)
+        usd = est_tok / _tps * (0.001097 if gpu == "h100" else 0.000542)
         print(f"DRY RUN — nothing will be spent")
         print(f"  cells       {len(cells)}  {sorted(cells)[:6]}{' ...' if len(cells)>6 else ''}")
-        print(f"  generations {len(jobs)}")
+        print(f"  generations {len(jobs)}"
+              + (f"   (topping up from instance {n_from})" if n_from else ""))
         print(f"  chunks      {(len(jobs) + chunk - 1) // chunk} of {chunk}")
+        print(f"  mean cell N {_meanN:.0f}   assumed {_tps} tok/s")
         print(f"  est tokens  {est_tok/1e6:.2f}M")
-        print(f"  est cost    ${usd:.2f}  (+ cold start ~$0.12)")
+        print(f"  est cost    ${usd + 0.13:.2f}  (incl. cold start)")
         return []
     mpath = write_manifest(
         sweep_id, model=model, gpu=gpu, thinking=thinking,
@@ -687,8 +716,9 @@ def grid(model: str = "Qwen/Qwen3-4B", gpu: str = "l40s", thinking: str = "true"
         n_saturated=n_saturated, n_lo=n_lo, n_hi=n_hi, chunk=chunk,
         n_planned=len(jobs),
         cost={"est_output_tokens": round(est_tok),
-              "est_usd": round(est_tok / 4032 * (0.001097 if gpu == "h100"
-                                                 else 0.000542), 3),
+              "est_tok_per_s": _tps, "mean_cell_N": round(_meanN, 1),
+              "est_usd": round(est_tok / _tps * (0.001097 if gpu == "h100"
+                                                 else 0.000542) + 0.13, 3),
               "actual_usd": None})
     print(f"{len(cells)} cells, {len(jobs)} generations, "
           f"chunks of {chunk} -> {(len(jobs) + chunk - 1) // chunk} batches")
