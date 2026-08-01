@@ -129,6 +129,21 @@ def token_budget(a: int, b: int, ceiling: int, per_step: int = 200,
     return granted, wanted, wanted > ceiling
 
 
+# Reasoning markers differ by family. gpt-oss uses harmony channels and emits
+# no <think> tag at all: all 30 gpt-oss records on disk had thinking_requested
+# True and thinking_observed False, while their raw text plainly began
+# "<|channel|>analysis". Filtering on that field would label a reasoning-ON run
+# as OFF -- the error that wasted 538 generations (D-2).
+THINK_MARKERS = ("<think>", "</think>", "<|channel|>analysis", "<|start|>assistant<|channel|>")
+
+
+def _observed_thinking(text):
+    for m in THINK_MARKERS:
+        if m in text:
+            return True, m
+    return False, None
+
+
 def _classify(finish_reason, ans, truth):
     """Four outcomes, not two. Collapsing these is what a tight cap destroys.
 
@@ -146,50 +161,58 @@ def _classify(finish_reason, ans, truth):
 
 
 def parse_answer(text: str):
-    """Return (answer, method). method is 'marker' | 'last_line' | 'none'.
+    """Return (answer, method). method names HOW it was found, and the caller
+    records it so a cell relying on a weak path can be excluded.
 
-    Two failures to avoid, and the fix for one caused the other:
+    Three incarnations of this function have now been wrong, each in a
+    different direction, and each cost real GPU time:
 
-    Too permissive (v1): captured [0-9,\\s]* which spans NEWLINES, so
-    "ANSWER: 999\\n1234" parsed as "9991234"; and a fallback that grabbed the
-    last 4+ digit run anywhere turned refusals into fabricated answers.
+      v1 too permissive -- captured across newlines, and a bare "last 4+ digit
+        run" fallback turned refusals into fabricated answers.
+      v2 too strict -- anchored to ^ANSWER:...$, which markdown bold breaks.
+        82 of 89 `quit` records had answered; 58 were correct.
+      v3 still too strict -- required a colon after ANSWER. Qwen's actual house
+        style is "### Final Answer" then "$$\\boxed{1234}$$", which has no
+        marker at all. 19 of 20 `quit` records were correct answers.
 
-    Too strict (v2): anchoring to ^ANSWER:...$ rejected the model's actual
-    house style, "**ANSWER: 14019192**". 82 of 89 generations labelled `quit`
-    really did answer, and 58 of those were correct -- a regex defect that
-    showed up on a chart as a model behaviour.
-
-    v3 accepts the decoration models actually emit (markdown bold, \\boxed,
-    \\text, trailing punctuation) while still refusing to invent an answer
-    where none was given.
+    v4 accepts the three forms models actually use, in priority order, and is
+    tested against a corpus of real tails in tests/test_parser.py. Do not edit
+    without adding the failing tail to that corpus first.
     """
     import re
 
-    DECOR = r"[\s*_`$]*"                       # bold, italics, code, math delims
-    OPEN  = r"(?:\\boxed\{|\\text\{|\{)?"     # \boxed{...}, \text{...}
-    NUM   = r"([+-]?\d[\d,\u00a0 \t]*)"
-    pat = re.compile(rf"{DECOR}{OPEN}{DECOR}ANSWER{DECOR}:{DECOR}{OPEN}{DECOR}{NUM}",
-                     re.I)
-    hits = [m for m in pat.finditer(text)]
+    # 1. the requested format: ANSWER: <int>, allowing markdown/LaTeX decoration
+    DECOR = r"[\s*_`$]*"
+    OPEN = r"(?:\\boxed\{|\\text\{|[{}])*"   # incl. the } in \text{ANSWER: } 123
+    NUM = r"([+-]?\d[\d,\u00a0 \t]*)"
+    pat = re.compile(rf"{DECOR}{OPEN}{DECOR}ANSWER{DECOR}[:\s]{DECOR}{OPEN}{DECOR}{NUM}", re.I)
+    hits = list(pat.finditer(text))
     if hits:
         m = hits[-1]
-        # reject scientific notation / decimals: an exact product is an integer,
-        # and "1.2345e7" must not silently parse as "1"
-        tail = text[m.end():m.end() + 2]
-        if not re.match(r"[.eE]\d", tail):
+        if not re.match(r"[.eE]\d", text[m.end():m.end() + 2]):
             v = re.sub(r"[,\s\u00a0]", "", m.group(1))
             if re.fullmatch(r"[+-]?\d+", v):
                 return v, "marker"
 
-    # fallback: the LAST non-empty line, only if it is nothing but a number
-    for ln in reversed([l.strip() for l in text.strip().split("\n") if l.strip()]):
+    # 2. \boxed{<int>} -- the LaTeX convention models reach for unprompted.
+    #    A format violation, not a refusal: the answer is unambiguous.
+    box = re.findall(r"\\boxed\{\s*([+-]?[\d][\d,\u00a0 \t]*)\s*\}", text)
+    if box:
+        v = re.sub(r"[,\s\u00a0]", "", box[-1])
+        if re.fullmatch(r"[+-]?\d+", v):
+            return v, "boxed"
+
+    # 3. last meaningful line, if it is nothing but a number. Skips LaTeX
+    #    delimiters and rules, which is what made v3 miss the boxed form.
+    for ln in reversed([x.strip() for x in text.strip().split("\n")]):
+        if not ln or re.fullmatch(r"[$\-=*_~`\s]+", ln):
+            continue
         bare = re.sub(r"[,\s\u00a0*_`$]", "", ln)
         bare = re.sub(r"^\\boxed\{|^\\text\{|\}$|\.$", "", bare)
         if re.fullmatch(r"[+-]?\d+", bare):
             return bare, "last_line"
         break
     return None, "none"
-
 
 # --------------------------------------------------------------------------
 # CPU-only weight prefetch. Pulling 16GB on a rented GPU is pure waste.
@@ -311,6 +334,7 @@ def _run_batch(self, gpu_name, jobs, temperature, top_p, thinking,
         text = o.outputs[0].text
         ans, parse_method = parse_answer(text)
         outcome = _classify(o.outputs[0].finish_reason, ans, j["truth"])
+        _obs_think, _obs_marker = _observed_thinking(text)
         recs.append(
             {
                 "model": self.model,
@@ -333,17 +357,18 @@ def _run_batch(self, gpu_name, jobs, temperature, top_p, thinking,
                 "seed": _seed_for(sweep_id, self.model, j["a"], j["b"],
                                  j["instance_id"], sample_idx),
                 "sample_idx": sample_idx,
-                "submit_index": submit_base + list(jobs).index(j)
-                                if False else j.get("_pos"),
+                "submit_index": j.get("_pos"),
+                "budget_mode": budget_mode,
                 "batch_seq": batch_seq,
                 "sweep_id": sweep_id,
                 "problem_seed": j.get("problem_seed"),
                 "prompt_text": prompt,
                 "prompt_sha256": hashlib.sha256(prompt.encode()).hexdigest()[:16],
-                "n_in_cell": cell_n[(j["a"], j["b"])],
+                "n_in_cell": j.get("_n_in_cell", cell_n[(j["a"], j["b"])]),
                 "trial_index": j["instance_id"],
                 "thinking_requested": thinking,
-                "thinking_observed": ("<think>" in text) or ("</think>" in text),
+                "thinking_observed": _obs_think,
+                "thinking_marker": _obs_marker,
                 "max_tokens": granted,
                 "tokens_wanted": wanted,
                 "room_clipped": clipped,
@@ -585,7 +610,8 @@ def grid(model: str = "Qwen/Qwen3-4B", gpu: str = "l40s", thinking: str = "true"
          lo: int = 2, hi: int = 12, n_live: int = 45, n_saturated: int = 10,
          temperature: float = 0.7, top_p: float = 1.0,
          n_lo: int = 10, n_hi: int = 50, chunk: int = 256,
-         sweep_id: str = "grid", axes: str = "", budget_mode: str = "max"):
+         sweep_id: str = "grid", axes: str = "", budget_mode: str = "max",
+         cells_spec: str = "", order_seed: str = "", dry_run: str = "false"):
     """The deliverable: x = digits of A, y = digits of B, z = P(exactly correct).
 
     Two things this does that the earlier entrypoints got wrong.
@@ -611,15 +637,23 @@ def grid(model: str = "Qwen/Qwen3-4B", gpu: str = "l40s", thinking: str = "true"
     # `axes` gives an explicit sparse axis list, e.g. "2,5,8,11" -> 16 cells.
     # Without it, lo..hi builds the dense square. The dense default is what a
     # sparse plan would silently get, so the plan must pass axes explicitly.
-    vals = ([int(v) for v in axes.split(",")] if axes.strip()
-            else list(range(lo, hi + 1)))
-    cells = [(a, b) for a in vals for b in vals]
+    if cells_spec.strip():
+        cells = [tuple(int(v) for v in c.split("x"))
+                 for c in cells_spec.split(",")]
+        vals = sorted({v for c in cells for v in c})
+    else:
+        vals = ([int(v) for v in axes.split(",")] if axes.strip()
+                else list(range(lo, hi + 1)))
+        cells = [(a, b) for a in vals for b in vals]
 
     jobs = []
     for (a, b) in cells:
         N = a * b
         n = n_live if n_lo <= N <= n_hi else n_saturated
-        jobs += make_problems(a, b, n)
+        got = make_problems(a, b, n)
+        for j in got:
+            j["_n_in_cell"] = n      # the CELL's n, not the batch's count
+        jobs += got
     # Seeded shuffle, NOT a systematic sort. Submission position measurably
     # affects output (the odd repeat was sample_idx 0 in 11 of 11 cases), so a
     # systematic order lets an engine-state effect masquerade as a capability
@@ -627,11 +661,24 @@ def grid(model: str = "Qwen/Qwen3-4B", gpu: str = "l40s", thinking: str = "true"
     # SAME scrambled order and any residual order effect is common to both and
     # cancels in the paired comparison. Position is recorded so it stays
     # testable rather than merely diluted.
-    random.Random(f"order-{sweep_id}").shuffle(jobs)
+    # The order seed must NOT be the sweep_id: two models run under different
+    # sweep ids would then get different submission orders, and submission
+    # position measurably affects output (methods 5). Same seed -> same order
+    # -> the order effect is common to both and cancels in the comparison.
+    random.Random(f"order-{order_seed or 'shared'}").shuffle(jobs)
     for i, j in enumerate(jobs):
         j["_pos"] = i
 
     est_tok = sum(505.2 * (j["a"] * j["b"]) ** 0.714 for j in jobs)
+    if dry_run.lower() == "true":
+        usd = est_tok / 4032 * (0.001097 if gpu == "h100" else 0.000542)
+        print(f"DRY RUN — nothing will be spent")
+        print(f"  cells       {len(cells)}  {sorted(cells)[:6]}{' ...' if len(cells)>6 else ''}")
+        print(f"  generations {len(jobs)}")
+        print(f"  chunks      {(len(jobs) + chunk - 1) // chunk} of {chunk}")
+        print(f"  est tokens  {est_tok/1e6:.2f}M")
+        print(f"  est cost    ${usd:.2f}  (+ cold start ~$0.12)")
+        return []
     mpath = write_manifest(
         sweep_id, model=model, gpu=gpu, thinking=thinking,
         budget_mode=budget_mode, temperature=temperature, top_p=top_p,

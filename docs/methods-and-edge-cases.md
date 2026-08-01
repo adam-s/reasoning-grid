@@ -90,7 +90,24 @@ ANSWER: 16959492.
 ANSWER: 123456<|im_end|>          <- with skip_special_tokens=False
 ```
 
-### Rules
+### Rules (v4)
+
+Three extraction paths, tried in order, each recorded in `parse_method`:
+
+1. **`ANSWER:`** — the requested format, with markdown/LaTeX decoration allowed
+2. **`\boxed{...}`** — the LaTeX convention models reach for unprompted. A
+   format violation, not a refusal: the answer is unambiguous
+3. **last meaningful line** if it is nothing but a number, skipping LaTeX
+   delimiters and horizontal rules
+
+`\boxed` accounted for 23 of 199 corpus tails. Treating it as a refusal is what
+caused D-17.
+
+**A parser extracts the model's assertion, not the correct answer.** A fixture
+whose expectation is "the truth" conflates the two: in one real case the model
+asserted a wrong product while the true value appeared earlier in its own
+reasoning. The regression corpus therefore locks *what was extracted and by
+which path*, never whether it was right.
 
 Accepted: markdown bold/italic/code around the marker or the number, `\boxed{}`,
 `\text{}`, thousands separators (comma, space, NBSP), trailing period, and a
@@ -326,6 +343,7 @@ Every defect found. Severity is "could it produce a wrong published number".
 | D-13 | Boundary fitter diverged silently | Undamped Newton ran to `alpha=1.5e11, beta=-5.5e10` under separation; their ratio happened to give exactly `ln(16)`, so it reported a boundary of **4.00 digits with a zero-width bootstrap interval** on data whose 4x4 cell was at 86%. Truth was 7.54. Fixed with ridge penalty, step limiting and backtracking; verified against an independent grid-search MLE | own check |
 | D-14 | Derived scores written into `runs/` as `.jsonl` | `analyze.py runs/*.jsonl` loaded raw and derived together and **double-counted every generation**, reporting 152/200 at a cell with 100 generations — the average of a buggy parse and a fixed parse of the same runs | adversarial review |
 | D-15 | `prompt_text` read a leaked loop variable | Every record stored the *last* problem's prompt; 506 of 532 mismatched their own operands | own check |
+| D-17 | Parser v3 required a colon after `ANSWER` | Qwen's actual house style is `### Final Answer` then `$$\boxed{1234}$$` — no marker at all — and the last-line fallback saw `$$`. **19 of 20 `quit` records in the smoke grid were correct answers.** Contaminated every run on disk: 133 recovered across 10 files, and the published boundary moved from 8.77 to **9.66 [8.67, 10.43]**. Third incarnation of the same class of bug (D-1, D-12). Fixed by parser v4 plus `tests/test_parser.py`, a 211-case regression corpus built from real tails across four models — the thing that should have existed after D-1 | adversarial audit |
 | D-16 | Published essay says "45 repeated runs" | They were 45 **distinct problems**, one sample each. "Repeated runs" tells a statistician the trials are clustered and invites the question "where is your ICC?" The methodology was correct; the caption makes it look wrong | chart review |
 
 ### Open

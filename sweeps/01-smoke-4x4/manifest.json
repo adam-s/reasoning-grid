@@ -1,0 +1,120 @@
+{
+  "sweep_id": "01-smoke-4x4",
+  "status": "closed",
+  "schema_version": 1,
+  "code_git_sha": "aa0a1a1e34e6dbdb027570c84391dcb6599e3c7b",
+  "code_git_dirty": true,
+  "prompt_text": "Compute the exact product of {x} and {y}.\nWork it out however you like, but the final line of your reply must be exactly:\nANSWER: <the full integer>",
+  "prompt_sha256": "770f964ea0ebbd50",
+  "problem_pool_size": 256,
+  "problem_seed": 20260730,
+  "engine": {
+    "vllm": "0.11.0",
+    "transformers": "4.57.0"
+  },
+  "batches": [
+    {
+      "batch": 0,
+      "n": 48,
+      "wall_s": 413.8,
+      "tokens": 504271
+    },
+    {
+      "batch": 1,
+      "n": 48,
+      "wall_s": 378.5,
+      "tokens": 495580
+    }
+  ],
+  "model": "Qwen/Qwen3-4B",
+  "gpu": "h100",
+  "thinking": "true",
+  "budget_mode": "max",
+  "temperature": 0.7,
+  "top_p": 1.0,
+  "axes": [
+    2,
+    5,
+    8,
+    11
+  ],
+  "cells": [
+    [
+      2,
+      2
+    ],
+    [
+      2,
+      5
+    ],
+    [
+      2,
+      8
+    ],
+    [
+      2,
+      11
+    ],
+    [
+      5,
+      2
+    ],
+    [
+      5,
+      5
+    ],
+    [
+      5,
+      8
+    ],
+    [
+      5,
+      11
+    ],
+    [
+      8,
+      2
+    ],
+    [
+      8,
+      5
+    ],
+    [
+      8,
+      8
+    ],
+    [
+      8,
+      11
+    ],
+    [
+      11,
+      2
+    ],
+    [
+      11,
+      5
+    ],
+    [
+      11,
+      8
+    ],
+    [
+      11,
+      11
+    ]
+  ],
+  "n_live": 6,
+  "n_saturated": 6,
+  "n_lo": 0,
+  "n_hi": 99999,
+  "chunk": 48,
+  "n_planned": 96,
+  "cost": {
+    "est_output_tokens": 659487,
+    "est_usd": 0.179,
+    "actual_usd": null
+  },
+  "n_actual": 96,
+  "actual_output_tokens": 999851
+}
