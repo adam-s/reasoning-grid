@@ -58,3 +58,28 @@ NOT yet done at time of writing. The tokenizer-periodicity prediction in this
 project turned out to have been published five months earlier, so operand-order
 effects in LLM arithmetic must be searched before this is called a discovery.
 A search is running in parallel with the measurement.
+
+
+---
+
+## Evidence so far (appended 2026-07-31, prediction unchanged above)
+
+**Token cost is symmetric.** Across 12 asymmetric Qwen pairs and 6 gpt-oss
+pairs, mean tokens(a×b)/tokens(b×a) = 1.00 and 0.98, with small-first dearer in
+exactly half the pairs. Fitting token cost: `a+b` gives R²=0.958, `a·b` 0.937,
+but `b` alone only 0.636 — the same as `a` alone at 0.638.
+
+This is evidence **against the mechanism** the prediction rests on. If the model
+wrote one partial product per digit of the multiplier, `b` would predict cost
+and `a` would not. It looks instead as though operand order is normalised
+internally before any work happens.
+
+Token cost is not accuracy, so the prediction is not yet tested. But if the
+model canonicalises the order, there is no procedural asymmetry left to produce
+an accuracy difference, and the expected result becomes a null.
+
+**The accuracy test still cannot be run from grid data.** `make_problems` seeds
+on `(seed, a, b)`, so cells (a,b) and (b,a) draw from different RNG streams and
+share zero operands — verified across all six reversed pairs in the 01-smoke
+grid. Only the `symmetry` entrypoint builds true swapped pairs. Any order claim
+must come from that path.

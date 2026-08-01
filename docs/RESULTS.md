@@ -16,11 +16,18 @@ defect was found that had scored 58 correct answers as failures.
 Fitted logistic in `log N`, N = a·b, bootstrap CI over cells, truncated
 generations excluded.
 
-| condition | boundary `d*` | 95% CI | N at 50% | generations |
-| --- | --- | --- | --- | --- |
-| reasoning **off** | 4.57 digits | [4.00, 5.24] | 21 | 31 |
-| reasoning on, formula ceiling (SUPERSEDED) | 7.54 digits | [6.12, 8.77] | 57 | 70 |
-| **reasoning on, full context** | **8.77 digits** | **[7.77, 9.62]** | **77** | 46 |
+| condition | boundary `d*` | 95% CI | generations |
+| --- | --- | --- | --- |
+| **reasoning on, full context, parser v4** | **9.66 digits** | **[8.67, 10.43]** | 48 |
+| reasoning on, full context, parser v3 (SUPERSEDED, D-17) | 8.77 | [7.77, 9.62] | 46 |
+| reasoning on, formula ceiling, parser v3 (SUPERSEDED, D-10) | 7.54 | [6.12, 8.77] | 70 |
+| reasoning **off**, parser v3 (not rescored, also suspect) | 4.57 | [4.00, 5.24] | 31 |
+
+**Two corrections have moved this number 2.1 digits, and both were found by
+audit rather than by a test.** Truncation contamination was worth +1.23
+(7.54 → 8.77, D-10); the parser missing `\boxed{}` answers was worth a further
++0.89 (8.77 → 9.66, D-17). Rescoring every run on disk with parser v4 recovered
+**133 correct answers**, 702 → 835.
 
 **The 7.54 figure was suppressed by truncation and should not be used.** Rerun
 with `budget_mode="max"`, granting the engine's full 32,136 tokens instead of
@@ -250,6 +257,79 @@ methods §7d.
 This calibration is for the **surface and boundary** only. Distinguishing a
 rate from a set of holes is a different question that cell count does not
 answer; see methods §7b.
+
+## 6c. Two-model pairing — verified 2026-07-31
+
+Sweep `02-smoke-1to4-2models`: 16 cells (1x1 through 4x4), Qwen3-4B and
+gpt-oss-20b, n=6, reasoning on, shared `order_seed`.
+
+| check | result |
+| --- | --- |
+| distinct `instance_uid` | 96 |
+| seen by **both** models | **96** |
+| same operands per uid | yes |
+| same submission position per uid | yes |
+| parse path, gpt-oss | 96/96 `marker` |
+| parse path, Qwen | 94 `marker`, **2 `boxed`** |
+
+The paired path works. Every problem reached both models with identical operands
+and identical queue position, so paired statistics finally have a valid basis.
+
+The two `boxed` records matter more than they look: under parser v3 they would
+have scored as refusals, making Qwen read 98% against gpt-oss's 100% — a 2-point
+gap that would have been **pure parser artifact**. That is the cross-model
+asymmetry methods §3 names as the largest threat to the comparison, and it
+appeared in the very first two-model run.
+
+Rates were 100%/100%, as expected for the saturated corner. This sweep measures
+plumbing, not capability.
+
+## 6d. Operand order does not change token cost
+
+From 12 asymmetric Qwen pairs and 6 gpt-oss pairs across both smoke grids:
+
+| model | mean tokens(a×b) / tokens(b×a) | small-first dearer in |
+| --- | --- | --- |
+| Qwen3-4B | 1.00 | 6 of 12 pairs |
+| gpt-oss-20b | 0.98 | 3 of 6 pairs |
+
+And the fit says the same thing — token cost is **symmetric** in the operands:
+
+| predictor | R² |
+| --- | --- |
+| `a+b` | **0.958** |
+| `a·b` | 0.937 |
+| `b` alone (the multiplier) | 0.636 |
+| `a` alone | 0.638 |
+
+If the model wrote one partial product per digit of the multiplier — the
+mechanism behind the pre-registered order prediction — then `b` would predict
+cost and `a` would not. They predict equally badly. The likely explanation is
+that the model normalises operand order internally before computing, which is
+exactly what Goat (2305.14201) hard-codes: *"The larger number of the two is
+placed in front and then the smaller one is split."*
+
+**This is about cost, not accuracy.** The accuracy question remains open and
+still needs genuinely paired cells — `grid` draws (a,b) and (b,a) from different
+RNG streams, so its reversed cells share zero operands.
+
+## 6e. Throughput is driven by cell size, not chunk size
+
+The confound is resolved. Same GPU, same chunk size, different cells:
+
+| run | cells | chunk | tok/s |
+| --- | --- | --- | --- |
+| 01-smoke | N ≤ 121 | 48 | 1,262 |
+| 02-smoke | N ≤ 16 | 48 | **2,456–2,994** |
+
+Chunk size held constant and throughput doubled, so the earlier 48-vs-128
+comparison was measuring cell mix. Large cells hold more KV cache per sequence
+and throttle concurrency.
+
+**gpt-oss is 5–8× cheaper per generation than Qwen** on identical problems —
+392 vs 2,935 tokens at 3x4, 166 vs 1,011 at 1x4. It answers tersely; Qwen writes
+long reasoning even on trivial problems. Over a full grid, Qwen is ~87% of the
+bill.
 
 ## 7. What has NOT been measured
 

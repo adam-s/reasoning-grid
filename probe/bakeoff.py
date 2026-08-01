@@ -681,6 +681,7 @@ def grid(model: str = "Qwen/Qwen3-4B", gpu: str = "l40s", thinking: str = "true"
         return []
     mpath = write_manifest(
         sweep_id, model=model, gpu=gpu, thinking=thinking,
+        order_seed=order_seed or "shared",
         budget_mode=budget_mode, temperature=temperature, top_p=top_p,
         axes=vals, cells=[list(c) for c in cells], n_live=n_live,
         n_saturated=n_saturated, n_lo=n_lo, n_hi=n_hi, chunk=chunk,
@@ -837,7 +838,7 @@ def throughput(model: str = "Qwen/Qwen3-4B", gpu: str = "h100",
 # Manifest. AGENTS.md: "analysis reads a manifest, never a filename", and
 # "estimate cost before launching, record actual cost after".
 # --------------------------------------------------------------------------
-def write_manifest(sweep_id, **fields):
+def write_manifest(sweep_id, model=None, **fields):
     """Written BEFORE the first generation. status='open' until closed.
 
     A run whose parameters live only in its filename is an anecdote: the
@@ -849,6 +850,10 @@ def write_manifest(sweep_id, **fields):
 
     d = pathlib.Path(__file__).resolve().parent.parent / "sweeps" / sweep_id
     d.mkdir(parents=True, exist_ok=True)
+    # one manifest per (sweep, model). A sweep legitimately spans models -- the
+    # shared order seed is the whole point -- so keying on sweep_id alone made
+    # the second model silently overwrite the first model's manifest.
+    name = f"manifest-{model.split('/')[-1]}.json" if model else "manifest.json"
     try:
         sha = subprocess.run(["git", "rev-parse", "HEAD"], capture_output=True,
                              text=True, cwd=d).stdout.strip()
@@ -857,15 +862,16 @@ def write_manifest(sweep_id, **fields):
                                     cwd=d).stdout.strip())
     except Exception:
         sha, dirty = "unknown", None
-    m = {"sweep_id": sweep_id, "status": "open", "schema_version": 1,
+    m = {"sweep_id": sweep_id, "model": model, "status": "open",
+         "schema_version": 2,
          "code_git_sha": sha, "code_git_dirty": dirty,
          "prompt_text": PROMPT,
          "prompt_sha256": hashlib.sha256(PROMPT.encode()).hexdigest()[:16],
          "problem_pool_size": POOL, "problem_seed": 20260730,
          "engine": {"vllm": "0.11.0", "transformers": "4.57.0"},
          "batches": [], **fields}
-    (d / "manifest.json").write_text(json.dumps(m, indent=2))
-    return d / "manifest.json"
+    (d / name).write_text(json.dumps(m, indent=2))
+    return d / name
 
 
 def close_manifest(path, **fields):

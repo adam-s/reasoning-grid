@@ -1,0 +1,120 @@
+{
+  "sweep_id": "02-smoke-1to4-2models",
+  "status": "closed",
+  "schema_version": 1,
+  "code_git_sha": "ec6d00e9dd153fc190427fc9dfbe3674a3cb6120",
+  "code_git_dirty": true,
+  "prompt_text": "Compute the exact product of {x} and {y}.\nWork it out however you like, but the final line of your reply must be exactly:\nANSWER: <the full integer>",
+  "prompt_sha256": "770f964ea0ebbd50",
+  "problem_pool_size": 256,
+  "problem_seed": 20260730,
+  "engine": {
+    "vllm": "0.11.0",
+    "transformers": "4.57.0"
+  },
+  "batches": [
+    {
+      "batch": 0,
+      "n": 48,
+      "wall_s": 7.2,
+      "tokens": 10776
+    },
+    {
+      "batch": 1,
+      "n": 48,
+      "wall_s": 6.6,
+      "tokens": 11210
+    }
+  ],
+  "model": "openai/gpt-oss-20b",
+  "gpu": "h100",
+  "thinking": "true",
+  "budget_mode": "max",
+  "temperature": 0.7,
+  "top_p": 1.0,
+  "axes": [
+    1,
+    2,
+    3,
+    4
+  ],
+  "cells": [
+    [
+      1,
+      1
+    ],
+    [
+      1,
+      2
+    ],
+    [
+      1,
+      3
+    ],
+    [
+      1,
+      4
+    ],
+    [
+      2,
+      1
+    ],
+    [
+      2,
+      2
+    ],
+    [
+      2,
+      3
+    ],
+    [
+      2,
+      4
+    ],
+    [
+      3,
+      1
+    ],
+    [
+      3,
+      2
+    ],
+    [
+      3,
+      3
+    ],
+    [
+      3,
+      4
+    ],
+    [
+      4,
+      1
+    ],
+    [
+      4,
+      2
+    ],
+    [
+      4,
+      3
+    ],
+    [
+      4,
+      4
+    ]
+  ],
+  "n_live": 6,
+  "n_saturated": 6,
+  "n_lo": 0,
+  "n_hi": 99999,
+  "chunk": 48,
+  "n_planned": 96,
+  "cost": {
+    "est_output_tokens": 171516,
+    "est_usd": 0.047,
+    "actual_usd": null
+  },
+  "n_actual": 96,
+  "actual_output_tokens": 21986
+}
