@@ -8,11 +8,17 @@ Everything here is derived and regenerable. Nothing is written back to runs/.
 
   .venv/bin/python probe/reduce_grid.py --sweep 07-grid12 --out derived/
 
-Validity rule, applied before any rate is computed: a generation that ended
-because it hit the token ceiling measured the ceiling, not the model. Those are
-counted separately and never folded into the denominator. A cell whose ceiling
-bound is reported as invalid rather than as a low score -- the renderer greys
-it, because "we cut it off" and "it got the answer wrong" are different facts.
+Scoring rule: a generation that consumed its entire context without answering
+counts as INCORRECT, not as missing data. See `cells()` for why that is sound
+here and when it is not -- the short version is that every model in sweep 10
+was granted its own native context, so running out is the model's limit rather
+than a budget we imposed, and the grid asks how often the model returns the
+exactly correct product. A run that never terminates returns nothing.
+
+Pass grind_is_wrong=False to recover the older reading, which excludes those
+generations as measuring the ceiling. That is the correct treatment for every
+sweep before 10, all of which ran against an arbitrary cap. The four-way
+outcome counts are carried on every cell so neither reading is lost.
 """
 
 import argparse
@@ -92,7 +98,31 @@ def dedupe(recs):
     return out, len(recs) - len(out)
 
 
-def cells(recs):
+GRIND_IS_WRONG = [True]
+
+
+def cells(recs, grind_is_wrong=True):
+    """Per-cell k/n with intervals.
+
+    `grind_is_wrong` decides what a generation that consumed its whole context
+    without answering counts as.
+
+      True  (default) -- it counts as incorrect and stays in the denominator.
+        Defensible ONLY because every model here was granted its own native
+        context, so exhausting it is the model's limit rather than a budget we
+        imposed. The cell then answers exactly the question the grid is for:
+        how often does this model return the exactly correct product? A run
+        that never terminates returns nothing.
+
+      False -- it is excluded as measuring the ceiling. Correct treatment when
+        the ceiling is an arbitrary cap, which is how every sweep before 10 was
+        run, and how any future sweep that does not grant native context must
+        be read.
+
+    Either way `outcomes` carries the four-way counts, so the other reading is
+    recoverable without re-running anything.
+    """
+    GRIND_IS_WRONG[0] = grind_is_wrong
     by = defaultdict(list)
     for r in recs:
         by[(r["a"], r["b"])].append(r)
@@ -100,8 +130,12 @@ def cells(recs):
     out = {}
     for (a, b), rs in by.items():
         bound = [r for r in rs if r.get("finish_reason") == "length"]
-        valid = [r for r in rs if r.get("finish_reason") != "length"]
-        k = sum(1 for r in valid if r["correct"])
+        if grind_is_wrong:
+            valid = rs
+        else:
+            valid = [r for r in rs if r.get("finish_reason") != "length"]
+        k = sum(1 for r in valid
+                if r["correct"] and r.get("finish_reason") != "length")
         n = len(valid)
         p, lo, hi = wilson(k, n)
         counts = defaultdict(int)
@@ -113,8 +147,11 @@ def cells(recs):
             "k": k, "n": n, "p": round(p, 4),
             "lo": round(lo, 4), "hi": round(hi, 4),
             "n_ceiling_bound": len(bound),
-            # a cell is only trustworthy if the ceiling never bound it
-            "valid": len(bound) == 0 and n > 0,
+            # under grind_is_wrong every cell with data is reportable: a
+            # non-terminating run is a failure to return the answer, not a
+            # missing measurement. The count is kept so the censoring is
+            # visible in the chart and recoverable in analysis.
+            "valid": n > 0 if GRIND_IS_WRONG[0] else (len(bound) == 0 and n > 0),
             "outcomes": dict(counts),
             "tok_mean": round(sum(toks) / len(toks)) if toks else 0,
             "tok_max": max(toks) if toks else 0,
@@ -135,11 +172,20 @@ def paired(recs_a, recs_b):
     def key(r):
         return (r["instance_uid"], r.get("temperature"), r.get("trial_index", 0))
 
-    da = {key(r): r for r in recs_a if r.get("finish_reason") != "length"}
-    db = {key(r): r for r in recs_b if r.get("finish_reason") != "length"}
+    # Truncated runs are KEPT and count as incorrect, matching the surface rule.
+    # Dropping them here while the surface counts them would mean the heatmap
+    # and the paired table answer different questions from the same data, and a
+    # model that grinds often (Phi-4-reasoning: 19-40% at high N) would look
+    # better in the pairing than in the chart beside it.
+    da = {key(r): r for r in recs_a}
+    db = {key(r): r for r in recs_b}
     both = set(da) & set(db)
     t = {"both_right": 0, "only_a": 0, "only_b": 0, "both_wrong": 0}
-    per_cell = defaultdict(lambda: dict(t))
+    # NOT dict(t) -- t is mutated as the loop runs, so a cell created partway
+    # through would start from the running totals instead of zero, and every
+    # per-cell count would be inflated by whatever had accumulated before it.
+    per_cell = defaultdict(
+        lambda: {"both_right": 0, "only_a": 0, "only_b": 0, "both_wrong": 0})
     for u in both:
         ra, rb = da[u], db[u]
         key = ("both_right" if ra["correct"] and rb["correct"] else
@@ -156,18 +202,65 @@ def paired(recs_a, recs_b):
             "per_cell": {k: v for k, v in per_cell.items()}}
 
 
+CONDITION = ("temperature", "top_p", "engine_max_len", "thinking_observed")
+
+
+def by_condition(recs, want):
+    """Keep only records matching every named condition.
+
+    Pooling across sweeps is safe when the CONDITIONS match, not when the file
+    names look related. Two runs of the same cell at different top_p are
+    different experiments; two runs at identical settings are extra Bernoulli
+    trials of the same quantity and may be added.
+
+    Caveat the caller must carry: repeated draws of the SAME instance are
+    correlated, because instances differ in difficulty. Pooling m draws of k
+    problems is worth less than m*k independent problems, so an interval
+    computed on the raw count runs optimistic.
+    """
+    out = []
+    for r in recs:
+        if all(r.get(k) == v for k, v in want.items()):
+            out.append(r)
+    return out
+
+
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument("--sweep", required=True, help="sweep id prefix, e.g. 07-grid12")
+    ap.add_argument("--sweep", help="sweep id prefix, e.g. 10-grid12")
+    ap.add_argument("--pool", action="append", default=[],
+                    help="extra sweep prefix to pool in; only records whose "
+                         "conditions match the primary sweep are kept")
     ap.add_argument("--runs", default="runs")
     ap.add_argument("--out", default="derived")
     ap.add_argument("--temperature", type=float, default=None)
     args = ap.parse_args()
+    if not args.sweep:
+        raise SystemExit("--sweep is required")
 
     paths = sorted(glob.glob(os.path.join(args.runs, f"{args.sweep}*.jsonl")))
     if not paths:
         raise SystemExit(f"no files matching {args.sweep}* in {args.runs}/")
     recs = load(paths, temperature=args.temperature)
+
+    if args.pool:
+        # the primary sweep defines the condition; anything not matching it is
+        # reported and dropped rather than silently averaged in
+        want = {m: {k: r.get(k) for k in CONDITION}
+                for m, r in ((x["model"], x) for x in recs)}
+        added, rejected = 0, 0
+        for pref in args.pool:
+            extra = load(sorted(glob.glob(os.path.join(args.runs, f"{pref}*.jsonl"))),
+                         temperature=args.temperature)
+            for r in extra:
+                w = want.get(r.get("model"))
+                if w and all(r.get(k) == v for k, v in w.items()):
+                    recs.append(r); added += 1
+                else:
+                    rejected += 1
+        print(f"pooled +{added} records from {args.pool}, rejected {rejected} "
+              f"on condition mismatch")
+
     recs, dropped = dedupe(recs)
 
     models = sorted({r["model"] for r in recs})

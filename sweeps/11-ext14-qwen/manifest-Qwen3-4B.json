@@ -1,0 +1,291 @@
+{
+  "sweep_id": "11-ext14-qwen",
+  "model": "Qwen/Qwen3-4B",
+  "status": "closed",
+  "schema_version": 2,
+  "code_git_sha": "5a777e9c552785d4774f94c9d46f4f5d24a1be45",
+  "code_git_dirty": true,
+  "prompt_text": "Compute the exact product of {x} and {y}.\nWork it out however you like, but the final line of your reply must be exactly:\nANSWER: <the full integer>",
+  "prompt_sha256": "770f964ea0ebbd50",
+  "problem_pool_size": 256,
+  "problem_seed": 20260730,
+  "engine": {
+    "vllm": "0.11.0",
+    "transformers": "4.57.0"
+  },
+  "batches": [
+    {
+      "batch": 0,
+      "n": 128,
+      "wall_s": 1401.6,
+      "tokens": 2521714
+    },
+    {
+      "batch": 1,
+      "n": 128,
+      "wall_s": 1442.8,
+      "tokens": 2565986
+    },
+    {
+      "batch": 2,
+      "n": 128,
+      "wall_s": 1243.9,
+      "tokens": 2314834
+    },
+    {
+      "batch": 3,
+      "n": 120,
+      "wall_s": 1244.4,
+      "tokens": 2273162
+    }
+  ],
+  "gpu": "h200",
+  "thinking": "true",
+  "order_seed": "grid10",
+  "budget_mode": "max",
+  "temperature": 0.7,
+  "top_p": 1.0,
+  "axes": [
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11,
+    12,
+    13,
+    14
+  ],
+  "cells": [
+    [
+      1,
+      13
+    ],
+    [
+      1,
+      14
+    ],
+    [
+      2,
+      13
+    ],
+    [
+      2,
+      14
+    ],
+    [
+      3,
+      13
+    ],
+    [
+      3,
+      14
+    ],
+    [
+      4,
+      13
+    ],
+    [
+      4,
+      14
+    ],
+    [
+      5,
+      13
+    ],
+    [
+      5,
+      14
+    ],
+    [
+      6,
+      13
+    ],
+    [
+      6,
+      14
+    ],
+    [
+      7,
+      13
+    ],
+    [
+      7,
+      14
+    ],
+    [
+      8,
+      13
+    ],
+    [
+      8,
+      14
+    ],
+    [
+      9,
+      13
+    ],
+    [
+      9,
+      14
+    ],
+    [
+      10,
+      13
+    ],
+    [
+      10,
+      14
+    ],
+    [
+      11,
+      13
+    ],
+    [
+      11,
+      14
+    ],
+    [
+      12,
+      13
+    ],
+    [
+      12,
+      14
+    ],
+    [
+      13,
+      1
+    ],
+    [
+      13,
+      2
+    ],
+    [
+      13,
+      3
+    ],
+    [
+      13,
+      4
+    ],
+    [
+      13,
+      5
+    ],
+    [
+      13,
+      6
+    ],
+    [
+      13,
+      7
+    ],
+    [
+      13,
+      8
+    ],
+    [
+      13,
+      9
+    ],
+    [
+      13,
+      10
+    ],
+    [
+      13,
+      11
+    ],
+    [
+      13,
+      12
+    ],
+    [
+      13,
+      13
+    ],
+    [
+      13,
+      14
+    ],
+    [
+      14,
+      1
+    ],
+    [
+      14,
+      2
+    ],
+    [
+      14,
+      3
+    ],
+    [
+      14,
+      4
+    ],
+    [
+      14,
+      5
+    ],
+    [
+      14,
+      6
+    ],
+    [
+      14,
+      7
+    ],
+    [
+      14,
+      8
+    ],
+    [
+      14,
+      9
+    ],
+    [
+      14,
+      10
+    ],
+    [
+      14,
+      11
+    ],
+    [
+      14,
+      12
+    ],
+    [
+      14,
+      13
+    ],
+    [
+      14,
+      14
+    ]
+  ],
+  "n_live": 12,
+  "n_saturated": 3,
+  "n_lo": 0,
+  "n_hi": 99999,
+  "chunk": 128,
+  "n_planned": 504,
+  "max_len": 40960,
+  "n_from": 0,
+  "cost": {
+    "est_output_tokens": 9040721,
+    "est_tok_per_s": 700,
+    "mean_cell_N": 95.3,
+    "est_usd": 16.416,
+    "actual_usd": null
+  },
+  "n_actual": 504,
+  "actual_output_tokens": 9675696
+}

@@ -14,10 +14,13 @@ Three things the colour has to say at once, and they must not be confusable:
   sample size   the cell's inset. n=3 draws smaller than n=12, so a thinly
                 sampled cell LOOKS thin. Adaptive n otherwise lies to the eye,
                 which reads every tile as equally certain.
-  invalidity    a cell whose generations hit the token ceiling measured the
-                ceiling, not the model. Those are grey and outside the ramp.
-                Painting them dark would say "the model failed here", which is
-                exactly the artefact this project keeps having to dig out.
+  nothing else  deliberately. A run that used the model's whole context without
+                answering counts as incorrect, exactly like a wrong digit: it
+                did not return the product. No second encoding separates the
+                two, because the grid measures one thing. The four-way outcome
+                is kept on every record and shown on hover, so the breakdown is
+                never lost -- it simply does not get a visual channel it would
+                have to earn. Grey means no data at all.
 
 The ramp is computed in CSS via color-mix() from two custom properties, so one
 per-cell number (--p) themes correctly in both light and dark.
@@ -97,6 +100,14 @@ text{font-family:ui-monospace,"SF Mono",Menlo,monospace; fill:var(--muted)}
 .tick{font-size:9.5px}
 .cell{stroke:var(--paper); stroke-width:.6}
 .void{fill:var(--void); opacity:.5}
+.hatch{stroke:none; pointer-events:none}
+.face{stroke:var(--paper); stroke-width:.5; stroke-linejoin:round}
+.floor{stroke:var(--line); stroke-width:.6; opacity:.55}
+.halfline{fill:none; stroke:var(--signal); stroke-width:2.2; stroke-linecap:round;
+          stroke-dasharray:5 4}
+.hero{background:var(--card); border:1px solid var(--line); border-radius:3px;
+      padding:22px 20px 12px}
+.hero svg{max-width:100%}
 .legend{display:flex; align-items:center; gap:14px; flex-wrap:wrap;
         font-family:ui-monospace,"SF Mono",Menlo,monospace; font-size:11px; color:var(--muted)}
 .swatch{display:inline-block; width:11px; height:11px; vertical-align:-1px; margin-right:5px;
@@ -122,7 +133,10 @@ def heatmap(cells, dim, dstar=None, title_x="digits of B", title_y="digits of A"
     W = PAD_L + dim * S + 8
     H = PAD_T + dim * S + PAD_B
     o = [f'<svg viewBox="0 0 {W} {H}" role="img" '
-         f'aria-label="probability of an exactly correct product by operand size">']
+         f'aria-label="probability of an exactly correct product by operand size">',
+         '<defs><pattern id="grind" width="4" height="4" patternUnits="userSpaceOnUse" '
+         'patternTransform="rotate(45)"><line x1="0" y1="0" x2="0" y2="4" '
+         'stroke="var(--paper)" stroke-width="1.4" opacity=".85"/></pattern></defs>']
 
     nmax = max((c["n"] for c in cells.values()), default=1) or 1
     for a in range(1, dim + 1):
@@ -137,14 +151,23 @@ def heatmap(cells, dim, dstar=None, title_x="digits of B", title_y="digits of A"
             w = S - 1.2 - 2 * ins
             tip = (f"{a}x{b}  N={c['N']}  {c['k']}/{c['n']}"
                    f"  p={c['p']:.2f} [{c['lo']:.2f}, {c['hi']:.2f}]")
+            gr = c.get("n_ceiling_bound", 0) / max(c["n"], 1)
+            if gr:
+                tip += f"  ({c['n_ceiling_bound']} ran out of context)"
             if not c["valid"]:
-                tip += f"  CEILING-BOUND x{c['n_ceiling_bound']}"
+                tip += "  NOT MEASURED"
                 o.append(f'<rect class="cell void" x="{x+ins:.1f}" y="{y+ins:.1f}" '
                          f'width="{w:.1f}" height="{w:.1f}"><title>{tip}</title></rect>')
             else:
                 o.append(f'<rect class="cell" x="{x+ins:.1f}" y="{y+ins:.1f}" '
                          f'width="{w:.1f}" height="{w:.1f}" style="{ramp_style(c["p"])}">'
                          f'<title>{tip}</title></rect>')
+                # No hatch, no second encoding. A wrong answer is a wrong
+                # answer whether the model computed it wrongly or never finished
+                # computing it -- in both cases it failed to return the product,
+                # which is the only thing this grid measures. The mechanism is
+                # still on every record and in the tooltip for anyone who wants
+                # it; it just does not get to complicate the chart.
 
     for i in range(1, dim + 1):
         o.append(f'<text class="tick" x="{PAD_L+(i-1)*S+S/2:.1f}" '
@@ -170,6 +193,100 @@ def heatmap(cells, dim, dstar=None, title_x="digits of B", title_y="digits of A"
              f'text-anchor="middle">{title_x}</text>')
     o.append(f'<text class="axttl" x="{-(PAD_T+dim*S/2):.1f}" y="10" '
              f'text-anchor="middle" transform="rotate(-90)">{title_y}</text>')
+    o.append("</svg>")
+    return "\n".join(o)
+
+
+def surface3d(cells, dim, zs=9.0, label="", dstar=None):
+    """x = digits of A, y = digits of B, z = P(exactly correct), as SVG.
+
+    Same isometric projection the Rubik's cube renderer in the neighbouring
+    project uses -- equal foreshortening on all three axes, no perspective
+    divide, no camera matrix:
+
+        px = (x - y) / sqrt(2)
+        py = (x + y - 2z) / sqrt(6)
+
+    and the same hidden-surface method: give every quad a depth along the view
+    axis (1,1,1), sort, draw back to front. A z-buffer would be overkill for
+    169 quads, and staying in SVG keeps the fill themeable through the same
+    custom properties the flat heatmap uses.
+
+    The surface is drawn from cell CENTRES, so each quad spans four adjacent
+    cells and is shaded by their mean. Reading a single cell's value off this
+    is not the point -- the shape is. The flat grid beside it carries the
+    numbers.
+    """
+    R2, R6 = math.sqrt(2), math.sqrt(6)
+
+    def proj(x, y, z):
+        return ((x - y) / R2, (x + y - 2 * z * zs) / R6)
+
+    def p_at(a, b):
+        c = cells.get(f"{a}x{b}")
+        return c["p"] if c else None
+
+    quads = []
+    for a in range(1, dim):
+        for b in range(1, dim):
+            pts = [(a, b), (a + 1, b), (a + 1, b + 1), (a, b + 1)]
+            zz = [p_at(u, v) for u, v in pts]
+            if any(z is None for z in zz):
+                continue
+            xy = [proj(u, v, z) for (u, v), z in zip(pts, zz)]
+            mean = sum(zz) / 4
+            depth = sum(u + v + z * zs for (u, v), z in zip(pts, zz)) / 4
+            quads.append((depth, xy, mean))
+    quads.sort(key=lambda q: q[0])
+
+    allpts = [p for _, xy, _ in quads for p in xy]
+    xs = [p[0] for p in allpts]; ys = [p[1] for p in allpts]
+    # room for the floor grid and the axis labels
+    pad = 1.1
+    minx, maxx = min(xs) - pad, max(xs) + pad
+    miny, maxy = min(ys) - pad * 1.4, max(ys) + pad
+    W, H = maxx - minx, maxy - miny
+    S = 46  # scale to a comfortable viewBox
+    o = [f'<svg viewBox="{minx*S:.1f} {miny*S:.1f} {W*S:.1f} {H*S:.1f}" role="img" '
+         f'aria-label="{label} surface: probability of an exactly correct product '
+         f'against the two operand sizes">']
+
+    # floor at z=0, so the height of the surface is readable against something
+    for a in range(1, dim + 1):
+        p0, p1 = proj(a, 1, 0), proj(a, dim, 0)
+        o.append(f'<line x1="{p0[0]*S:.1f}" y1="{p0[1]*S:.1f}" x2="{p1[0]*S:.1f}" '
+                 f'y2="{p1[1]*S:.1f}" class="floor"/>')
+    for b in range(1, dim + 1):
+        p0, p1 = proj(1, b, 0), proj(dim, b, 0)
+        o.append(f'<line x1="{p0[0]*S:.1f}" y1="{p0[1]*S:.1f}" x2="{p1[0]*S:.1f}" '
+                 f'y2="{p1[1]*S:.1f}" class="floor"/>')
+
+    for _, xy, mean in quads:
+        pts = " ".join(f"{x*S:.1f},{y*S:.1f}" for x, y in xy)
+        o.append(f'<polygon points="{pts}" class="face" style="{ramp_style(mean)}"/>')
+
+    # the 50% plane where the fitted boundary sits, drawn as a hyperbola on the surface
+    if dstar:
+        N = dstar * dstar
+        pts = []
+        for i in range(0, 241):
+            a = 1 + i * (dim - 1) / 240
+            b = N / a
+            if 1 <= b <= dim:
+                x, y = proj(a, b, 0.5)
+                pts.append(f"{x*S:.1f},{y*S:.1f}")
+        if len(pts) > 1:
+            o.append(f'<polyline points="{" ".join(pts)}" class="halfline"/>')
+
+    for a, b, t, dx in ((dim, 1, "digits of A", 0.9), (1, dim, "digits of B", -0.9)):
+        x, y = proj(a + (dx > 0) * 0.9, b + (dx < 0) * 0.9, 0)
+        o.append(f'<text class="axttl" x="{x*S:.1f}" y="{y*S:.1f}" '
+                 f'text-anchor="middle">{t}</text>')
+    for v in (1, dim):
+        x, y = proj(v, 0.1, 0)
+        o.append(f'<text class="tick" x="{x*S:.1f}" y="{y*S:.1f}" text-anchor="middle">{v}</text>')
+        x, y = proj(0.1, v, 0)
+        o.append(f'<text class="tick" x="{x*S:.1f}" y="{y*S:.1f}" text-anchor="middle">{v}</text>')
     o.append("</svg>")
     return "\n".join(o)
 
@@ -255,6 +372,21 @@ def main():
         <figure>{heatmap(md['cells'], dim, d)}</figure>
       </div>""")
 
+    # the 3D surface leads: x = digits of A, y = digits of B, z = P(correct).
+    # Built for whichever model covers the most cells, since that is the one
+    # with a complete surface to show.
+    top = max(stats, key=lambda s: s[4]["n_cells"])
+    tdim = max(max(c["a"], c["b"]) for c in top[4]["cells"].values())
+    hero = f'''<div class="hero">
+    <p class="eyebrow">{top[0]} &middot; {tdim}&times;{tdim} &middot; z = P(exactly correct)</p>
+    <h2>The surface</h2>
+    <p class="note" style="margin:0 0 10px">Height is the share of runs returning the
+      exactly correct product. The plateau at the back is where the model is reliable;
+      the floor at the front is where it has stopped working. The dashed line traces the
+      50% crossing, at {top[1]:.2f} digits on the diagonal.</p>
+    {surface3d(top[4]["cells"], tdim, label=top[0], dstar=top[1])}
+  </div>'''
+
     tot_gen = sum(s[4]["n_records"] for s in stats)
     tot_tok = sum(s[4]["total_tokens"] for s in stats)
     cards = [
@@ -313,6 +445,7 @@ def main():
   </div>
 
   <hr class="rule"/>
+  {hero}
   <div class="grids">{''.join(panels)}</div>
 
   <div class="legend">
@@ -320,15 +453,15 @@ def main():
     <span><span class="swatch"
        style="background:color-mix(in oklab,var(--ramp-hi) 50%,var(--ramp-lo))"></span>50%</span>
     <span><span class="swatch" style="background:var(--ramp-hi)"></span>100%</span>
-    <span><span class="swatch" style="background:var(--void);opacity:.5"></span>
-       ceiling-bound &mdash; not measured</span>
     <span>smaller tile = fewer runs</span>
   </div>
-  <p class="note">Cells are drawn smaller where fewer runs were spent on them. Samples are
-    concentrated where the outcome is genuinely uncertain; a cell pinned at 0% or 100%
-    gets only enough runs to confirm the bound. Grey cells hit the token ceiling, so they
-    measure the limit we granted rather than the model, and are excluded from every rate
-    and every fit on this page.</p>
+  <p class="note">Cells are drawn smaller where fewer runs were spent on them. Samples
+    are concentrated where the outcome is genuinely uncertain; a cell pinned at 0% or 100%
+    gets only enough runs to confirm the bound. A run that consumed the model&rsquo;s entire
+    context without answering counts as incorrect, the same as a wrong digit &mdash; either
+    way the model did not return the product. That is fair here because every model was
+    granted its own full context, so running out is the model&rsquo;s own limit and not a
+    budget we imposed on it.</p>
   {paired_block}
 </div>
 """
