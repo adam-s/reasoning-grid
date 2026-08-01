@@ -185,7 +185,19 @@ def parse_answer(text: str):
     DECOR = r"[\s*_`$]*"
     OPEN = r"(?:\\boxed\{|\\text\{|[{}])*"   # incl. the } in \text{ANSWER: } 123
     NUM = r"([+-]?\d[\d,\u00a0 \t]*)"
-    pat = re.compile(rf"{DECOR}{OPEN}{DECOR}ANSWER{DECOR}[:\s]{DECOR}{OPEN}{DECOR}{NUM}", re.I)
+    # The prompt ends "ANSWER: <the full integer>", and the Phi family echoes
+    # that template back in three ways, all of which are answers:
+    #     ANSWER: <the full integer>1234   placeholder kept, digits appended
+    #     ANSWER: <1234>                   digits substituted INTO the brackets
+    #     ANSWER: the full integer 1234    placeholder echoed as bare words
+    # Scoring any of these as None records a model that answered as a refusal --
+    # the defect that has now bitten v2, v3 and v4. Kept narrow on purpose: this
+    # matches an angle bracket or our own prompt's literal words, never prose,
+    # so it cannot manufacture an answer out of reasoning text.
+    ECHO = r"(?:<\s*)?(?:the\s+full\s+integer\s*)?(?:>\s*)?"
+    pat = re.compile(
+        rf"{DECOR}{OPEN}{DECOR}ANSWER{DECOR}[:\s]{DECOR}{ECHO}{DECOR}{OPEN}{DECOR}{NUM}",
+        re.I)
     hits = list(pat.finditer(text))
     if hits:
         m = hits[-1]
@@ -312,15 +324,25 @@ def _run_batch(self, gpu_name, jobs, temperature, top_p, thinking,
                       [_SP(temperature=0.0, max_tokens=16)] * warmup)
 
     t0 = time.time()
-    if thinking:
-        outs = self.llm.chat(msgs, params)
-    else:
+    # Reasoning-on cannot be left to the model's default. Qwen3 and the Phi
+    # reasoning models think unless told not to; Granite 3.3 does NOT, and a run
+    # that assumed the default produced 144 records at thinking_observed=False
+    # and a mean of 940 tokens -- a non-reasoning model measured as if it were
+    # reasoning, which is not comparable to anything else in the grid.
+    # Families disagree on the key, so ask under each name and keep the first
+    # that the template accepts. thinking_observed on every record is what makes
+    # a silent failure here detectable rather than fatal.
+    _keys = ({"enable_thinking": True}, {"thinking": True}) if thinking \
+        else ({"enable_thinking": False}, {"thinking": False})
+    outs = None
+    for kw in _keys:
         try:
-            outs = self.llm.chat(
-                msgs, params, chat_template_kwargs={"enable_thinking": False}
-            )
+            outs = self.llm.chat(msgs, params, chat_template_kwargs=kw)
+            break
         except Exception:
-            outs = self.llm.chat(msgs, params)  # model has no thinking switch
+            continue
+    if outs is None:
+        outs = self.llm.chat(msgs, params)   # template takes no thinking switch
     wall = time.time() - t0
 
     from collections import Counter
@@ -434,12 +456,43 @@ class ProbeH100:
                       sweep_id, sample_idx, budget_mode=budget_mode)
 
 
+@app.cls(gpu="H200", **_CLS_KW)
+class ProbeH200:
+    model: str = modal.parameter()
+    max_len: int = modal.parameter(default=32768)
+
+    @modal.enter()
+    def load(self):
+        _load_engine(self)
+
+    @modal.method()
+    def run(self, jobs: list, temperature: float, top_p: float = 0.95,
+            thinking: bool = True, ceiling: int = 0,
+            sweep_id: str = "dev", sample_idx: int = 0,
+            budget_mode: str = "formula"):
+        return _run_batch(self, "H200", jobs, temperature, top_p, thinking, ceiling,
+                      sweep_id, sample_idx, budget_mode=budget_mode)
+
+
 # A10G cannot hold these models at 32K context, and A100-40GB adds nothing over
 # the L40S. gpt-oss-20b needs compute capability >= 9.0 for its MXFP4 weights,
 # so H100 is mandatory for it: on Ada (L40S, sm89) vLLM falls back to the Marlin
 # MoE kernel, which fails because hidden_size == intermediate_size == 2880 is not
 # divisible by 128 (vllm-project/vllm#38022).
-PROBES = {"l40s": ProbeL40S, "h100": ProbeH100}
+#
+# H200 costs 15% more per second than H100 and returns 2-3x the throughput on
+# THIS workload, because the workload is KV-cache bound rather than compute
+# bound. Granting a real ceiling (the D-10 fix) means vLLM reserves max_len
+# tokens of KV per lane, so lane count is (HBM - weights) / max_len. 141GB
+# against 80GB roughly doubles what is left after weights, and the memory
+# bandwidth is 43% higher on top. Measured: Phi-4-reasoning at max_len 32768
+# gets 6.38 concurrent sequences on H100. Bigger models gain the most, because
+# their weights eat a larger share of the smaller card.
+PROBES = {"l40s": ProbeL40S, "h100": ProbeH100, "h200": ProbeH200}
+
+# $/second, from Modal's published rates. Used for the pre-run estimate and the
+# manifest's recorded actual, so a run's spend can be checked against its plan.
+GPU_USD_PER_SEC = {"l40s": 0.000542, "h100": 0.001097, "h200": 0.001261}
 
 
 # --------------------------------------------------------------------------
@@ -613,7 +666,7 @@ def grid(model: str = "Qwen/Qwen3-4B", gpu: str = "l40s", thinking: str = "true"
          n_lo: int = 10, n_hi: int = 50, chunk: int = 256,
          sweep_id: str = "grid", axes: str = "", budget_mode: str = "max",
          cells_spec: str = "", order_seed: str = "", dry_run: str = "false",
-         n_from: int = 0):
+         n_from: int = 0, max_len: int = 0):
     """The deliverable: x = digits of A, y = digits of B, z = P(exactly correct).
 
     Two things this does that the earlier entrypoints got wrong.
@@ -698,7 +751,7 @@ def grid(model: str = "Qwen/Qwen3-4B", gpu: str = "l40s", thinking: str = "true"
     _meanN = sum(j["a"] * j["b"] for j in jobs) / max(len(jobs), 1)
     _tps = 2700 if _meanN <= 20 else 1610 if _meanN <= 90 else 700
     if dry_run.lower() == "true":
-        usd = est_tok / _tps * (0.001097 if gpu == "h100" else 0.000542)
+        usd = est_tok / _tps * GPU_USD_PER_SEC[gpu]
         print(f"DRY RUN — nothing will be spent")
         print(f"  cells       {len(cells)}  {sorted(cells)[:6]}{' ...' if len(cells)>6 else ''}")
         print(f"  generations {len(jobs)}"
@@ -714,17 +767,22 @@ def grid(model: str = "Qwen/Qwen3-4B", gpu: str = "l40s", thinking: str = "true"
         budget_mode=budget_mode, temperature=temperature, top_p=top_p,
         axes=vals, cells=[list(c) for c in cells], n_live=n_live,
         n_saturated=n_saturated, n_lo=n_lo, n_hi=n_hi, chunk=chunk,
-        n_planned=len(jobs),
+        n_planned=len(jobs), max_len=max_len or 32768, n_from=n_from,
         cost={"est_output_tokens": round(est_tok),
               "est_tok_per_s": _tps, "mean_cell_N": round(_meanN, 1),
-              "est_usd": round(est_tok / _tps * (0.001097 if gpu == "h100"
-                                                 else 0.000542) + 0.13, 3),
+              "est_usd": round(est_tok / _tps * GPU_USD_PER_SEC[gpu] + 0.13, 3),
               "actual_usd": None})
     print(f"{len(cells)} cells, {len(jobs)} generations, "
           f"chunks of {chunk} -> {(len(jobs) + chunk - 1) // chunk} batches")
     print(f"manifest: {mpath}   est {est_tok/1e6:.2f}M tok")
 
-    p = PROBES[gpu](model=model)
+    # budget_mode="max" grants the ENGINE's limit, and the engine only knows what
+    # we told it. The class default (32768) is a constant we picked, not a model
+    # property -- gpt-oss and Phi-4-mini both carry 131072 natively. Leaving it
+    # unset silently recreates defect D-10 one layer down: the ceiling binds, the
+    # hardest cells grind against it, and the resulting cliff looks like a finding.
+    p = (PROBES[gpu](model=model, max_len=max_len) if max_len
+         else PROBES[gpu](model=model))
     total, tok, batches = [], 0, []
     for i in range(0, len(jobs), chunk):
         part = jobs[i:i + chunk]
@@ -734,7 +792,7 @@ def grid(model: str = "Qwen/Qwen3-4B", gpu: str = "l40s", thinking: str = "true"
                            budget_mode=budget_mode)
         total += out["records"]
         tok += out["total_completion_tokens"]
-        # save每 chunk: a stop costs one batch, not the sweep
+        # save every chunk: a stop costs one batch, not the sweep
         _save(out["records"], f"{sweep_id}-{model.split('/')[-1]}-part{i // chunk:03d}")
         done = min(i + chunk, len(jobs))
         batches.append({"batch": i // chunk, "n": len(out["records"]),
@@ -840,7 +898,7 @@ def throughput(model: str = "Qwen/Qwen3-4B", gpu: str = "h100",
     think = thinking.lower() == "true"
     print(f"\n{'batch':>7}{'gens':>7}{'wall s':>9}{'out tok':>10}"
           f"{'tok/s':>9}{'s/gen':>8}{'$/1k gens':>11}")
-    usd_s = 0.001097 if gpu == "h100" else 0.000542
+    usd_s = GPU_USD_PER_SEC[gpu]
     recs = []
     for c in [int(x) for x in chunks.split(",")]:
         jobs = []
