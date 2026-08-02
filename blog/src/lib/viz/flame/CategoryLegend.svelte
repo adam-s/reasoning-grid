@@ -40,8 +40,16 @@
 
   // Leaves only. Parent rows in this data are containers spanning their
   // children, so counting both would charge the same milliseconds twice.
+  // When the data marks containers explicitly, believe it. The containment test
+  // below assumes every row shares one coordinate space, which is false the
+  // moment rows from several traces are pooled into one legend: each trace's
+  // offsets start at zero, so a deeper row from trace B falls inside a leaf from
+  // trace C by pure coincidence and the leaf is dropped. That silently lost the
+  // only ERROR_CORRECTION row in the whole corpus.
   const leaves = $derived(
-    rows.filter((r) => !rows.some((o) => o !== r && o.depth > r.depth && o.start >= r.start && o.start + o.width <= r.start + r.width))
+    rows.some((r) => r.muted !== undefined)
+      ? rows.filter((r) => !r.muted)
+      : rows.filter((r) => !rows.some((o) => o !== r && o.depth > r.depth && o.start >= r.start && o.start + o.width <= r.start + r.width))
   );
 
   const totals = $derived.by(() => {

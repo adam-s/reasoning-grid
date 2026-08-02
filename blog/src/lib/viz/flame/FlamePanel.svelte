@@ -880,7 +880,7 @@
     padding: 0;
     border-radius: 50%;
     border: 1px solid var(--line);
-    background: var(--paper);
+    background: var(--bg);
     color: var(--ink-dim);
     font-family: var(--font-mono);
     font-size: 9.5px;
@@ -916,7 +916,7 @@
     margin-top: 2px;
     border-radius: 50%;
     background: var(--ink);
-    color: var(--paper);
+    color: var(--bg);
     font-family: var(--font-mono);
     font-size: 9.5px;
     line-height: 16px;
