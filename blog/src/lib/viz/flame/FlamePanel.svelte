@@ -16,8 +16,8 @@
   import CategoryLegend from './CategoryLegend.svelte';
   import MinimapBrush from './MinimapBrush.svelte';
   import { ChartViewport } from './ChartViewport.svelte';
-  import type { AnnotatedTrace } from '../../data/lambda-trace';
-  import type { AnyFlameRow } from '../../design/scheme';
+  import type { Snippet } from 'svelte';
+  import type { AnyFlameRow, AnyTrace, CategoryScheme } from '../../design/scheme';
   import { LAMBDA_SCHEME, metaFor } from '../../design/scheme';
 
   // Rows are typed structurally so this panel and FlameGraph agree. The
@@ -33,8 +33,12 @@
 
   type Outcome = { label: string; tone: 'ok' | 'err' | 'neutral' };
 
+  /** A moment worth calling out, pinned to the segment where it happens. */
+  export type PanelAnnotation = { segment: number; kind: string; text: string };
+
   type Props = {
-    trace: AnnotatedTrace;
+    trace: AnyTrace & { stepCount?: number; model?: string; algorithmId?: string;
+                        detail?: string; elapsedSeconds?: number; outputTokens?: number };
     /** Optional override: replaces the default "{algorithm} · {detail}" title suffix. */
     titleOverride?: string | null;
     /** Optional right-aligned outcome badge (e.g. "passed · 8,962"). */
@@ -49,6 +53,36 @@
     maxChartHeight?: number;
     /** External override of selectedIndex; when non-null, overrides internal selection. */
     forceSelectedIndex?: number | null;
+
+    /* --- below: added for carrychain. Every one defaults to the λ behaviour, so
+       the reference figure renders exactly as it did before. --- */
+
+    /** Which categories colour this panel. */
+    scheme?: CategoryScheme;
+    /** Replaces the default header entirely. The λ header is model-specific
+     *  (model badge, algorithm id, wall-clock) and does not fit every trace. */
+    header?: Snippet;
+    /** Formats an x-axis tick. λ shows raw offsets; a trace whose axis is a
+     *  share of itself wants "50%". */
+    formatTick?: (v: number) => string;
+    /** Chooses tick positions for the visible domain. Needed when the labels are
+     *  a transform of the axis: d3 picks round numbers in CHARACTERS, and those
+     *  become 11%, 22%, 33% once converted. Returning round numbers in the
+     *  displayed unit instead is the caller's job, because only the caller knows
+     *  what the unit is. */
+    tickValues?: (domain: readonly [number, number]) => number[];
+    /** Numbered markers above the flame. Clicking one pins its note. */
+    annotations?: readonly PanelAnnotation[];
+    /** Which annotation is open on first mount. */
+    initialAnnotation?: number | null;
+    /** The minimap is worth its 64px on a long trace and repeats the chart on a
+     *  short one. */
+    showMinimap?: boolean;
+    /** Controlled category filter. Omit and the panel keeps its own, which is
+     *  what a lone panel wants; pass it when several panels share one legend so
+     *  hiding a category hides it in all of them at once. */
+    hiddenCategories?: ReadonlySet<string>;
+    onToggleCategory?: (category: string) => void;
   };
 
   let {
@@ -60,11 +94,26 @@
     errorIndex = null,
     maxChartHeight = 360,
     forceSelectedIndex = null,
+    scheme = LAMBDA_SCHEME,
+    header = undefined,
+    formatTick = undefined,
+    tickValues = undefined,
+    annotations = [],
+    initialAnnotation = null,
+    showMinimap = true,
+    hiddenCategories: hiddenProp = undefined,
+    onToggleCategory = undefined,
   }: Props = $props();
+
+  // svelte-ignore state_referenced_locally
+  let openAnnotation: number | null = $state(initialAnnotation);
+
+  const stepCount = $derived(trace.stepCount ?? trace.rows.length);
 
   let hoveredIndex: number | null = $state(null);
   let selectedIndex: number | null = $state(initialSelectedIndex);
-  let hiddenCategories: Set<string> = $state(new Set());
+  let ownHidden: Set<string> = $state(new Set());
+  const hiddenCategories = $derived(hiddenProp ?? ownHidden);
 
   type TooltipState = { x: number; y: number; row: FlameRow } | null;
   let tooltip: TooltipState = $state(null);
@@ -141,7 +190,40 @@
   const axisScale = $derived(
     scaleLinear().domain([...viewport.domain]).range([0, chartWidth]),
   );
-  const axisTicks = $derived(axisScale.ticks(6));
+  const axisTicks = $derived(
+    tickValues ? tickValues(viewport.domain) : axisScale.ticks(6),
+  );
+
+  // Leaves carry the segment indices annotations point at. A container row
+  // shares an index with the first segment it spans, so match on the un-muted
+  // row first and only fall back if there is none.
+  function rowForSegment(seg: number): FlameRow | undefined {
+    return trace.rows.find((r) => r.index === seg && !r.muted)
+        ?? trace.rows.find((r) => r.index === seg);
+  }
+
+  // Annotations can land within a few characters of each other -- one trace has
+  // four inside a tenth of its length -- and overlapping circles hide their own
+  // numbers. Push each right until it clears the last.
+  const MARK_W = 17;
+  const placedMarks = $derived.by(() => {
+    let last = -Infinity;
+    return annotations
+      .map((a, i) => ({ a, i, at: axisScale(rowForSegment(a.segment)?.start ?? 0) }))
+      .sort((x, y) => x.at - y.at)
+      .map((m) => {
+        const x = Math.max(m.at, last + MARK_W);
+        last = x;
+        return { ...m, x };
+      });
+  });
+
+  function openMark(i: number): void {
+    openAnnotation = openAnnotation === i ? null : i;
+    const seg = annotations[i]?.segment;
+    const row = seg === undefined ? undefined : rowForSegment(seg);
+    selectedIndex = row ? trace.rows.indexOf(row) : null;
+  }
 
   const TOOLTIP_W_EST = 320;
   const TOOLTIP_H_EST = 96;
@@ -219,10 +301,14 @@
   }
 
   function toggleCategory(cat: string): void {
-    const next = new Set(hiddenCategories);
+    if (onToggleCategory) {
+      onToggleCategory(cat);
+      return;
+    }
+    const next = new Set(ownHidden);
     if (next.has(cat)) next.delete(cat);
     else next.add(cat);
-    hiddenCategories = next;
+    ownHidden = next;
   }
 
   const effectiveSelectedIndex = $derived(
@@ -252,11 +338,14 @@
 
   const titleText = $derived(
     titleOverride ??
-      `${trace.algorithmId.replace(/-/g, ' ')} · ${trace.detail}`,
+      `${(trace.algorithmId ?? '').replace(/-/g, ' ')} · ${trace.detail ?? ''}`,
   );
 </script>
 
 <div class="flame-panel">
+  {#if header}
+    {@render header()}
+  {:else}
   <header class="figure-header">
     <div class="title-row">
       <span class="model-badge" data-model={trace.model}>{trace.model}</span>
@@ -279,7 +368,7 @@
         </span>
       {/if}
       <span class="meta-pill">
-        <span class="meta-pill-value">{trace.stepCount}</span>
+        <span class="meta-pill-value">{stepCount}</span>
         <span class="meta-pill-label">steps</span>
       </span>
       <span class="meta-pill">
@@ -288,9 +377,26 @@
       </span>
     </div>
   </header>
+  {/if}
 
   {#if showLegend}
-    <CategoryLegend {hiddenCategories} onToggle={toggleCategory} rows={trace.rows} />
+    <CategoryLegend {hiddenCategories} onToggle={toggleCategory} rows={trace.rows} {scheme} />
+  {/if}
+
+  {#if placedMarks.length}
+    <div class="marks">
+      {#each placedMarks as m (m.i)}
+        <button
+          type="button"
+          class="mark"
+          class:is-open={openAnnotation === m.i}
+          style:left="{m.x}px"
+          onclick={() => openMark(m.i)}
+          aria-expanded={openAnnotation === m.i}
+          aria-label="{m.a.kind.replace(/_/g, ' ')}"
+        >{m.i + 1}</button>
+      {/each}
+    </div>
   {/if}
 
   <div class="chart-toolbar">
@@ -326,6 +432,7 @@
   >
     <FlameGraph
       {trace}
+      {scheme}
       {hiddenCategories}
       selectedIndex={effectiveSelectedIndex}
       {hoveredIndex}
@@ -341,10 +448,15 @@
 
   <svg class="x-axis" viewBox="0 0 {chartWidth} 22" width={chartWidth} height={22}>
     <line class="axis-line" x1={0} x2={chartWidth} y1={0} y2={0} />
-    {#each axisTicks as t (t)}
-      <g transform="translate({axisScale(t)}, 0)">
+    {#each axisTicks as t, i (t)}
+      {@const x = axisScale(t)}
+      <g transform="translate({x}, 0)">
         <line class="tick" y1={0} y2={4} />
-        <text class="tick-label" y={14} text-anchor="middle">{Math.round(t).toLocaleString()}</text>
+        <text
+          class="tick-label"
+          y={14}
+          text-anchor={x < 12 ? 'start' : x > chartWidth - 12 ? 'end' : 'middle'}
+          >{formatTick ? formatTick(t) : Math.round(t).toLocaleString()}</text>
       </g>
     {/each}
   </svg>
@@ -359,20 +471,22 @@
       <div class="tooltip-label">
         <span
           class="tooltip-swatch"
-          style:background={metaFor(LAMBDA_SCHEME, tooltip.row.category).color}
+          style:background={metaFor(scheme, tooltip.row.category).color}
           aria-hidden="true"
         ></span>
-        {metaFor(LAMBDA_SCHEME, tooltip.row.category).label}
-        <span class="tooltip-step">{tooltip.row.index < trace.stepCount ? `· step ${tooltip.row.index}` : '· span'}</span>
+        {metaFor(scheme, tooltip.row.category).label}
+        <span class="tooltip-step">{tooltip.row.index < stepCount ? `· step ${tooltip.row.index}` : '· span'}</span>
       </div>
       <div class="tooltip-text">{excerpt(tooltip.row.text, 140)}</div>
     </div>
   {/if}
 
+  {#if showMinimap}
   <div class="minimap" aria-label="Trace overview minimap — drag to select a zoom window">
     <div class="minimap-chart" style:height="{MINIMAP_HEIGHT}px">
       <FlameGraph
         {trace}
+        {scheme}
         {hiddenCategories}
         selectedIndex={null}
         hoveredIndex={null}
@@ -395,15 +509,26 @@
       height={MINIMAP_HEIGHT}
     />
   </div>
+  {/if}
 
   <div class="inspector" aria-live="polite">
+    {#if openAnnotation !== null && annotations[openAnnotation]}
+      {@const a = annotations[openAnnotation]}
+      <div class="inspector-note">
+        <span class="note-n">{openAnnotation + 1}</span>
+        <span>
+          <span class="note-kind">{a.kind.replace(/_/g, ' ')}</span>
+          {a.text}
+        </span>
+      </div>
+    {/if}
     {#if selectedRow}
-      {@const meta = metaFor(LAMBDA_SCHEME, selectedRow.category)}
+      {@const meta = metaFor(scheme, selectedRow.category)}
       <div class="inspector-header">
         <span class="inspector-swatch" style:background={meta.color}></span>
         <span class="inspector-label">{meta.label}</span>
         <span class="inspector-step">
-          {selectedRow.index < trace.stepCount ? `step ${selectedRow.index} / ${trace.stepCount - 1}` : 'span'}
+          {selectedRow.index < stepCount ? `step ${selectedRow.index} / ${stepCount - 1}` : 'span'}
         </span>
         <button
           type="button"
@@ -416,7 +541,7 @@
       </div>
       <div class="inspector-description">{meta.description}</div>
       <blockquote class="inspector-text">{selectedRow.text}</blockquote>
-    {:else}
+    {:else if openAnnotation === null}
       <div class="inspector-empty">
         Click any block above to pin it here and read the full thinking text.
       </div>
@@ -744,6 +869,69 @@
     max-height: 120px;
     overflow-y: auto;
   }
+  /* annotation markers */
+  .marks { position: relative; height: 18px; }
+  .mark {
+    position: absolute;
+    top: 0;
+    transform: translateX(-50%);
+    width: 16px;
+    height: 16px;
+    padding: 0;
+    border-radius: 50%;
+    border: 1px solid var(--line);
+    background: var(--paper);
+    color: var(--ink-dim);
+    font-family: var(--font-mono);
+    font-size: 9.5px;
+    font-weight: 600;
+    line-height: 14px;
+    cursor: pointer;
+    transition: background 130ms ease, color 130ms ease, border-color 130ms ease;
+  }
+  .mark:hover { border-color: var(--ink-dim); color: var(--ink); }
+  .mark.is-open { background: var(--ink); color: #fff; border-color: var(--ink); }
+  .mark::after {
+    content: '';
+    position: absolute;
+    left: 50%;
+    top: 100%;
+    width: 1px;
+    height: 3px;
+    background: var(--line);
+  }
+
+  .inspector-note {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 8px;
+    font-size: var(--text-sm);
+    line-height: 1.5;
+    color: var(--ink-dim);
+  }
+  .note-n {
+    flex: 0 0 auto;
+    width: 16px;
+    height: 16px;
+    margin-top: 2px;
+    border-radius: 50%;
+    background: var(--ink);
+    color: var(--paper);
+    font-family: var(--font-mono);
+    font-size: 9.5px;
+    line-height: 16px;
+    text-align: center;
+  }
+  .note-kind {
+    display: block;
+    font-family: var(--font-mono);
+    font-size: 0.66rem;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    margin-bottom: 1px;
+  }
+
   .inspector-empty {
     font-family: var(--font-serif);
     font-style: italic;
