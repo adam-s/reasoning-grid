@@ -180,6 +180,14 @@ but Y" balancing, no rule-of-three padding, no hedge on every claim. The running
 tell-list is in [.agents/reference/anti-slop.md](.agents/reference/anti-slop.md)
 — read it before writing prose anyone else will see.
 
+Before publishing prose — blog copy, a RESULTS write-up, anything the essay will
+cite — run [`prose-review`](.agents/skills/prose-review/SKILL.md). It reads the
+text phrase by phrase for how it could be misread, verifies each candidate
+against a reader that has not seen the reasoning, then checks register against
+[.agents/reference/voice/](.agents/reference/voice/). That directory describes
+how Adam actually writes, derived from his own corpus; its README records where
+it conflicts with the rules above and which wins.
+
 State results plainly, including negative ones. A run that failed, a cell that
 was skipped, and a prediction that missed are all reportable outcomes. Burying
 them costs more credibility than the failure itself.
