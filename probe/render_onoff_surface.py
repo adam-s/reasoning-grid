@@ -139,7 +139,7 @@ canvas:active{cursor:grabbing}
     <div class="plot"><canvas id="c"></canvas><span class="hint">drag to rotate</span></div>
     <div class="key">
       <span><span class="sw" style="background:linear-gradient(90deg,var(--on-lo),var(--on-hi))"></span>reasoning on</span>
-      <span><span class="sw" style="background:var(--off);opacity:.85"></span>reasoning off</span>
+      <span><span class="sw" style="background:var(--off);opacity:.5"></span>reasoning off</span>
       <span class="mono" style="color:var(--faint)">x, y = digits in each factor &middot; height = P(exactly correct)</span>
     </div>
     <figcaption>Two 14&times;14 sheets over the same grid. The lower one is the model
@@ -237,7 +237,7 @@ function draw(){
       ctx.closePath();
       const m=(z[0]+z[1]+z[2]+z[3])/4;
       if(arm==='on'){ ctx.fillStyle=ramp(m); ctx.globalAlpha=1; }
-      else { ctx.fillStyle=off; ctx.globalAlpha=.85; }
+      else { ctx.fillStyle=off; ctx.globalAlpha=.5; }
       ctx.fill();
       ctx.globalAlpha=arm==='on'?.55:.35; ctx.strokeStyle=css('--paper');
       ctx.lineWidth=.6; ctx.stroke(); ctx.globalAlpha=1;
