@@ -20,6 +20,7 @@
   import { onMount } from 'svelte';
   import { SURFACE } from '../../data/surface';
   import { project, groundOrder, rateAt, ramp, type Camera } from './project';
+  import ConvergenceRail from './ConvergenceRail.svelte';
 
   let canvas: HTMLCanvasElement | null = $state(null);
   let host: HTMLDivElement | null = $state(null);
@@ -27,7 +28,11 @@
   let h = $state(440);
 
   const DIM = SURFACE.dim;
-  const MAXT = SURFACE.maxTrials;
+  // The scrub stops at 29, not at the 55 the longest cell reached. Past 29 only
+  // four cells still have trials left, so the last 26 steps of a full-range
+  // slider move almost nothing while eating three quarters of the travel. Those
+  // four are shown truncated to 29 and the caption says so.
+  const MAXT = Math.min(29, SURFACE.maxTrials);
 
   let t = $state(1);
   let playing = $state(false);
@@ -321,6 +326,10 @@
     aria-label="Reliability surface: digits in factor A by digits in factor B by probability of an exactly correct product, at {t} {t === 1 ? 'trial' : 'trials'} each. Drag to rotate."
   >
     <canvas bind:this={canvas} style:width="{w}px" style:height="{h}px"></canvas>
+    <!-- The plot is centred, so the flanks are dead space at every camera angle.
+         The rail overlays them rather than taking width from the canvas, and is
+         pointer-transparent so dragging through it still orbits. -->
+    <div class="rail-slot"><ConvergenceRail {t} max={MAXT} /></div>
     <span class="hint">drag to rotate</span>
   </div>
 
@@ -343,7 +352,8 @@
     <strong>{stillMeasuring}</strong> of {cellsAtT} cells still have trials left at this point.
     Saturated corners were given three and freeze early; cells in the transition band were given
     twelve or more and keep moving. Where the terrain is still changing late is exactly where the
-    sampling plan decided the answer was worth buying.
+    sampling plan decided the answer was worth buying. The scrub stops at {MAXT}: past it only four
+    cells have trials left, and those four are shown truncated.
   </figcaption>
 </figure>
 
@@ -373,9 +383,20 @@
   }
   .stage:active { cursor: grabbing; }
   canvas { display: block; }
+  .rail-slot {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    pointer-events: none;
+  }
+  /* Below this the plot no longer has flanks to spare. */
+  @media (max-width: 700px) {
+    .rail-slot { display: none; }
+  }
+
   .hint {
     position: absolute;
-    right: 8px;
+    left: 10px;      /* the rail owns the right flank */
     bottom: 6px;
     font-family: var(--font-mono);
     font-size: 9px;
