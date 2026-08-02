@@ -394,6 +394,7 @@
           onclick={() => openMark(m.i)}
           aria-expanded={openAnnotation === m.i}
           aria-label="{m.a.kind.replace(/_/g, ' ')}"
+          title="{m.a.kind.replace(/_/g, ' ')}"
         >{m.i + 1}</button>
       {/each}
     </div>
