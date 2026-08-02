@@ -132,10 +132,11 @@ export function rateAt(
 }
 
 /** Sequential ramp, pale to deep. One hue: the data is ordered, not categorical. */
-export function ramp(p: number, dark: boolean): string {
+const RAMP_LO = [232, 236, 243];
+const RAMP_HI = [27, 42, 94];
+
+export function ramp(p: number): string {
   const t = Math.max(0, Math.min(1, p));
-  const lo = dark ? [26, 33, 48] : [232, 236, 243];
-  const hi = dark ? [150, 176, 240] : [27, 42, 94];
   const m = (a: number, b: number) => Math.round(a + (b - a) * t);
-  return `rgb(${m(lo[0], hi[0])},${m(lo[1], hi[1])},${m(lo[2], hi[2])})`;
+  return `rgb(${m(RAMP_LO[0], RAMP_HI[0])},${m(RAMP_LO[1], RAMP_HI[1])},${m(RAMP_LO[2], RAMP_HI[2])})`;
 }

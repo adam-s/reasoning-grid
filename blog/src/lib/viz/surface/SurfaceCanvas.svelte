@@ -38,7 +38,6 @@
   let playing = $state(false);
   let yaw = $state(-0.62);
   let pitch = $state(0.52);
-  let dark = $state(false);
   let hovered = $state<{ cell: string; p: number; n: number; total: number } | null>(null);
 
   // Height in world units. The grid is ~14 wide, so this decides how much of a
@@ -51,12 +50,16 @@
   // round for tick labels and axis titles. Must match .rail-slot.
   const RAIL_W = 178;
   const PAD = 58;
-  const railW = $derived(w > 700 ? RAIL_W : 0);
+  // One threshold, used by the reserved width, the height floor AND whether the
+  // rail renders. A CSS media query cannot be that threshold: it measures the
+  // viewport while everything here measures the container, and the two disagree
+  // by the page gutters -- which is how the rail stayed visible at 720px inside
+  // a plot that had already dropped to its short floor.
+  const RAIL_MIN_W = 700;
+  const showRail = $derived(w > RAIL_MIN_W);
+  const railW = $derived(showRail ? RAIL_W : 0);
   const order = $derived(groundOrder(DIM - 1, yaw));
 
-  const stillMeasuring = $derived(
-    Object.values(SURFACE.cells).filter((o) => o.length > t).length,
-  );
   const cellsAtT = $derived(Object.values(SURFACE.cells).filter((o) => o.length >= 1).length);
 
   function heightAt(a: number, b: number): number | null {
@@ -109,7 +112,7 @@
     };
 
     // floor grid first, so the surface sits on something
-    ctx.strokeStyle = dark ? 'rgba(190,200,220,0.30)' : 'rgba(70,80,105,0.32)';
+    ctx.strokeStyle = 'rgba(70,80,105,0.32)';
     ctx.lineWidth = 1;
     ctx.beginPath();
     for (let g = 1; g <= DIM; g++) {
@@ -150,9 +153,9 @@
       ctx.moveTo(pts[0].sx, pts[0].sy);
       for (let p = 1; p < 4; p++) ctx.lineTo(pts[p].sx, pts[p].sy);
       ctx.closePath();
-      ctx.fillStyle = ramp(mean, dark);
+      ctx.fillStyle = ramp(mean);
       ctx.fill();
-      ctx.strokeStyle = dark ? 'rgba(10,14,22,0.55)' : 'rgba(255,255,255,0.55)';
+      ctx.strokeStyle = 'rgba(255,255,255,0.55)';
       ctx.lineWidth = 0.6;
       ctx.stroke();
     }
@@ -207,7 +210,7 @@
       // the edge itself, a shade stronger than the floor grid
       const e0 = at(1);
       const e1 = at(DIM);
-      ctx.strokeStyle = dark ? 'rgba(205,214,232,0.62)' : 'rgba(50,60,82,0.58)';
+      ctx.strokeStyle = 'rgba(50,60,82,0.58)';
       ctx.lineWidth = 1;
       ctx.beginPath();
       ctx.moveTo(e0.sx, e0.sy);
@@ -215,7 +218,7 @@
       ctx.stroke();
 
       ctx.font = '10px ui-monospace, "SF Mono", monospace';
-      ctx.fillStyle = dark ? 'rgba(212,220,236,0.92)' : 'rgba(52,62,84,0.92)';
+      ctx.fillStyle = 'rgba(52,62,84,0.92)';
       ctx.textAlign = 'center';
       for (let g = 2; g <= DIM; g += 2) {
         const t0 = at(g);
@@ -245,7 +248,7 @@
       ctx.translate(ttx, tty);
       ctx.rotate(angle);
       ctx.font = '600 11px system-ui, sans-serif';
-      ctx.fillStyle = dark ? 'rgba(210,218,232,0.95)' : 'rgba(45,55,75,0.95)';
+      ctx.fillStyle = 'rgba(45,55,75,0.95)';
       ctx.textAlign = 'center';
       ctx.fillText(ax.title, 0, 0);
       ctx.restore();
@@ -254,35 +257,25 @@
 
   $effect(() => {
     // touch the reactive inputs so a change to any of them repaints
-    t; yaw; pitch; w; h; dark; order;
+    t; yaw; pitch; w; h; order;
     draw();
   });
 
   onMount(() => {
-    const mq = window.matchMedia('(prefers-color-scheme: dark)');
-    const readTheme = () => {
-      const attr = document.documentElement.dataset.theme;
-      dark = attr === 'dark' ? true : attr === 'light' ? false : mq.matches;
-    };
-    readTheme();
-    mq.addEventListener('change', readTheme);
-    const mo = new MutationObserver(readTheme);
-    mo.observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
-
     const ro = new ResizeObserver((e) => {
       const r = e[0]?.contentRect;
       if (r) {
         w = Math.max(280, Math.floor(r.width));
-        h = Math.max(300, Math.round(Math.min(480, r.width * 0.58)));
+        // Where the rail is shown the plot must be at least as tall as it is,
+        // or eight sparklines run off the bottom of a plot that shrank with the
+        // window. Below the rail's breakpoint the shorter floor applies again.
+        const floor = r.width > RAIL_MIN_W ? 450 : 300;
+        h = Math.max(floor, Math.round(Math.min(480, r.width * 0.58)));
       }
     });
     if (host) ro.observe(host);
 
-    return () => {
-      mq.removeEventListener('change', readTheme);
-      mo.disconnect();
-      ro.disconnect();
-    };
+    return () => ro.disconnect();
   });
 
   // Playback runs once and stops on the last frame. Looping would restart the
@@ -364,7 +357,9 @@
     <!-- The plot is centred, so its flanks are dead space at every camera angle.
          The rail overlays them rather than taking width from the canvas, and is
          pointer-transparent so a drag through it still orbits. -->
-    <div class="rail-slot"><ConvergenceRail {t} max={MAXT} /></div>
+    {#if showRail}
+      <div class="rail-slot"><ConvergenceRail {t} max={MAXT} /></div>
+    {/if}
   </div>
 
   <div class="controls">
@@ -386,13 +381,6 @@
     <span class="count mono">{t}/{MAXT}</span>
   </div>
 
-  <figcaption>
-    <strong>{stillMeasuring}</strong> of {cellsAtT} cells still have trials left at this point.
-    Saturated corners were given three and freeze early; cells in the transition band were given
-    twelve or more and keep moving. Where the terrain is still changing late is exactly where the
-    sampling plan decided the answer was worth buying. The scrub stops at {MAXT}: past it only four
-    cells have trials left, and those four are shown truncated.
-  </figcaption>
 </figure>
 
 <style>
@@ -430,11 +418,6 @@
     width: 158px; /* + the 10px inset = the RAIL_W the canvas reserves */
     pointer-events: none;
   }
-  /* Below this the plot no longer has flanks to spare. */
-  @media (max-width: 700px) {
-    .rail-slot { display: none; }
-  }
-
   .hint {
     position: absolute;
     left: 10px;      /* the rail owns the right flank */
@@ -475,11 +458,4 @@
     text-align: right;
   }
 
-  figcaption {
-    margin-top: 8px;
-    font-size: var(--text-xs);
-    line-height: 1.55;
-    color: var(--ink-faint);
-  }
-  figcaption strong { color: var(--ink-dim); font-variant-numeric: tabular-nums; }
 </style>
