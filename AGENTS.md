@@ -88,6 +88,13 @@ These are the rules that decide whether a run was worth its GPU time.
   can — it is a different experiment, and no amount of extra sampling converts
   one into the other. Write down the fit before spending, then confirm each of
   its terms varies independently in what you are about to run.
+- **Allocate on uncertainty, not on activity.** Extra trials are worth most
+  where the interval is widest, which is near the middle of the range, not
+  wherever a cell's estimate happens to still be moving. A cell close to
+  saturation looks unsettled by raw variance while being nearly pinned, and will
+  absorb a budget that buys almost nothing. Rank by expected narrowing —
+  `p(1−p)/n` — before spending, or the band you most wanted to resolve ends up
+  the worst measured in the sweep.
 - **Sample counts imply error bars, and error bars are reported.** State the
   interval alongside every rate. A rate quoted bare invites a reader to treat
   noise as signal, and near the extremes the interval is wide enough to reverse

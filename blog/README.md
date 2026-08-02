@@ -182,8 +182,12 @@ Broader survey of what the surrounding projects use:
 
 ## The data path
 
-`public/data/*.json` comes from `probe/reduce_grid.py`. **The browser never sees
-a raw generation.**
+Data reaches the page as **generated TypeScript modules**, not as JSON fetched
+at runtime. `probe/build_flame.py` and `probe/build_surface.py` read the reduced
+artifacts and write `src/lib/data/*.ts`, which Vite bundles and tree-shakes. An
+earlier scaffold fetched `public/data/*.json` instead; it was deleted along with
+`scripts/prepare.py` and `lib/data/load.ts` once nothing imported them. **The
+browser never sees a raw generation** either way.
 
 That reducer does three things this post depends on, and none should be
 reimplemented here:
@@ -197,7 +201,10 @@ reimplemented here:
 
 ```sh
 python probe/reduce_grid.py --sweep 10-grid12 --pool 11-ext14 --out derived
-python blog/scripts/prepare.py     # TODO: copies derived/*.json -> blog/public/data/
+python probe/segment_trace.py --uid <uid> -o derived/segments-X.json
+python probe/label_grind.py        # regenerates trace C's labels
+python probe/build_flame.py        # labels/ + derived/segments-*.json -> src/lib/data/
+python probe/build_surface.py      # runs/ -> src/lib/data/surface.ts
 ```
 
 ## Writing

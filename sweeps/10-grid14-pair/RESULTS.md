@@ -203,6 +203,46 @@ for 15% more per second.
 - **A failed `modal run` does not release its container.** EXAONE died on load
   and held an H200 for eight minutes.
 
+## The long runs went to the wrong cells
+
+The plan was to concentrate extra trials where the outcome was most uncertain —
+cells near 50%, where the interval is widest and an extra trial buys the most.
+That is not where they went.
+
+Of the 18 cells given 24 or more trials, only **7** sit
+between 35% and 65%. The four most-measured cells in the whole sweep are:
+
+| cell | trials | rate |
+|---|---|---|
+| 3x4 | 55 | 91% |
+| 6x6 | 53 | 87% |
+| 5x6 | 52 | 94% |
+| 4x5 | 48 | 98% |
+
+All four are above 85%, where the interval is already narrow and another trial
+changes almost nothing. **559 generations went to long runs and only
+171 of them (31%) landed near 50%.**
+
+The cost is not the wasted trials, it is the trials the uncertain band did not
+get. The best-measured cell at the bottom of the rate range has 14 trials
+against 29 at the top, so the part of the surface that is hardest to pin down is
+the part with the least evidence behind it.
+
+**Why it happened.** Allocation was driven by trial count on cells already
+sampled, not by each cell's current interval width. A cell at 90% after 12
+trials looks "still moving" by raw variance while being nearly settled; a cell
+at 50% needs far more samples to reach the same precision. Ranking by
+uncertainty rather than by activity would have inverted the order.
+
+**What to do next time.** Allocate on expected interval narrowing —
+`p(1−p)/n` — not on how much a cell has moved. It is one line in the planner and
+it is the difference between spending a budget and placing it.
+
+This is visible in the published figure rather than hidden: the sparkline rail
+in `blog/src/lib/viz/surface/ConvergenceRail.svelte` selects one cell per rate
+band and prints each one's trial count, so the thin coverage at the low end
+reads directly off the chart.
+
 ## Not claimed
 
 - **Anything about temperature.** One temperature. A second would have halved

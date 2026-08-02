@@ -109,6 +109,8 @@
   const stepCount = $derived(trace.stepCount ?? trace.rows.length);
 
   let hoveredIndex: number | null = $state(null);
+  // svelte-ignore state_referenced_locally
+  // Initial value only, by design -- the panel owns the selection after mount.
   let selectedIndex: number | null = $state(initialSelectedIndex);
   let ownHidden: Set<string> = $state(new Set());
   const hiddenCategories = $derived(hiddenProp ?? ownHidden);
