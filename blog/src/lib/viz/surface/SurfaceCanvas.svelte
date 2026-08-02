@@ -46,6 +46,12 @@
   const ZSCALE = 5.2;
 
   const cam = $derived<Camera>({ yaw, pitch, dist: 900, zoom: 26 });
+
+  // Space the scene is NOT allowed into: the rail on the right, and a margin all
+  // round for tick labels and axis titles. Must match .rail-slot.
+  const RAIL_W = 178;
+  const PAD = 58;
+  const railW = $derived(w > 700 ? RAIL_W : 0);
   const order = $derived(groundOrder(DIM - 1, yaw));
 
   const stillMeasuring = $derived(
@@ -72,24 +78,35 @@
     ctx.clearRect(0, 0, w, h);
 
     const mid = (DIM + 1) / 2;
-    // cx/cy are added after the perspective divide, so framing is a pure
-    // translation: project the scene's corners about the origin, then shift the
-    // whole thing so its bounding box is centred. Without this the composition
-    // slides off as soon as anyone orbits.
+    // Fit the scene to the space that is actually free, at whatever angle it is
+    // being viewed from. Centring alone is not enough: the footprint is smallest
+    // seen edge-on and largest seen from above, so a fixed zoom that looks right
+    // at one pitch runs off the canvas and under the rail at another.
+    //
+    // Project the scene's corners about the origin first, then apply a single
+    // screen-space multiplier. That is a viewport zoom, not a camera move, so it
+    // rescales without touching the perspective the camera already decided.
+    const raw = (a: number, b: number, z: number) =>
+      project(a - mid, b - mid, z * ZSCALE, cam, 0, 0);
     let bx0 = Infinity, bx1 = -Infinity, by0 = Infinity, by1 = -Infinity;
     for (const a0 of [1, DIM]) {
       for (const b0 of [1, DIM]) {
         for (const z0 of [0, 1]) {
-          const q = project(a0 - mid, b0 - mid, z0 * ZSCALE, cam, 0, 0);
+          const q = raw(a0, b0, z0);
           bx0 = Math.min(bx0, q.sx); bx1 = Math.max(bx1, q.sx);
           by0 = Math.min(by0, q.sy); by1 = Math.max(by1, q.sy);
         }
       }
     }
-    const cx = w / 2 - (bx0 + bx1) / 2;
-    const cy = h / 2 - (by0 + by1) / 2;
-    const P = (a: number, b: number, z: number) =>
-      project(a - mid, b - mid, z * ZSCALE, cam, cx, cy);
+    const availW = Math.max(80, w - railW - PAD * 2);
+    const availH = Math.max(80, h - PAD * 2);
+    const fit = Math.min(availW / Math.max(1, bx1 - bx0), availH / Math.max(1, by1 - by0));
+    const cx = PAD + availW / 2 - ((bx0 + bx1) / 2) * fit;
+    const cy = PAD + availH / 2 - ((by0 + by1) / 2) * fit;
+    const P = (a: number, b: number, z: number) => {
+      const q = raw(a, b, z);
+      return { sx: cx + q.sx * fit, sy: cy + q.sy * fit, depth: q.depth };
+    };
 
     // floor grid first, so the surface sits on something
     ctx.strokeStyle = dark ? 'rgba(190,200,220,0.30)' : 'rgba(70,80,105,0.32)';
@@ -327,22 +344,27 @@
     </span>
   </div>
 
-  <div
-    class="stage"
-    bind:this={host}
-    onpointerdown={down}
-    onpointermove={move}
-    onpointerup={up}
-    onpointercancel={up}
-    role="img"
-    aria-label="Reliability surface: digits in factor A by digits in factor B by probability of an exactly correct product, at {t} {t === 1 ? 'trial' : 'trials'} each. Drag to rotate."
-  >
-    <canvas bind:this={canvas} style:width="{w}px" style:height="{h}px"></canvas>
-    <!-- The plot is centred, so the flanks are dead space at every camera angle.
+  <div class="plot">
+    <!-- The rail is a SIBLING of the stage, not a child. role="img" makes its
+         element's whole subtree presentational, so a rail nested inside the
+         stage had every one of its numbers hidden from screen readers. -->
+    <div
+      class="stage"
+      bind:this={host}
+      onpointerdown={down}
+      onpointermove={move}
+      onpointerup={up}
+      onpointercancel={up}
+      role="img"
+      aria-label="Reliability surface: digits in factor A by digits in factor B by probability of an exactly correct product, at {t} {t === 1 ? 'trial' : 'trials'} each. Drag to rotate."
+    >
+      <canvas bind:this={canvas} style:width="{w}px" style:height="{h}px"></canvas>
+      <span class="hint">drag to rotate</span>
+    </div>
+    <!-- The plot is centred, so its flanks are dead space at every camera angle.
          The rail overlays them rather than taking width from the canvas, and is
-         pointer-transparent so dragging through it still orbits. -->
+         pointer-transparent so a drag through it still orbits. -->
     <div class="rail-slot"><ConvergenceRail {t} max={MAXT} /></div>
-    <span class="hint">drag to rotate</span>
   </div>
 
   <div class="controls">
@@ -388,12 +410,14 @@
   .title strong { color: var(--ink); font-variant-numeric: tabular-nums; }
   .meta { font-size: 0.68rem; color: var(--ink-faint); }
 
-  .stage {
+  .plot {
     position: relative;
     border: 1px solid var(--line);
     border-radius: var(--radius-sm);
     background: var(--panel);
     overflow: hidden;
+  }
+  .stage {
     cursor: grab;
     touch-action: pan-y;
   }
@@ -403,6 +427,7 @@
     position: absolute;
     top: 10px;
     right: 10px;
+    width: 158px; /* + the 10px inset = the RAIL_W the canvas reserves */
     pointer-events: none;
   }
   /* Below this the plot no longer has flanks to spare. */

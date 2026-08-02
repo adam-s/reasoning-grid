@@ -47,7 +47,7 @@
       let k = 0;
       for (let i = 0; i < n; i++) {
         k += o[i];
-        run.push(k / n && k / (i + 1));
+        run.push(k / (i + 1));
       }
       return { cell, n, run, p: run[n - 1] ?? 0 };
     });
