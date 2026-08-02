@@ -273,3 +273,26 @@ The finding is the control: **re-asking the identical question flips the answer
 about a third of the time**, which is a floor no order effect this size could
 show above. An earlier baseline read 17.5% and was wrong — it drew from
 whichever cells got re-run, and those skew easy.
+
+### 10. Reasoning on vs off — as two surfaces
+
+[Open the chart](https://claude.ai/code/artifact/67bae4ac-0cab-41cc-a972-3eb11c01e2d5)
+
+`probe/render_onoff_surface.py` &rarr; `derived/onoff-surface.html`
+
+The same comparison as chart 4, but on the grid instead of collapsed onto
+`N = a&times;b`. Two 14&times;14 sheets in one orbitable scene: the lower is the
+model answering immediately, the upper is the same model allowed to think first.
+Self-contained, no library.
+
+**Says:** the gap is a ridge, not a level shift. The sheets touch on easy
+problems (thinking confirms what the weights knew) and touch again at the floor
+(thinking does not rescue what is out of reach) &mdash; everything reasoning
+buys is in the band between, which the one-dimensional version averages away.
+Paired one run per problem per arm: **58.2% on, 24.0% off** over 1,566 identical
+problems. Reasoning solves **569** that the immediate answer misses; the
+immediate answer solves **33** that reasoning misses, about 17 to 1.
+
+**Trap it avoids:** pooling every run instead lifts the reasoning arm to 62.8%,
+because that arm was sampled more. It looks like a bigger effect and is an
+artefact of allocation.
