@@ -1,0 +1,168 @@
+{
+  "sweep_id": "14-temp0-qwen",
+  "model": "Qwen/Qwen3-4B",
+  "status": "closed",
+  "schema_version": 2,
+  "code_git_sha": "cb894f10c2e20b11c27e34be67a74018ea6edb8e",
+  "code_git_dirty": true,
+  "prompt_text": "Compute the exact product of {x} and {y}.\nWork it out however you like, but the final line of your reply must be exactly:\nANSWER: <the full integer>",
+  "prompt_sha256": "770f964ea0ebbd50",
+  "problem_pool_size": 256,
+  "problem_seed": 20260730,
+  "engine": {
+    "vllm": "0.11.0",
+    "transformers": "4.57.0"
+  },
+  "batches": [
+    {
+      "batch": 0,
+      "n": 50,
+      "wall_s": 999.2,
+      "tokens": 1252688
+    },
+    {
+      "batch": 1,
+      "n": 50,
+      "wall_s": 763.8,
+      "tokens": 1084660
+    }
+  ],
+  "gpu": "h200",
+  "thinking": "true",
+  "order_seed": "grid10",
+  "budget_mode": "max",
+  "temperature": 0.0,
+  "top_p": 1.0,
+  "axes": [
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11,
+    12,
+    13,
+    14
+  ],
+  "cells": [
+    [
+      7,
+      8
+    ],
+    [
+      14,
+      4
+    ],
+    [
+      5,
+      12
+    ],
+    [
+      7,
+      9
+    ],
+    [
+      5,
+      13
+    ],
+    [
+      10,
+      7
+    ],
+    [
+      8,
+      9
+    ],
+    [
+      6,
+      12
+    ],
+    [
+      6,
+      13
+    ],
+    [
+      9,
+      9
+    ],
+    [
+      6,
+      14
+    ],
+    [
+      8,
+      11
+    ],
+    [
+      7,
+      13
+    ],
+    [
+      14,
+      7
+    ],
+    [
+      9,
+      11
+    ],
+    [
+      8,
+      13
+    ],
+    [
+      11,
+      10
+    ],
+    [
+      13,
+      9
+    ],
+    [
+      12,
+      10
+    ],
+    [
+      14,
+      9
+    ],
+    [
+      12,
+      11
+    ],
+    [
+      11,
+      13
+    ],
+    [
+      11,
+      14
+    ],
+    [
+      13,
+      12
+    ],
+    [
+      13,
+      13
+    ]
+  ],
+  "n_live": 4,
+  "n_saturated": 4,
+  "n_lo": 0,
+  "n_hi": 99999,
+  "chunk": 50,
+  "n_planned": 100,
+  "max_len": 40960,
+  "n_from": 0,
+  "cost": {
+    "est_output_tokens": 1860321,
+    "est_tok_per_s": 700,
+    "mean_cell_N": 98.6,
+    "est_usd": 3.481,
+    "actual_usd": null
+  },
+  "n_actual": 100,
+  "actual_output_tokens": 2337348
+}

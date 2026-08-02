@@ -174,6 +174,62 @@ still measuring. Saturated corners got three trials and freeze; transition-band
 cells got twelve and keep moving. The regions still shifting late are exactly
 the ones the allocation decided were worth spending on.
 
+### 9. Effort and price — what it spends, what it gets
+
+[Open the chart](https://claude.ai/code/artifact/26614ce5-5921-4b5a-994b-de2b0b341792)
+
+`probe/render_effort.py` &rarr; `derived/effort.html`
+
+Two panels from the reasoning on/off pair: output length against problem size,
+then tokens per *correct* answer.
+
+**Says:** with reasoning the model scales effort 7&times; with difficulty.
+Without it the line is **flat** &mdash; ~870 tokens whether the product needs
+seven digits or twenty-two, barely above the length of the answer itself. It is
+not computing and failing; it is emitting an answer-shaped string at constant
+cost. And the price lines cross: below ~30 operations reasoning-off is 14&ndash;16&times;
+cheaper per correct answer and nearly as accurate; past 90 it never succeeds at
+any price.
+
+### 10. Temperature ladder
+
+[Open the chart](https://claude.ai/code/artifact/41108e3b-9677-496f-a10c-ce2fceb1cb86)
+
+`probe/render_temperature.py` &rarr; `derived/temperature.html`
+
+One cell, ~100 trials at each of five temperatures, from the old variance
+sweeps. Deeper per point than anything else in the project.
+
+**Says:** 71% at T=0 down to 32% at T=2.0, z=5.5. But **nothing below 1.0 is
+distinguishable** &mdash; 0, 0.5 and 1.0 all sit within noise of each other, so
+the project's choice of 0.7 was free. The only significant adjacent step is
+1.5&nbsp;&rarr;&nbsp;2.0.
+
+Bounded hard: one easy cell (4&times;4) with **reasoning off**.
+
+### 11. Greedy decoding, and the loop trap
+
+[Open the chart](https://claude.ai/code/artifact/f8cbc2f3-0f78-45de-bc86-3ebcb2d89b8a)
+
+`probe/render_temp0.py` &rarr; `derived/temp0.html`
+
+100 hard problems run once at T=0.7 and once at T=0, reasoning on, paired on
+`instance_uid`. Two panels: the paired 2&times;2, then the disagreement rate
+against a same-temperature control.
+
+**Says:** identical scores (31% vs 30%, McNemar p=1.000), and switching to
+greedy disagrees with sampling *less* than sampling disagrees with itself
+(27% vs 37%, p=0.140). So temperature 0 is indistinguishable from asking again.
+
+**The real finding is the mechanism.** 29 of 100 greedy runs used the entire
+context without answering, against 3 at 0.7 — twenty of them in plain
+repetition loops. Each token is a fixed function of the context, so once the
+model enters a repeating state **it cannot leave**; the randomness that was
+switched off is the only thing that breaks the loop. The null score is two
+effects cancelling, not temperature doing nothing.
+
+Both pre-run predictions on this page were wrong, and the page says so.
+
 ## Encoding rules used across all of them
 
 - **Sequential ramp, one hue** for probability. A rainbow invents boundaries the

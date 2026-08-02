@@ -96,11 +96,18 @@ input[type=range]{flex:1;min-width:200px;accent-color:var(--ramp-hi)}
       &mdash; high at the back, low at the front &mdash; but every cell is 0% or 100%, so
       it reads as a cliff rather than a slope. The middle fills in over the next few
       trials, and by about eight the terrain stops changing shape and only jitters.</p>
-    <p class="note" style="margin-top:12px">Cells settle at different times, and not
-      because some are better measured. Saturated corners were given three trials and
-      freeze there; cells in the transition band were given twelve and keep moving longer.
-      The parts of the surface still shifting late are exactly the parts the sampling plan
-      decided were worth spending on.</p>
+    <p class="note" style="margin-top:12px"><strong>Cells run out of trials at different
+      points, and each one keeps its last value rather than being dropped.</strong> A cell
+      with __MINN__ trials freezes early; one with __MAXN__ keeps moving to the end. So a
+      late frame is not a uniform snapshot &mdash; it is every cell showing everything
+      that was ever measured for it, which is also how the grid itself is scored. Trimming
+      every cell to a common count would throw away most of the data to buy a tidiness
+      nothing depends on.</p>
+    <p class="note" style="margin-top:12px">The counter tracks how many cells are still
+      moving. It falls fast at first, because the sampling plan gave saturated corners
+      only enough runs to confirm a bound. What is still shifting near the end is the
+      transition band &mdash; exactly where the budget went, and exactly where the answer
+      was genuinely uncertain.</p>
   </section>
 </div>
 <script>
@@ -197,13 +204,33 @@ def main():
     ap.add_argument("-o", "--out", default="derived/animation.html")
     args = ap.parse_args()
 
-    paths = []
-    for g in args.glob.split(","):
-        paths += sorted(glob.glob(os.path.join(args.runs, f"{g}.jsonl")))
-    recs = load(paths, model=args.model, temperature=0.7)
+    # Pool every record at matching temperature, top_p and thinking, regardless
+    # of which sweep wrote it. The context ceiling is allowed to differ ONLY
+    # where it provably could not have mattered: if some records in a cell ran
+    # under a smaller ceiling, they are kept only when no record in that cell
+    # came near it. A generation that finished in 5k tokens is the same
+    # measurement whether the cap was 32k or 40k; one that ran to 30k is not.
+    # This is worth the care -- it adds 22% more trials, and the small cells
+    # that gain most are the ones with the longest histories on disk.
+    SAFE = 0.80
+    recs = []
+    for f in sorted(glob.glob(os.path.join(args.runs, "*.jsonl"))):
+        for r in load([f], model=args.model, temperature=0.7):
+            if r.get("top_p") != 1.0 or r.get("thinking_observed") is not True:
+                continue
+            recs.append(r)
     by = collections.defaultdict(list)
     for r in recs:
         by[(r["a"], r["b"])].append(r)
+    dropped = 0
+    for k, rs in list(by.items()):
+        ceils = {r.get("engine_max_len") for r in rs if r.get("engine_max_len")}
+        if len(ceils) > 1:
+            mn = min(ceils)
+            if any(r["completion_tokens"] > SAFE * mn for r in rs):
+                keep = [r for r in rs if r.get("engine_max_len") == max(ceils)]
+                dropped += len(rs) - len(keep)
+                by[k] = keep
 
     data, dim, maxn = {}, 0, 0
     for (a, b), rs in by.items():
@@ -226,7 +253,9 @@ def main():
     miny, maxy = min(ys) - pad, max(ys) + pad
     vb = (f"{minx*S:.1f} {miny*S:.1f} {(maxx-minx)*S:.1f} {(maxy-miny)*S:.1f}")
 
+    lens = [len(v) for v in data.values()]
     html = (PAGE.replace("__DATA__", json.dumps(data, separators=(",", ":")))
+                .replace("__MINN__", str(min(lens)))
                 .replace("__DIM__", str(dim))
                 .replace("__MAXN__", str(maxn))
                 .replace("__CELLS__", str(len(data)))
@@ -237,6 +266,7 @@ def main():
     print(f"wrote {args.out}")
     print(f"  {len(data)} cells, {dim}x{dim}, up to {maxn} trials, "
           f"{sum(len(v) for v in data.values()):,} outcomes embedded")
+    print(f"  {dropped} records dropped: a smaller ceiling could have bound them")
 
 
 if __name__ == "__main__":

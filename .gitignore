@@ -5,5 +5,14 @@ __pycache__/
 .env.*
 .claude/settings.local.json
 temp/
-runs/
+
+# runs/ IS tracked. It is the raw record -- every generation exactly as the
+# model produced it -- and every score, chart and claim in this repo is derived
+# from it by a committed script. Publishing it is what makes the numbers
+# checkable rather than asserted: anyone who disagrees with how an answer was
+# parsed can reparse it. ~24MB packed, which is worth that.
+#
+# derived/ is NOT tracked. It regenerates from runs/ in seconds:
+#   python probe/reduce_grid.py --sweep 10-grid12 --pool 11-ext14 --out derived
+#   python probe/render_*.py ...
 derived/
