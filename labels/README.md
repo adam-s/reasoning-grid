@@ -42,6 +42,54 @@ Those 44 are labelled once each in `probe/label_grind.py` and applied by
 matching, so identical text gets an identical label by construction. Segments
 0–72 were labelled individually, like A and B.
 
+Ordering is not blindness, and the rubric's fail condition asked for a blind
+pass. One ran afterward; the next section is its result.
+
+## Reconciliation against a blind pass
+
+All 245 judgments (A 64, B 64, C 73 pre-lockup + 44 distinct post-lockup texts)
+were reproduced from segment text alone: shuffled under a recorded seed, each
+item presented as five segments of context with no trace identity, no outcome,
+and no filename, one uppercase word out of the nine per item, written before the
+keymap was opened. **Agreement 205/245 = 84%** — A 97%, B 84%, C 76%.
+
+Adjudicating the 40 disagreements against the numbered rules moved **16 labels,
+all in C**. A and B are unchanged, so `17:3`, `9:14`, the 36%/40% verification
+shares and the zero `ERROR_CORRECTION` counts all stand as published. C's
+changes: `11,12,44,64,65,71,101,103` → `ACCUMULATE` (rule 5 says "aligns", and C
+already used `ACCUMULATE` for the identical move elsewhere), `34–37` →
+`RECHECK` (rule 3 fires before 5 and 6 — "let me do that again", same
+breakdown, on a value C[33] had finished), `33` → `PARTIAL_PRODUCT` (sums
+*inside* one term, not across terms), `54,56` → `STATE_TRACKING` (rule 6 needs
+a decomposition and neither chooses one), and `19` → `ACCUMULATE`, which
+removes C's lone `ERROR_CORRECTION`: no value changes there, and the rubric
+lists "`ERROR_CORRECTION` assigned where no value changed" as a fail condition.
+A's and B's equivalent false alarms (A[41], B[53]) are `CROSSCHECK`, so C's is
+now consistent with them. The new labels also open one sub-range, C `34–39`.
+
+**The rule-3 amendment survives.** `A[26]`–`A[29]`, the four segments the whole
+exposure rested on, came back `PARTIAL_PRODUCT` blind — identical to stored. The
+amendment was not special pleading, and `17:3` is not load-bearing on an
+unaudited judgment any more.
+
+**No sign the stored labels favour the correct run.** A had the *fewest*
+disagreements of the three, and neither of its two produced a change. Where the
+blind pass disagreed with B it mostly wanted `PARTIAL_PRODUCT` in place of
+`RECHECK` at `B[35]`–`B[42]` — which would have weakened "B is recheck-dominant",
+not strengthened it. That cluster is an artefact of the ±2 window: B's second
+pass re-derives products computed 25 segments earlier, outside what the blind
+context could show, so rule 3 applies on the full trace and the stored label
+stands. The only outcome-correlated drift found anywhere was **in the blind pass
+itself** — it called A's two scientific-notation place-value doubts `CROSSCHECK`
+and B's identical `B[10]` `PARTIAL_PRODUCT`, while the stored labels give all
+three `CROSSCHECK`. Stored was the consistent one and was kept.
+
+One honest limit: the rubric is binding on the classifier and the rubric names
+B's operands and both truths, so the pass was blind to trace identity by
+construction but not proof against recognising it. The four amendment segments
+were nonetheless judged with no marker in the window saying which trace they
+were in.
+
 ## Rebuilding what depends on them
 
 ```sh

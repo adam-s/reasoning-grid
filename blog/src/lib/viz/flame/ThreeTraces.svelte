@@ -73,15 +73,22 @@
     <button class:on={lens === 'ooda'} onclick={() => (lens = 'ooda')}>by OODA phase</button>
   </div>
 
-  <CategoryLegend {hiddenCategories} onToggle={toggle} rows={allLeaves} {scheme} showShare={false} />
+  <CategoryLegend
+    {hiddenCategories}
+    onToggle={toggle}
+    rows={allLeaves}
+    {scheme}
+    showShare={false}
+    showEmpty={lens === 'ooda'}
+  />
 
   <p class="axis-note">
     {#if lens === 'ooda'}
       Same bars, four colours. The run that got it right and the run that got it wrong are
-      nearly the same picture here — the loop does not tell them apart. <strong>Decide
-      appears once in 524 segments</strong>: these traces almost never change a value they
-      have already written. Switch back to <em>by move</em> to split Observe into the two
-      kinds of checking, which is where the difference actually is.
+      nearly the same picture here — the loop does not tell them apart. <strong>Decide never
+      appears at all</strong>: in 524 segments, not one changes a value the model had
+      already written. Switch back to <em>by move</em> to split Observe into the two kinds
+      of checking, which is where the difference actually is.
     {:else}
       Position is share of each trace, not time. Click any bar to read it.
     {/if}

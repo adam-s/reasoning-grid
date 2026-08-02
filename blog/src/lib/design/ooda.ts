@@ -12,10 +12,16 @@
  * vocabulary everyone reaches for is too coarse for the thing being measured.
  *
  * DECIDE is the other half of it. Across all 524 labelled segments it occurs
- * once. These models observe, orient and act; they almost never decide to
- * change a value they have already written down. A loop with no decide phase
- * cannot correct itself, and cannot choose to stop — which is exactly how the
- * third trace ends.
+ * ZERO times. These models observe, orient and act; not once does one of them
+ * decide to change a value it has already written down. A loop with no decide
+ * phase cannot correct itself and cannot choose to stop — which is exactly how
+ * the third trace ends.
+ *
+ * It was one, until a blind reproduction of every label removed it: the single
+ * ERROR_CORRECTION was a false alarm the model talked itself out of without
+ * changing anything, and the rubric lists "ERROR_CORRECTION assigned where no
+ * value changed" as a fail condition. All three traces raise exactly one false
+ * alarm and all three resolve it without editing a digit.
  *
  * STRATEGY is mapped to ORIENT, not split between orient and decide. The rubric
  * says the two are not separable in these traces because the model states a plan
@@ -60,7 +66,7 @@ const meta: Record<OodaPhase, SchemeMeta> = {
     color: '#bf4536',
     symbol: 'D',
     description:
-      'Changing a value already written down. One segment in 524 — the loop these models run has almost no decide phase.',
+      'Changing a value already written down. Zero segments in 524 — the loop these models run has no decide phase at all.',
   },
   ACT: {
     label: 'Act',

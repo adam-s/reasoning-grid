@@ -31,10 +31,11 @@ PRE = [
     "PARTIAL_PRODUCT",                                         # 05
     "ACCUMULATE", "ACCUMULATE", "ACCUMULATE", "ACCUMULATE",    # 06-09
     "ACCUMULATE",                                              # 10
-    "STATE_TRACKING", "STATE_TRACKING",                        # 11-12  count and align the digits
+    "ACCUMULATE", "ACCUMULATE",                                # 11-12  align the addends (rule 5 says "aligns")
     "ACCUMULATE", "ACCUMULATE", "ACCUMULATE", "ACCUMULATE",    # 13-16
     "ACCUMULATE", "ACCUMULATE",                                # 17-18
-    "ERROR_CORRECTION",                                        # 19     rejects 30,682,678,033,547
+    "ACCUMULATE",                                              # 19     reads off 30,682,678,033,547 and doubts it;
+                                                               #         no value changes, so rule 1 does not fire
     "STRATEGY",                                                # 20     abandons digit-by-digit
     "ACCUMULATE",                                              # 21
     "RECHECK", "RECHECK",                                      # 22-23
@@ -43,23 +44,27 @@ PRE = [
     "STATE_TRACKING", "STATE_TRACKING",                        # 29-30
     "STRATEGY",                                                # 31
     "PARTIAL_PRODUCT",                                         # 32
-    "ACCUMULATE", "ACCUMULATE", "ACCUMULATE", "ACCUMULATE",    # 33-36
-    "STRATEGY",                                                # 37     "that seems high"
+    "PARTIAL_PRODUCT",                                         # 33     sums inside one term, not across terms
+    "RECHECK", "RECHECK", "RECHECK",                           # 34-36  "let me do that again", same breakdown
+    "RECHECK",                                                 # 37     "that seems high"
     "RECHECK", "RECHECK",                                      # 38-39
     "ACCUMULATE", "ACCUMULATE",                                # 40-41
     "RECHECK", "RECHECK",                                      # 42-43
-    "STATE_TRACKING",                                          # 44
+    "ACCUMULATE",                                              # 44     lists the two parts in order to add them
     "ACCUMULATE", "ACCUMULATE", "ACCUMULATE", "ACCUMULATE",    # 45-48
     "ACCUMULATE",                                              # 49
     "ACCUMULATE",                                              # 50 <-- the correct total, first written here
-    "STRATEGY", "STRATEGY", "STRATEGY", "STRATEGY", "STRATEGY", "STRATEGY",   # 51-56
+    "STRATEGY", "STRATEGY", "STRATEGY",                        # 51-53
+    "STATE_TRACKING",                                          # 54     "I think this is the right answer"
+    "STRATEGY",                                                # 55
+    "STATE_TRACKING",                                          # 56     names the answer the work holds
     "RECHECK", "RECHECK",                                      # 57-58
     "CROSSCHECK", "CROSSCHECK", "CROSSCHECK", "CROSSCHECK",    # 59-62  the sci-notation check
     "CROSSCHECK",                                              # 63 <-- "my previous addition was wrong"
-    "STATE_TRACKING", "STATE_TRACKING",                        # 64-65
+    "ACCUMULATE", "ACCUMULATE",                                # 64-65  align the addends
     "ACCUMULATE", "ACCUMULATE", "ACCUMULATE", "ACCUMULATE",    # 66-69
     "ACCUMULATE",                                              # 70
-    "STATE_TRACKING",                                          # 71
+    "ACCUMULATE",                                              # 71     align the addends
     "ACCUMULATE",                                              # 72
 ]
 
@@ -74,7 +79,8 @@ POST = {
     15: "CROSSCHECK", 16: "RECHECK", 17: "RECHECK", 18: "RECHECK",
     19: "RECHECK", 20: "RECHECK", 21: "RECHECK", 22: "CROSSCHECK",
     23: "CROSSCHECK", 24: "CROSSCHECK", 25: "RECHECK", 26: "ACCUMULATE",
-    27: "ACCUMULATE", 28: "STATE_TRACKING", 29: "ACCUMULATE", 30: "STRATEGY",
+    # 28 (seg 101) and 30 (seg 103) both align-then-add; rule 5 fires before 6 and 7
+    27: "ACCUMULATE", 28: "ACCUMULATE", 29: "ACCUMULATE", 30: "ACCUMULATE",
     31: "CROSSCHECK", 32: "RECHECK", 33: "RECHECK", 34: "RECHECK",
     35: "RECHECK", 36: "RECHECK", 37: "CROSSCHECK", 38: "CROSSCHECK",
     39: "CROSSCHECK", 40: "CROSSCHECK", 41: "ACCUMULATE", 42: "ACCUMULATE",
@@ -120,7 +126,9 @@ def main():
         "note": (
             "Labelled after A and B, whose labels were already locked and were not "
             "revised. Segments 0-72 individually; 73-395 by mapping each of the 44 "
-            "distinct texts once. See probe/label_grind.py."
+            "distinct texts once. See probe/label_grind.py. A later blind pass "
+            "reproduced all 117 judgments from segment text alone and moved 16 of "
+            "them; see the reconciliation section of labels/README.md."
         ),
         "labels": labels,
         "lockup_segment": LOCKUP_SEG,
@@ -129,6 +137,7 @@ def main():
             {"start": 0,  "end": 3,   "label": "Look for a shortcut"},
             {"start": 4,  "end": 23,  "label": "First part: 21,000 x"},
             {"start": 24, "end": 43,  "label": "Second part: 28 x"},
+            {"start": 34, "end": 39,  "label": "Recheck the eighth partial product"},
             {"start": 44, "end": 50,  "label": "Add the two parts"},
             {"start": 51, "end": 58,  "label": "Recheck"},
             {"start": 59, "end": 63,  "label": "Scientific-notation crosscheck"},

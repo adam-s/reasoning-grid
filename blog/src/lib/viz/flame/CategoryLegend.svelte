@@ -31,10 +31,15 @@
      *  when the rows pool several traces of different lengths, where a single
      *  bar reads as an average but is really dominated by the longest one. */
     showShare?: boolean;
+    /** Keep a category in the key when the data contains none of it. Normally
+     *  noise; essential when the absence IS the result being shown. */
+    showEmpty?: boolean;
   };
 
-  let { hiddenCategories, onToggle, rows = [], scheme = LAMBDA_SCHEME, showShare = true }: Props =
-    $props();
+  let {
+    hiddenCategories, onToggle, rows = [], scheme = LAMBDA_SCHEME,
+    showShare = true, showEmpty = false,
+  }: Props = $props();
 
   let hovered = $state<string | null>(null);
 
@@ -63,7 +68,9 @@
   );
 
   // Present categories only. An entry at 0% is noise in a legend.
-  const present = $derived(scheme.order.filter((c) => (totals.get(c) ?? 0) > 0));
+  const present = $derived(
+    showEmpty ? scheme.order : scheme.order.filter((c) => (totals.get(c) ?? 0) > 0),
+  );
 
   function share(c: string): number {
     if (hiddenCategories.has(c) || visibleTotal <= 0) return 0;

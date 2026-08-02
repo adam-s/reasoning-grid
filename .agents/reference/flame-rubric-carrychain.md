@@ -134,24 +134,29 @@ verification into methods with different failure modes and reached mod 1000. B
 put more than half into re-deriving what it had already derived, and its deepest
 independent check was one digit.
 
-**Two of those numbers are load-bearing on one unaudited judgment.** The
-amendment above decides four segments, `A[26]`–`A[29]`. Removing it moves A to
-17:7 and lifts A's verification share to 46%, which reverses "B verified more":
+**Two of those numbers were load-bearing on one judgment, and a blind pass has
+now settled it.** The amendment above decides four segments, `A[26]`–`A[29]`.
+Removing it would move A to 17:7 and lift A's verification share to 46%, which
+reverses "B verified more":
 
 | | with the amendment | strict rule 3 |
 |---|---|---|
 | A crosscheck : recheck | 17 : 3 | 17 : 7 |
 | A verification share | 36% | 46% |
 
-B's 9:14 and 40% do not move. What survives either labelling is the direction —
-A is crosscheck-dominant, B is recheck-dominant, and the two spend a similar
-share of the trace checking. **Only that is safe to publish** until a blind pass
-settles those four segments, and the post is written to the safe version.
+A blind reproduction of all 245 judgments — shuffled, five segments of context,
+no trace identity or outcome, keymap sealed until every label was written —
+returned `PARTIAL_PRODUCT` for all four, matching the stored labels. 17:3 and
+36% stand as measured, not as an assumption. Agreement over the whole set was
+84%; adjudication moved 16 labels, every one of them in C, so A's and B's
+numbers in the table above did not change. Method and result: `labels/README.md`.
 
 A mechanical cross-trace consistency check found no other exposure: all 201
 distinct segments compared pairwise with digits stripped produced three
 similar-but-differently-labelled pairs, and all three are correct under the
-rules. The scientific-notation calls are consistent across all three traces.
+rules. The scientific-notation calls are consistent across all three traces —
+and are the one place the blind pass was *less* consistent than the stored
+labels, which is recorded in `labels/README.md` rather than smoothed over.
 
 **A prediction in the traps section missed.** It expected roughly four
 corrections per trace and got zero in 128 segments — neither model ever changed
