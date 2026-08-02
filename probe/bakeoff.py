@@ -300,7 +300,17 @@ def _run_batch(self, gpu_name, jobs, temperature, top_p, thinking,
 
     msgs, params, budgets, prompts = [], [], [], []
     for j_i, j in enumerate(jobs):
-        prompt = PROMPT.format(x=j["x"], y=j["y"])
+        # j["swapped"] presents THE SAME product with the operands reversed.
+        # Cells (a,b) and (b,a) draw independent numbers, so comparing them
+        # confounds operand order with which numbers were drawn -- it cannot
+        # answer whether order matters. Reversing one instance holds the product
+        # fixed and varies only the order, which makes the comparison paired on
+        # instance_uid and is the only version of this test that identifies the
+        # effect.
+        if j.get("swapped"):
+            prompt = PROMPT.format(x=j["y"], y=j["x"])
+        else:
+            prompt = PROMPT.format(x=j["x"], y=j["y"])
         prompts.append(prompt)
         msgs.append([{"role": "user", "content": prompt}])
         room = hard - 256  # margin for chat template + prompt tokens
@@ -367,6 +377,10 @@ def _run_batch(self, gpu_name, jobs, temperature, top_p, thinking,
                 "instance_uid": j.get("instance_uid"),
                 "x": str(j["x"]),
                 "y": str(j["y"]),
+                # x and y are the PROBLEM, always in canonical order, so the uid
+                # matches across both presentations. presented_as records which
+                # way round the model actually saw it.
+                "presented_as": "yx" if j.get("swapped") else "xy",
                 "truth": j["truth"],
                 "answer": ans,
                 "correct": outcome == "converged_right",
@@ -666,7 +680,7 @@ def grid(model: str = "Qwen/Qwen3-4B", gpu: str = "l40s", thinking: str = "true"
          n_lo: int = 10, n_hi: int = 50, chunk: int = 256,
          sweep_id: str = "grid", axes: str = "", budget_mode: str = "max",
          cells_spec: str = "", order_seed: str = "", dry_run: str = "false",
-         n_from: int = 0, max_len: int = 0):
+         n_from: int = 0, max_len: int = 0, swap: str = "false"):
     """The deliverable: x = digits of A, y = digits of B, z = P(exactly correct).
 
     Two things this does that the earlier entrypoints got wrong.
@@ -721,6 +735,13 @@ def grid(model: str = "Qwen/Qwen3-4B", gpu: str = "l40s", thinking: str = "true"
         got = [j for j in got if j["instance_id"] >= n_from]
         for j in got:
             j["_n_in_cell"] = n      # the CELL's total n, not this run's slice
+            # swap presents the SAME product with operands reversed, so the run
+            # pairs against an existing one on instance_uid. Comparing cell
+            # (a,b) with cell (b,a) cannot do this: those cells draw independent
+            # numbers, so a difference between them confounds operand order with
+            # instance difficulty and identifies neither.
+            if swap.lower() == "true":
+                j["swapped"] = True
         jobs += got
     # Seeded shuffle, NOT a systematic sort. Submission position measurably
     # affects output (the odd repeat was sample_idx 0 in 11 of 11 cases), so a
