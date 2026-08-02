@@ -34,12 +34,52 @@ OUT = "blog/src/lib/data/carrychain-traces.ts"
 MAX_TEXT = 420          # tooltips do not need more, and C repeats one line 275 times
 
 
+# Qwen writes its post-</think> summary in Markdown and LaTeX, so the last few
+# segments of a finished trace carry $$, \begin{align*}, ** and \boxed{}. Drawn
+# literally on a bar they are unreadable. Cleaning happens HERE, at build time,
+# for display only: offsets and widths are measured on the raw string and are not
+# affected, the segment files keep the raw text, and runs/ is never touched.
+TAG = re.compile(r"</?think>")
+BRACED = re.compile(r"\\(?:boxed|text|mathrm|mathbf|mathit)\s*\{([^{}]*)\}")
+ENV = re.compile(r"\\(?:begin|end)\s*\{[^{}]*\}")
+CMD = re.compile(r"\\[a-zA-Z]+")
+# Longest first. Substring order matters: \cdot replaced before \cdots leaves a
+# stray "s" behind, which is how "\cdots" first rendered as "·s".
+SYMBOL = dict(sorted({
+    r"\times": "×", r"\cdots": "…", r"\ldots": "…", r"\dots": "…", r"\cdot": "·",
+    r"\approx": "≈", r"\leq": "≤", r"\geq": "≥", r"\neq": "≠", r"\pm": "±",
+    r"\le": "≤", r"\ge": "≥", r"\ne": "≠",
+    r"\sum": "∑", r"\prod": "∏", r"\frac": "/",
+    r"\quad": " ", r"\qquad": " ", r"\,": " ", r"\;": " ", r"\!": "",
+}.items(), key=lambda kv: -len(kv[0])))
+
+
+def display(t):
+    """What a reader sees on a bar and in its tooltip."""
+    t = TAG.sub(" ", t)
+    t = BRACED.sub(r"\1", t)          # \boxed{123} -> 123
+    t = ENV.sub(" ", t)               # \begin{align*} -> gone
+    for a, b in SYMBOL.items():
+        t = t.replace(a, b)
+    t = t.replace("\\\\", " ")        # LaTeX line break
+    t = t.replace("$$", " ").replace("$", " ")
+    t = t.replace("&=", "=").replace("&", " ")
+    t = CMD.sub(" ", t)               # any command left over
+    # Sub/superscripts: keep the value, drop the TeX braces. Done AFTER commands
+    # are stripped, so \sum_{i=0}^{10} does not leave a dangling "_{i=0}".
+    t = re.sub(r"([_^])\s*\{([^{}]*)\}", r"\1\2", t)
+    t = t.replace("**", "").replace("__", "")
+    t = re.sub(r"\s+", " ", t)
+    t = re.sub(r"(?:^|(?<= ))(?:#{1,6}|-{3,}|\|)(?= |$)", " ", t)
+    return re.sub(r"\s+", " ", t).strip(" -–—·:")
+
+
 def clean(s):
     return re.sub(r"\s+", " ", s).strip()
 
 
 def short(s, n=58):
-    s = clean(s).lstrip("<think>").strip()
+    s = display(s)
     return s if len(s) <= n else s[: n - 1].rstrip() + "…"
 
 
@@ -74,7 +114,7 @@ def build(segs, labels, subtasks):
         rows.append(dict(depth=(max(inner) + 1) if inner else 0,
                          start=s["start"], width=s["chars"],
                          category=labels[i], label=short(s["text"]),
-                         text=clean(s["text"])[:MAX_TEXT], index=i,
+                         text=display(s["text"])[:MAX_TEXT], index=i,
                          container=False, muted=False))
     rows.sort(key=lambda r: (r["depth"], r["start"]))
     return rows

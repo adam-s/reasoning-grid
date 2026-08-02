@@ -115,7 +115,7 @@ export const CARRY_TRACES: readonly CarryTrace[] = [
    "width": 167,
    "category": "TASK_SETUP",
    "label": "Okay, so I need to calculate the exact product of 2053896\u2026",
-   "text": "<think> Okay, so I need to calculate the exact product of 2053896 and 30957123778. Hmm, that's a pretty big multiplication. Let me think about how to approach this.",
+   "text": "Okay, so I need to calculate the exact product of 2053896 and 30957123778. Hmm, that's a pretty big multiplication. Let me think about how to approach this.",
    "index": 0,
    "container": false,
    "muted": false
@@ -148,7 +148,7 @@ export const CARRY_TRACES: readonly CarryTrace[] = [
    "width": 296,
    "category": "STRATEGY",
    "label": "Second number: 30,957,123,778 Hmm, maybe I can express th\u2026",
-   "text": "Second number: 30,957,123,778 Hmm, maybe I can express these numbers in terms of their components. Let me check if there's a way to simplify the multiplication. For example, maybe factor out some common terms? But I don't see any obvious common factors between these two numbers. Let me check:",
+   "text": "Second number: 30,957,123,778 Hmm, maybe I can express these numbers in terms of their components. Let me check if there's a way to simplify the multiplication. For example, maybe factor out some common terms? But I don't see any obvious common factors between these two numbers. Let me check",
    "index": 3,
    "container": false,
    "muted": false
@@ -203,7 +203,7 @@ export const CARRY_TRACES: readonly CarryTrace[] = [
    "width": 117,
    "category": "STRATEGY",
    "label": "But given that both numbers are very large, maybe I need\u2026",
-   "text": "But given that both numbers are very large, maybe I need to use a more systematic approach. Let me write them down:",
+   "text": "But given that both numbers are very large, maybe I need to use a more systematic approach. Let me write them down",
    "index": 20,
    "container": false,
    "muted": false
@@ -214,7 +214,7 @@ export const CARRY_TRACES: readonly CarryTrace[] = [
    "width": 157,
    "category": "TASK_SETUP",
    "label": "First number: 2,053,896 Second number: 30,957,123,778 Let\u2026",
-   "text": "First number: 2,053,896 Second number: 30,957,123,778 Let me write them vertically: 2,053,896 \u00d730,957,123,778 ----------------",
+   "text": "First number: 2,053,896 Second number: 30,957,123,778 Let me write them vertically: 2,053,896 \u00d730,957,123,778",
    "index": 21,
    "container": false,
    "muted": false
@@ -236,7 +236,7 @@ export const CARRY_TRACES: readonly CarryTrace[] = [
    "width": 170,
    "category": "STATE_TRACKING",
    "label": "But given the second number is 30,957,123,778, which has\u2026",
-   "text": "But given the second number is 30,957,123,778, which has 11 digits. Let me count: 3 0 9 5 7 1 2 3 7 7 8. Yes, 11 digits. So, to perform the multiplication step by step:",
+   "text": "But given the second number is 30,957,123,778, which has 11 digits. Let me count: 3 0 9 5 7 1 2 3 7 7 8. Yes, 11 digits. So, to perform the multiplication step by step",
    "index": 23,
    "container": false,
    "muted": false
@@ -379,7 +379,7 @@ export const CARRY_TRACES: readonly CarryTrace[] = [
    "width": 146,
    "category": "RESULT",
    "label": "Therefore, the result seems to be correct. So the exact p\u2026",
-   "text": "Therefore, the result seems to be correct. So the exact product is 63,582,712,699,139,088. **Final Answer** ANSWER: 63582712699139088 </think>",
+   "text": "Therefore, the result seems to be correct. So the exact product is 63,582,712,699,139,088. Final Answer ANSWER: 63582712699139088",
    "index": 60,
    "container": false,
    "muted": false
@@ -389,8 +389,8 @@ export const CARRY_TRACES: readonly CarryTrace[] = [
    "start": 16245,
    "width": 521,
    "category": "RESULT",
-   "label": "To compute the exact product of the two large integers $\u2026",
-   "text": "To compute the exact product of the two large integers $ 2,053,896 $ and $ 30,957,123,778 $, we proceed by breaking the multiplication into manageable parts using the distributive property and performing each step carefully. --- ### Step-by-Step Breakdown: We express the second number in terms of its place values: $$ 30,957,123,778 = 3 \\times 10^{10} + 0 \\times 10^9 + 9 \\times 10^8 + 5 \\times 10^7 + 7 \\times 10^6 + 1",
+   "label": "To compute the exact product of the two large integers 2,\u2026",
+   "text": "To compute the exact product of the two large integers 2,053,896 and 30,957,123,778 , we proceed by breaking the multiplication into manageable parts using the distributive property and performing each step carefully. Step-by-Step Breakdown: We express the second number in terms of its place values: 30,957,123,778 = 3 \u00d7 10^10 + 0 \u00d7 10^9 + 9 \u00d7 10^8 + 5 \u00d7 10^7 + 7 \u00d7 10^6 + 1 \u00d7 10^5 + 2 \u00d7 10^4 + 3 \u00d7 10^3 + 7 \u00d7 10^2 + 7 ",
    "index": 61,
    "container": false,
    "muted": false
@@ -400,8 +400,8 @@ export const CARRY_TRACES: readonly CarryTrace[] = [
    "start": 16766,
    "width": 916,
    "category": "RESULT",
-   "label": "Then, we compute: $$ 2,053,896 \\times (3 \\times 10^{10} +\u2026",
-   "text": "Then, we compute: $$ 2,053,896 \\times (3 \\times 10^{10} + 0 \\times 10^9 + 9 \\times 10^8 + \\cdots + 8 \\times 10^0) $$ This yields: $$ \\sum_{i=0}^{10} (2,053,896 \\times d_i \\times 10^i) $$ Where $ d_i $ is the digit at the $ i $-th place in the second number. We calculate each term: - $ 2,053,896 \\times 3 \\times 10^{10} = 61,616,880,000,000,000 $ - $ 2,053,896 \\times 0 \\times 10^9 = 0 $ - $ 2,053,896 \\times 9 \\times 10",
+   "label": "Then, we compute: 2,053,896 \u00d7 (3 \u00d7 10^10 + 0 \u00d7 10^9 + 9 \u00d7\u2026",
+   "text": "Then, we compute: 2,053,896 \u00d7 (3 \u00d7 10^10 + 0 \u00d7 10^9 + 9 \u00d7 10^8 + \u2026 + 8 \u00d7 10^0) This yields: \u2211_i=0^10 (2,053,896 \u00d7 d_i \u00d7 10^i) Where d_i is the digit at the i -th place in the second number. We calculate each term: - 2,053,896 \u00d7 3 \u00d7 10^10 = 61,616,880,000,000,000 - 2,053,896 \u00d7 0 \u00d7 10^9 = 0 - 2,053,896 \u00d7 9 \u00d7 10^8 = 1,848,506,400,000,000 - 2,053,896 \u00d7 5 \u00d7 10^7 = 102,694,800,000,000 - 2,053,896 \u00d7 7 \u00d7 10^6 = 14,377,272,00",
    "index": 62,
    "container": false,
    "muted": false
@@ -411,8 +411,8 @@ export const CARRY_TRACES: readonly CarryTrace[] = [
    "start": 17682,
    "width": 308,
    "category": "RESULT",
-   "label": "Adding all of these values: $$ 61,616,880,000,000,000 + 1\u2026",
-   "text": "Adding all of these values: $$ 61,616,880,000,000,000 + 1,848,506,400,000,000 + 102,694,800,000,000 + 14,377,272,000,000 + 205,389,600,000 + 41,077,920,000 + 6,161,688,000 + 1,437,727,200 + 143,772,720 + 16,431,168 = 63,582,712,699,139,088 $$ --- ### Final Answer: $$ \\text{ANSWER: } 63582712699139088 $$",
+   "label": "Adding all of these values: 61,616,880,000,000,000 + 1,84\u2026",
+   "text": "Adding all of these values: 61,616,880,000,000,000 + 1,848,506,400,000,000 + 102,694,800,000,000 + 14,377,272,000,000 + 205,389,600,000 + 41,077,920,000 + 6,161,688,000 + 1,437,727,200 + 143,772,720 + 16,431,168 = 63,582,712,699,139,088 Final Answer: ANSWER: 63582712699139088",
    "index": 63,
    "container": false,
    "muted": false
@@ -797,7 +797,7 @@ export const CARRY_TRACES: readonly CarryTrace[] = [
    "width": 168,
    "category": "CROSSCHECK",
    "label": "So the product should be congruent to 6 \u00d7 7 = 42 mod 9. 4\u2026",
-   "text": "So the product should be congruent to 6 \u00d7 7 = 42 mod 9. 42 mod 9 is 6 (since 9*4=36, 42-36=6). Now check the product we have: 63,582,712,699,139,088. Sum its digits:",
+   "text": "So the product should be congruent to 6 \u00d7 7 = 42 mod 9. 42 mod 9 is 6 (since 9*4=36, 42-36=6). Now check the product we have: 63,582,712,699,139,088. Sum its digits",
    "index": 50,
    "container": false,
    "muted": false
@@ -874,7 +874,7 @@ export const CARRY_TRACES: readonly CarryTrace[] = [
    "width": 120,
    "category": "CROSSCHECK",
    "label": "Compute 896 \u00d7 778 mod 1000. First, compute 896 \u00d7 778: But\u2026",
-   "text": "Compute 896 \u00d7 778 mod 1000. First, compute 896 \u00d7 778: But since we only need mod 1000, we can compute it as follows:",
+   "text": "Compute 896 \u00d7 778 mod 1000. First, compute 896 \u00d7 778: But since we only need mod 1000, we can compute it as follows",
    "index": 57,
    "container": false,
    "muted": false
@@ -1013,7 +1013,7 @@ export const CARRY_TRACES: readonly CarryTrace[] = [
    "width": 324,
    "category": "TASK_SETUP",
    "label": "Okay, so I need to compute the exact product of 80,379,53\u2026",
-   "text": "<think> Okay, so I need to compute the exact product of 80,379,530 and 4,621,821. Hmm, that's a pretty big multiplication. Let me think about how to approach this. I remember that multiplying large numbers can be done using the standard algorithm, but that might take a while. Maybe there's a smarter way to break it down?",
+   "text": "Okay, so I need to compute the exact product of 80,379,530 and 4,621,821. Hmm, that's a pretty big multiplication. Let me think about how to approach this. I remember that multiplying large numbers can be done using the standard algorithm, but that might take a while. Maybe there's a smarter way to break it down?",
    "index": 0,
    "container": false,
    "muted": false
@@ -1024,7 +1024,7 @@ export const CARRY_TRACES: readonly CarryTrace[] = [
    "width": 534,
    "category": "STRATEGY",
    "label": "First, let me write down the numbers: 80,379,530 \u00d7 4,621,\u2026",
-   "text": "First, let me write down the numbers: 80,379,530 \u00d7 4,621,821 ---------------- Hmm, maybe I can break down 4,621,821 into smaller components. Let me see... 4,621,821 can be expressed as 4,000,000 + 600,000 + 20,000 + 1,000 + 800 + 20 + 1. Wait, that might not be the most efficient way. Alternatively, maybe using the distributive property. Let me think of it as 4,621,821 = 4,600,000 + 21,821. Or maybe even 4,621,821 = ",
+   "text": "First, let me write down the numbers: 80,379,530 \u00d7 4,621,821 Hmm, maybe I can break down 4,621,821 into smaller components. Let me see... 4,621,821 can be expressed as 4,000,000 + 600,000 + 20,000 + 1,000 + 800 + 20 + 1. Wait, that might not be the most efficient way. Alternatively, maybe using the distributive property. Let me think of it as 4,621,821 = 4,600,000 + 21,821. Or maybe even 4,621,821 = 4,621,821. Hmm. A",
    "index": 1,
    "container": false,
    "muted": false
@@ -1046,7 +1046,7 @@ export const CARRY_TRACES: readonly CarryTrace[] = [
    "width": 173,
    "category": "STRATEGY",
    "label": "But that might take a while. Let me try to structure this\u2026",
-   "text": "But that might take a while. Let me try to structure this properly. First, note that multiplying by 4,621,821 is the same as multiplying by 4,621,821. Let me write it as:",
+   "text": "But that might take a while. Let me try to structure this properly. First, note that multiplying by 4,621,821 is the same as multiplying by 4,621,821. Let me write it as",
    "index": 3,
    "container": false,
    "muted": false
@@ -1134,7 +1134,7 @@ export const CARRY_TRACES: readonly CarryTrace[] = [
    "width": 175,
    "category": "TASK_SETUP",
    "label": "Let me write the numbers: Multiplicand: 80,379,530 Multip\u2026",
-   "text": "Let me write the numbers: Multiplicand: 80,379,530 Multiplier: 4,621,821 Let me write them vertically: 80,379,530 \u00d7 4,621,821 ----------------",
+   "text": "Let me write the numbers: Multiplicand: 80,379,530 Multiplier: 4,621,821 Let me write them vertically: 80,379,530 \u00d7 4,621,821",
    "index": 28,
    "container": false,
    "muted": false
@@ -1222,7 +1222,7 @@ export const CARRY_TRACES: readonly CarryTrace[] = [
    "width": 128,
    "category": "STRATEGY",
    "label": "Alternatively, maybe I can use the fact that 80,379,530 \u00d7\u2026",
-   "text": "Alternatively, maybe I can use the fact that 80,379,530 \u00d7 4,621,821 = 80,379,530 \u00d7 (4,600,000 + 21,821). Let me try this. So:",
+   "text": "Alternatively, maybe I can use the fact that 80,379,530 \u00d7 4,621,821 = 80,379,530 \u00d7 (4,600,000 + 21,821). Let me try this. So",
    "index": 45,
    "container": false,
    "muted": false
@@ -1353,8 +1353,8 @@ export const CARRY_TRACES: readonly CarryTrace[] = [
    "start": 14952,
    "width": 105,
    "category": "RESULT",
-   "label": "Therefore, the exact product is 371,499,719,424,970. **Fi\u2026",
-   "text": "Therefore, the exact product is 371,499,719,424,970. **Final Answer** ANSWER: 371499719424970 </think>",
+   "label": "Therefore, the exact product is 371,499,719,424,970. Fina\u2026",
+   "text": "Therefore, the exact product is 371,499,719,424,970. Final Answer ANSWER: 371499719424970",
    "index": 60,
    "container": false,
    "muted": false
@@ -1364,8 +1364,8 @@ export const CARRY_TRACES: readonly CarryTrace[] = [
    "start": 15057,
    "width": 323,
    "category": "RESULT",
-   "label": "To compute the exact product of **80,379,530** and **4,62\u2026",
-   "text": "To compute the exact product of **80,379,530** and **4,621,821**, we can break the multiplication into manageable parts using the distributive property of multiplication. The second number, 4,621,821, can be expressed as the sum of its place values: $$ 4,621,821 = 4,000,000 + 600,000 + 20,000 + 1,000 + 800 + 20 + 1 $$",
+   "label": "To compute the exact product of 80,379,530 and 4,621,821,\u2026",
+   "text": "To compute the exact product of 80,379,530 and 4,621,821, we can break the multiplication into manageable parts using the distributive property of multiplication. The second number, 4,621,821, can be expressed as the sum of its place values: 4,621,821 = 4,000,000 + 600,000 + 20,000 + 1,000 + 800 + 20 + 1",
    "index": 61,
    "container": false,
    "muted": false
@@ -1375,8 +1375,8 @@ export const CARRY_TRACES: readonly CarryTrace[] = [
    "start": 15380,
    "width": 490,
    "category": "RESULT",
-   "label": "Now, we compute the product of **80,379,530** with each o\u2026",
-   "text": "Now, we compute the product of **80,379,530** with each of these components and then sum the results: --- ### Step-by-step Breakdown: 1. **80,379,530 \u00d7 4,000,000 = 321,518,120,000,000** 2. **80,379,530 \u00d7 600,000 = 48,227,718,000,000** 3. **80,379,530 \u00d7 20,000 = 1,607,590,600,000** 4. **80,379,530 \u00d7 1,000 = 80,379,530,000** 5. **80,379,530 \u00d7 800 = 64,303,624,000** 6. **80,379,530 \u00d7 20 = 1,607,590,600** 7. **80,379,530",
+   "label": "Now, we compute the product of 80,379,530 with each of th\u2026",
+   "text": "Now, we compute the product of 80,379,530 with each of these components and then sum the results: Step-by-step Breakdown: 1. 80,379,530 \u00d7 4,000,000 = 321,518,120,000,000 2. 80,379,530 \u00d7 600,000 = 48,227,718,000,000 3. 80,379,530 \u00d7 20,000 = 1,607,590,600,000 4. 80,379,530 \u00d7 1,000 = 80,379,530,000 5. 80,379,530 \u00d7 800 = 64,303,624,000 6. 80,379,530 \u00d7 20 = 1,607,590,600 7. 80,379,530 \u00d7 1 = 80,379,530 Adding All the Resul",
    "index": 62,
    "container": false,
    "muted": false
@@ -1386,8 +1386,8 @@ export const CARRY_TRACES: readonly CarryTrace[] = [
    "start": 15870,
    "width": 497,
    "category": "RESULT",
-   "label": "Now, we sum all the computed values: $$ \\begin{align*} 32\u2026",
-   "text": "Now, we sum all the computed values: $$ \\begin{align*} 321,518,120,000,000 \\\\ + 48,227,718,000,000 &= 369,745,838,000,000 \\\\ + 1,607,590,600,000 &= 371,353,428,600,000 \\\\ + 80,379,530,000 &= 371,433,808,130,000 \\\\ + 64,303,624,000 &= 371,498,111,754,000 \\\\ + 1,607,590,600 &= 371,499,719,344,600 \\\\ + 80,379,530 &= 371,499,719,424,970 \\\\ \\end{align*} $$ --- ### Final Result: The exact product of **80,379,530** and **4,",
+   "label": "Now, we sum all the computed values: 321,518,120,000,000\u2026",
+   "text": "Now, we sum all the computed values: 321,518,120,000,000 + 48,227,718,000,000 = 369,745,838,000,000 + 1,607,590,600,000 = 371,353,428,600,000 + 80,379,530,000 = 371,433,808,130,000 + 64,303,624,000 = 371,498,111,754,000 + 1,607,590,600 = 371,499,719,344,600 + 80,379,530 = 371,499,719,424,970 Final Result: The exact product of 80,379,530 and 4,621,821 is: 371499719424970 ANSWER: 371499719424970",
    "index": 63,
    "container": false,
    "muted": false
@@ -1618,7 +1618,7 @@ export const CARRY_TRACES: readonly CarryTrace[] = [
    "width": 205,
    "category": "STRATEGY",
    "label": "Let me try that. First, write both numbers: 80,379,530 \u00d7\u2026",
-   "text": "Let me try that. First, write both numbers: 80,379,530 \u00d7 4,621,821 ---------------- We can multiply 80,379,530 by each digit of 4,621,821, starting from the rightmost digit.",
+   "text": "Let me try that. First, write both numbers: 80,379,530 \u00d7 4,621,821 We can multiply 80,379,530 by each digit of 4,621,821, starting from the rightmost digit.",
    "index": 33,
    "container": false,
    "muted": false
@@ -1911,7 +1911,7 @@ export const CARRY_TRACES: readonly CarryTrace[] = [
    "width": 309,
    "category": "TASK_SETUP",
    "label": "Okay, so I need to compute the exact product of 21028 and\u2026",
-   "text": "<think> Okay, so I need to compute the exact product of 21028 and 1506351245407. Hmm, that's a pretty big number. Let me think about how to approach this. Maybe I can break it down into smaller parts or use some multiplication techniques. Let me start by writing down the two numbers: 21028 \u00d7 1506351245407",
+   "text": "Okay, so I need to compute the exact product of 21028 and 1506351245407. Hmm, that's a pretty big number. Let me think about how to approach this. Maybe I can break it down into smaller parts or use some multiplication techniques. Let me start by writing down the two numbers: 21028 \u00d7 1506351245407",
    "index": 0,
    "container": false,
    "muted": false
@@ -2021,7 +2021,7 @@ export const CARRY_TRACES: readonly CarryTrace[] = [
    "width": 116,
    "category": "ACCUMULATE",
    "label": "Let me write them aligned: 30127024908140 + 1506351245407\u2026",
-   "text": "Let me write them aligned: 30127024908140 + 1506351245407 Let me add them: Starting from the rightmost digit:",
+   "text": "Let me write them aligned: 30127024908140 + 1506351245407 Let me add them: Starting from the rightmost digit",
    "index": 10,
    "container": false,
    "muted": false
@@ -2032,7 +2032,7 @@ export const CARRY_TRACES: readonly CarryTrace[] = [
    "width": 125,
    "category": "STATE_TRACKING",
    "label": "First number: ...8140 Second number: ...407 So, let's wri\u2026",
-   "text": "First number: ...8140 Second number: ...407 So, let's write them with the same number of digits. Let me count the digits:",
+   "text": "First number: ...8140 Second number: ...407 So, let's write them with the same number of digits. Let me count the digits",
    "index": 11,
    "container": false,
    "muted": false
@@ -2076,7 +2076,7 @@ export const CARRY_TRACES: readonly CarryTrace[] = [
    "width": 110,
    "category": "ACCUMULATE",
    "label": "Second number: 0 1 5 0 6 3 5 1 2 4 5 4 0 7 Wait, maybe I\u2026",
-   "text": "Second number: 0 1 5 0 6 3 5 1 2 4 5 4 0 7 Wait, maybe I need to align them properly. Let me write them as:",
+   "text": "Second number: 0 1 5 0 6 3 5 1 2 4 5 4 0 7 Wait, maybe I need to align them properly. Let me write them as",
    "index": 15,
    "container": false,
    "muted": false
@@ -2131,7 +2131,7 @@ export const CARRY_TRACES: readonly CarryTrace[] = [
    "width": 108,
    "category": "STRATEGY",
    "label": "Alternatively, maybe I should just compute 30127024908140\u2026",
-   "text": "Alternatively, maybe I should just compute 30127024908140 + 1506351245407. Let me convert them to numbers:",
+   "text": "Alternatively, maybe I should just compute 30127024908140 + 1506351245407. Let me convert them to numbers",
    "index": 20,
    "container": false,
    "muted": false
@@ -2153,7 +2153,7 @@ export const CARRY_TRACES: readonly CarryTrace[] = [
    "width": 110,
    "category": "RECHECK",
    "label": "Wait, let me check: 30,127,024,908,140 + 1,506,351,245,40\u2026",
-   "text": "Wait, let me check: 30,127,024,908,140 + 1,506,351,245,407. Adding 30,127,024,908,140 + 1,506,351,245,407:",
+   "text": "Wait, let me check: 30,127,024,908,140 + 1,506,351,245,407. Adding 30,127,024,908,140 + 1,506,351,245,407",
    "index": 22,
    "container": false,
    "muted": false
@@ -2318,7 +2318,7 @@ export const CARRY_TRACES: readonly CarryTrace[] = [
    "width": 134,
    "category": "STRATEGY",
    "label": "Wait, but that seems high. Let me check with another meth\u2026",
-   "text": "Wait, but that seems high. Let me check with another method. Let me compute 1,506,351,245,407 \u00d7 8: Let me do 1,506,351,245,407 \u00d7 8:",
+   "text": "Wait, but that seems high. Let me check with another method. Let me compute 1,506,351,245,407 \u00d7 8: Let me do 1,506,351,245,407 \u00d7 8",
    "index": 37,
    "container": false,
    "muted": false
@@ -2362,7 +2362,7 @@ export const CARRY_TRACES: readonly CarryTrace[] = [
    "width": 153,
    "category": "ACCUMULATE",
    "label": "Adding these two numbers: 30,127,024,908,140 +12,050,809,\u2026",
-   "text": "Adding these two numbers: 30,127,024,908,140 +12,050,809,963,256 = 42,177,834,871,396 Wait, let me check: 30,127,024,908,140 + 12,050,809,963,256:",
+   "text": "Adding these two numbers: 30,127,024,908,140 +12,050,809,963,256 = 42,177,834,871,396 Wait, let me check: 30,127,024,908,140 + 12,050,809,963,256",
    "index": 41,
    "container": false,
    "muted": false
@@ -2395,7 +2395,7 @@ export const CARRY_TRACES: readonly CarryTrace[] = [
    "width": 155,
    "category": "STATE_TRACKING",
    "label": "So the second part, 28 \u00d7 1,506,351,245,407 = 42,177,834,8\u2026",
-   "text": "So the second part, 28 \u00d7 1,506,351,245,407 = 42,177,834,871,396. Now, the total product is the first part (21000 \u00d7 ...) plus the second part (28 \u00d7 ...):",
+   "text": "So the second part, 28 \u00d7 1,506,351,245,407 = 42,177,834,871,396. Now, the total product is the first part (21000 \u00d7 ...) plus the second part (28 \u00d7 ...)",
    "index": 44,
    "container": false,
    "muted": false
@@ -2417,7 +2417,7 @@ export const CARRY_TRACES: readonly CarryTrace[] = [
    "width": 109,
    "category": "ACCUMULATE",
    "label": "Let me write them aligned: 31,633,376,153,547,000 + 42,17\u2026",
-   "text": "Let me write them aligned: 31,633,376,153,547,000 + 42,177,834,871,396 = ? Let me add the numbers:",
+   "text": "Let me write them aligned: 31,633,376,153,547,000 + 42,177,834,871,396 = ? Let me add the numbers",
    "index": 46,
    "container": false,
    "muted": false
@@ -2571,7 +2571,7 @@ export const CARRY_TRACES: readonly CarryTrace[] = [
    "width": 352,
    "category": "CROSSCHECK",
    "label": "Adding them: (3.1633376153547 + 4.2177834871396) \u00d7 10^13\u2026",
-   "text": "Adding them: (3.1633376153547 + 4.2177834871396) \u00d7 10^13 = 7.3811211024943 \u00d7 10^13 = 73,811,211,024,943 \u00d7 10^0? Wait, no. Wait, 7.3811211024943 \u00d7 10^13 is 73,811,211,024,943,000? Wait, no. Wait, 7.3811211024943 \u00d7 10^13 is 73,811,211,024,943,000? Wait, no. Wait, 10^13 is 10,000,000,000,000. So 7.3811211024943 \u00d7 10^13 is 73,811,211,024,943. Wait, no:",
+   "text": "Adding them: (3.1633376153547 + 4.2177834871396) \u00d7 10^13 = 7.3811211024943 \u00d7 10^13 = 73,811,211,024,943 \u00d7 10^0? Wait, no. Wait, 7.3811211024943 \u00d7 10^13 is 73,811,211,024,943,000? Wait, no. Wait, 7.3811211024943 \u00d7 10^13 is 73,811,211,024,943,000? Wait, no. Wait, 10^13 is 10,000,000,000,000. So 7.3811211024943 \u00d7 10^13 is 73,811,211,024,943. Wait, no",
    "index": 60,
    "container": false,
    "muted": false
@@ -2604,7 +2604,7 @@ export const CARRY_TRACES: readonly CarryTrace[] = [
    "width": 115,
    "category": "CROSSCHECK",
    "label": "Wait, this suggests that my previous addition was wrong.\u2026",
-   "text": "Wait, this suggests that my previous addition was wrong. So where did I go wrong? Let me re-express the numbers:",
+   "text": "Wait, this suggests that my previous addition was wrong. So where did I go wrong? Let me re-express the numbers",
    "index": 63,
    "container": false,
    "muted": false
@@ -2780,7 +2780,7 @@ export const CARRY_TRACES: readonly CarryTrace[] = [
    "width": 113,
    "category": "ACCUMULATE",
    "label": "Wait, 31,633,376,153,547,000 + 42,177,834,871,396 = ? Let\u2026",
-   "text": "Wait, 31,633,376,153,547,000 + 42,177,834,871,396 = ? Let me add 42,177,834,871,396 to 31,633,376,153,547,000:",
+   "text": "Wait, 31,633,376,153,547,000 + 42,177,834,871,396 = ? Let me add 42,177,834,871,396 to 31,633,376,153,547,000",
    "index": 79,
    "container": false,
    "muted": false
@@ -2813,7 +2813,7 @@ export const CARRY_TRACES: readonly CarryTrace[] = [
    "width": 140,
    "category": "ACCUMULATE",
    "label": "Let me add the numbers: Start with 31,633,376,153,547,000\u2026",
-   "text": "Let me add the numbers: Start with 31,633,376,153,547,000 + 42,177,834,871,396. Let me add 42,177,834,871,396 to 31,633,376,153,547,000:",
+   "text": "Let me add the numbers: Start with 31,633,376,153,547,000 + 42,177,834,871,396. Let me add 42,177,834,871,396 to 31,633,376,153,547,000",
    "index": 82,
    "container": false,
    "muted": false
@@ -2835,7 +2835,7 @@ export const CARRY_TRACES: readonly CarryTrace[] = [
    "width": 321,
    "category": "CROSSCHECK",
    "label": "But earlier when I did the decimal conversion, I thought\u2026",
-   "text": "But earlier when I did the decimal conversion, I thought that 3.1633... \u00d7 10^16 + 4.2177... \u00d7 10^13 = 3.1637... \u00d7 10^16, which would be 31,637,593,937,034,000, but that's not matching with 31,675,553,988,418,396. Wait, why is there a discrepancy? Ah, I think I made a mistake in the decimal conversion. Let me recheck:",
+   "text": "But earlier when I did the decimal conversion, I thought that 3.1633... \u00d7 10^16 + 4.2177... \u00d7 10^13 = 3.1637... \u00d7 10^16, which would be 31,637,593,937,034,000, but that's not matching with 31,675,553,988,418,396. Wait, why is there a discrepancy? Ah, I think I made a mistake in the decimal conversion. Let me recheck",
    "index": 84,
    "container": false,
    "muted": false
@@ -3022,7 +3022,7 @@ export const CARRY_TRACES: readonly CarryTrace[] = [
    "width": 141,
    "category": "STATE_TRACKING",
    "label": "Adding: Start from the right: The first number has 17 dig\u2026",
-   "text": "Adding: Start from the right: The first number has 17 digits, the second has 15 digits. Let me write them with the same number of digits:",
+   "text": "Adding: Start from the right: The first number has 17 digits, the second has 15 digits. Let me write them with the same number of digits",
    "index": 101,
    "container": false,
    "muted": false
@@ -3176,7 +3176,7 @@ export const CARRY_TRACES: readonly CarryTrace[] = [
    "width": 126,
    "category": "CROSSCHECK",
    "label": "Wait, this suggests that there is a mistake in the additi\u2026",
-   "text": "Wait, this suggests that there is a mistake in the addition. Let me check the addition again. Let me write the two numbers:",
+   "text": "Wait, this suggests that there is a mistake in the addition. Let me check the addition again. Let me write the two numbers",
    "index": 115,
    "container": false,
    "muted": false
@@ -3209,7 +3209,7 @@ export const CARRY_TRACES: readonly CarryTrace[] = [
    "width": 116,
    "category": "ACCUMULATE",
    "label": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000:\u2026",
-   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000:",
+   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000",
    "index": 118,
    "container": false,
    "muted": false
@@ -3242,7 +3242,7 @@ export const CARRY_TRACES: readonly CarryTrace[] = [
    "width": 116,
    "category": "ACCUMULATE",
    "label": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000:\u2026",
-   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000:",
+   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000",
    "index": 120,
    "container": false,
    "muted": false
@@ -3253,7 +3253,7 @@ export const CARRY_TRACES: readonly CarryTrace[] = [
    "width": 116,
    "category": "ACCUMULATE",
    "label": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000:\u2026",
-   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000:",
+   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000",
    "index": 121,
    "container": false,
    "muted": false
@@ -3264,7 +3264,7 @@ export const CARRY_TRACES: readonly CarryTrace[] = [
    "width": 116,
    "category": "ACCUMULATE",
    "label": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000:\u2026",
-   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000:",
+   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000",
    "index": 122,
    "container": false,
    "muted": false
@@ -3275,7 +3275,7 @@ export const CARRY_TRACES: readonly CarryTrace[] = [
    "width": 116,
    "category": "ACCUMULATE",
    "label": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000:\u2026",
-   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000:",
+   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000",
    "index": 123,
    "container": false,
    "muted": false
@@ -3286,7 +3286,7 @@ export const CARRY_TRACES: readonly CarryTrace[] = [
    "width": 116,
    "category": "ACCUMULATE",
    "label": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000:\u2026",
-   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000:",
+   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000",
    "index": 124,
    "container": false,
    "muted": false
@@ -3297,7 +3297,7 @@ export const CARRY_TRACES: readonly CarryTrace[] = [
    "width": 116,
    "category": "ACCUMULATE",
    "label": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000:\u2026",
-   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000:",
+   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000",
    "index": 125,
    "container": false,
    "muted": false
@@ -3308,7 +3308,7 @@ export const CARRY_TRACES: readonly CarryTrace[] = [
    "width": 116,
    "category": "ACCUMULATE",
    "label": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000:\u2026",
-   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000:",
+   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000",
    "index": 126,
    "container": false,
    "muted": false
@@ -3319,7 +3319,7 @@ export const CARRY_TRACES: readonly CarryTrace[] = [
    "width": 116,
    "category": "ACCUMULATE",
    "label": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000:\u2026",
-   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000:",
+   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000",
    "index": 127,
    "container": false,
    "muted": false
@@ -3330,7 +3330,7 @@ export const CARRY_TRACES: readonly CarryTrace[] = [
    "width": 116,
    "category": "ACCUMULATE",
    "label": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000:\u2026",
-   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000:",
+   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000",
    "index": 128,
    "container": false,
    "muted": false
@@ -3341,7 +3341,7 @@ export const CARRY_TRACES: readonly CarryTrace[] = [
    "width": 116,
    "category": "ACCUMULATE",
    "label": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000:\u2026",
-   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000:",
+   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000",
    "index": 129,
    "container": false,
    "muted": false
@@ -3352,7 +3352,7 @@ export const CARRY_TRACES: readonly CarryTrace[] = [
    "width": 116,
    "category": "ACCUMULATE",
    "label": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000:\u2026",
-   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000:",
+   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000",
    "index": 130,
    "container": false,
    "muted": false
@@ -3363,7 +3363,7 @@ export const CARRY_TRACES: readonly CarryTrace[] = [
    "width": 116,
    "category": "ACCUMULATE",
    "label": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000:\u2026",
-   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000:",
+   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000",
    "index": 131,
    "container": false,
    "muted": false
@@ -3374,7 +3374,7 @@ export const CARRY_TRACES: readonly CarryTrace[] = [
    "width": 116,
    "category": "ACCUMULATE",
    "label": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000:\u2026",
-   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000:",
+   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000",
    "index": 132,
    "container": false,
    "muted": false
@@ -3385,7 +3385,7 @@ export const CARRY_TRACES: readonly CarryTrace[] = [
    "width": 116,
    "category": "ACCUMULATE",
    "label": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000:\u2026",
-   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000:",
+   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000",
    "index": 133,
    "container": false,
    "muted": false
@@ -3396,7 +3396,7 @@ export const CARRY_TRACES: readonly CarryTrace[] = [
    "width": 116,
    "category": "ACCUMULATE",
    "label": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000:\u2026",
-   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000:",
+   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000",
    "index": 134,
    "container": false,
    "muted": false
@@ -3407,7 +3407,7 @@ export const CARRY_TRACES: readonly CarryTrace[] = [
    "width": 116,
    "category": "ACCUMULATE",
    "label": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000:\u2026",
-   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000:",
+   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000",
    "index": 135,
    "container": false,
    "muted": false
@@ -3418,7 +3418,7 @@ export const CARRY_TRACES: readonly CarryTrace[] = [
    "width": 116,
    "category": "ACCUMULATE",
    "label": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000:\u2026",
-   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000:",
+   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000",
    "index": 136,
    "container": false,
    "muted": false
@@ -3429,7 +3429,7 @@ export const CARRY_TRACES: readonly CarryTrace[] = [
    "width": 116,
    "category": "ACCUMULATE",
    "label": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000:\u2026",
-   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000:",
+   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000",
    "index": 137,
    "container": false,
    "muted": false
@@ -3440,7 +3440,7 @@ export const CARRY_TRACES: readonly CarryTrace[] = [
    "width": 116,
    "category": "ACCUMULATE",
    "label": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000:\u2026",
-   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000:",
+   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000",
    "index": 138,
    "container": false,
    "muted": false
@@ -3451,7 +3451,7 @@ export const CARRY_TRACES: readonly CarryTrace[] = [
    "width": 116,
    "category": "ACCUMULATE",
    "label": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000:\u2026",
-   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000:",
+   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000",
    "index": 139,
    "container": false,
    "muted": false
@@ -3462,7 +3462,7 @@ export const CARRY_TRACES: readonly CarryTrace[] = [
    "width": 116,
    "category": "ACCUMULATE",
    "label": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000:\u2026",
-   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000:",
+   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000",
    "index": 140,
    "container": false,
    "muted": false
@@ -3473,7 +3473,7 @@ export const CARRY_TRACES: readonly CarryTrace[] = [
    "width": 116,
    "category": "ACCUMULATE",
    "label": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000:\u2026",
-   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000:",
+   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000",
    "index": 141,
    "container": false,
    "muted": false
@@ -3484,7 +3484,7 @@ export const CARRY_TRACES: readonly CarryTrace[] = [
    "width": 116,
    "category": "ACCUMULATE",
    "label": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000:\u2026",
-   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000:",
+   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000",
    "index": 142,
    "container": false,
    "muted": false
@@ -3495,7 +3495,7 @@ export const CARRY_TRACES: readonly CarryTrace[] = [
    "width": 116,
    "category": "ACCUMULATE",
    "label": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000:\u2026",
-   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000:",
+   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000",
    "index": 143,
    "container": false,
    "muted": false
@@ -3506,7 +3506,7 @@ export const CARRY_TRACES: readonly CarryTrace[] = [
    "width": 116,
    "category": "ACCUMULATE",
    "label": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000:\u2026",
-   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000:",
+   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000",
    "index": 144,
    "container": false,
    "muted": false
@@ -3517,7 +3517,7 @@ export const CARRY_TRACES: readonly CarryTrace[] = [
    "width": 116,
    "category": "ACCUMULATE",
    "label": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000:\u2026",
-   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000:",
+   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000",
    "index": 145,
    "container": false,
    "muted": false
@@ -3528,7 +3528,7 @@ export const CARRY_TRACES: readonly CarryTrace[] = [
    "width": 116,
    "category": "ACCUMULATE",
    "label": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000:\u2026",
-   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000:",
+   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000",
    "index": 146,
    "container": false,
    "muted": false
@@ -3539,7 +3539,7 @@ export const CARRY_TRACES: readonly CarryTrace[] = [
    "width": 116,
    "category": "ACCUMULATE",
    "label": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000:\u2026",
-   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000:",
+   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000",
    "index": 147,
    "container": false,
    "muted": false
@@ -3550,7 +3550,7 @@ export const CARRY_TRACES: readonly CarryTrace[] = [
    "width": 116,
    "category": "ACCUMULATE",
    "label": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000:\u2026",
-   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000:",
+   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000",
    "index": 148,
    "container": false,
    "muted": false
@@ -3561,7 +3561,7 @@ export const CARRY_TRACES: readonly CarryTrace[] = [
    "width": 116,
    "category": "ACCUMULATE",
    "label": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000:\u2026",
-   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000:",
+   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000",
    "index": 149,
    "container": false,
    "muted": false
@@ -3572,7 +3572,7 @@ export const CARRY_TRACES: readonly CarryTrace[] = [
    "width": 116,
    "category": "ACCUMULATE",
    "label": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000:\u2026",
-   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000:",
+   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000",
    "index": 150,
    "container": false,
    "muted": false
@@ -3583,7 +3583,7 @@ export const CARRY_TRACES: readonly CarryTrace[] = [
    "width": 116,
    "category": "ACCUMULATE",
    "label": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000:\u2026",
-   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000:",
+   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000",
    "index": 151,
    "container": false,
    "muted": false
@@ -3594,7 +3594,7 @@ export const CARRY_TRACES: readonly CarryTrace[] = [
    "width": 116,
    "category": "ACCUMULATE",
    "label": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000:\u2026",
-   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000:",
+   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000",
    "index": 152,
    "container": false,
    "muted": false
@@ -3605,7 +3605,7 @@ export const CARRY_TRACES: readonly CarryTrace[] = [
    "width": 116,
    "category": "ACCUMULATE",
    "label": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000:\u2026",
-   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000:",
+   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000",
    "index": 153,
    "container": false,
    "muted": false
@@ -3616,7 +3616,7 @@ export const CARRY_TRACES: readonly CarryTrace[] = [
    "width": 116,
    "category": "ACCUMULATE",
    "label": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000:\u2026",
-   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000:",
+   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000",
    "index": 154,
    "container": false,
    "muted": false
@@ -3627,7 +3627,7 @@ export const CARRY_TRACES: readonly CarryTrace[] = [
    "width": 116,
    "category": "ACCUMULATE",
    "label": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000:\u2026",
-   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000:",
+   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000",
    "index": 155,
    "container": false,
    "muted": false
@@ -3638,7 +3638,7 @@ export const CARRY_TRACES: readonly CarryTrace[] = [
    "width": 116,
    "category": "ACCUMULATE",
    "label": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000:\u2026",
-   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000:",
+   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000",
    "index": 156,
    "container": false,
    "muted": false
@@ -3649,7 +3649,7 @@ export const CARRY_TRACES: readonly CarryTrace[] = [
    "width": 116,
    "category": "ACCUMULATE",
    "label": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000:\u2026",
-   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000:",
+   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000",
    "index": 157,
    "container": false,
    "muted": false
@@ -3660,7 +3660,7 @@ export const CARRY_TRACES: readonly CarryTrace[] = [
    "width": 116,
    "category": "ACCUMULATE",
    "label": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000:\u2026",
-   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000:",
+   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000",
    "index": 158,
    "container": false,
    "muted": false
@@ -3671,7 +3671,7 @@ export const CARRY_TRACES: readonly CarryTrace[] = [
    "width": 116,
    "category": "ACCUMULATE",
    "label": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000:\u2026",
-   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000:",
+   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000",
    "index": 159,
    "container": false,
    "muted": false
@@ -3682,7 +3682,7 @@ export const CARRY_TRACES: readonly CarryTrace[] = [
    "width": 116,
    "category": "ACCUMULATE",
    "label": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000:\u2026",
-   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000:",
+   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000",
    "index": 160,
    "container": false,
    "muted": false
@@ -3693,7 +3693,7 @@ export const CARRY_TRACES: readonly CarryTrace[] = [
    "width": 116,
    "category": "ACCUMULATE",
    "label": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000:\u2026",
-   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000:",
+   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000",
    "index": 161,
    "container": false,
    "muted": false
@@ -3704,7 +3704,7 @@ export const CARRY_TRACES: readonly CarryTrace[] = [
    "width": 116,
    "category": "ACCUMULATE",
    "label": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000:\u2026",
-   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000:",
+   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000",
    "index": 162,
    "container": false,
    "muted": false
@@ -3715,7 +3715,7 @@ export const CARRY_TRACES: readonly CarryTrace[] = [
    "width": 116,
    "category": "ACCUMULATE",
    "label": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000:\u2026",
-   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000:",
+   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000",
    "index": 163,
    "container": false,
    "muted": false
@@ -3726,7 +3726,7 @@ export const CARRY_TRACES: readonly CarryTrace[] = [
    "width": 116,
    "category": "ACCUMULATE",
    "label": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000:\u2026",
-   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000:",
+   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000",
    "index": 164,
    "container": false,
    "muted": false
@@ -3737,7 +3737,7 @@ export const CARRY_TRACES: readonly CarryTrace[] = [
    "width": 116,
    "category": "ACCUMULATE",
    "label": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000:\u2026",
-   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000:",
+   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000",
    "index": 165,
    "container": false,
    "muted": false
@@ -3748,7 +3748,7 @@ export const CARRY_TRACES: readonly CarryTrace[] = [
    "width": 116,
    "category": "ACCUMULATE",
    "label": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000:\u2026",
-   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000:",
+   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000",
    "index": 166,
    "container": false,
    "muted": false
@@ -3759,7 +3759,7 @@ export const CARRY_TRACES: readonly CarryTrace[] = [
    "width": 116,
    "category": "ACCUMULATE",
    "label": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000:\u2026",
-   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000:",
+   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000",
    "index": 167,
    "container": false,
    "muted": false
@@ -3770,7 +3770,7 @@ export const CARRY_TRACES: readonly CarryTrace[] = [
    "width": 116,
    "category": "ACCUMULATE",
    "label": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000:\u2026",
-   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000:",
+   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000",
    "index": 168,
    "container": false,
    "muted": false
@@ -3781,7 +3781,7 @@ export const CARRY_TRACES: readonly CarryTrace[] = [
    "width": 116,
    "category": "ACCUMULATE",
    "label": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000:\u2026",
-   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000:",
+   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000",
    "index": 169,
    "container": false,
    "muted": false
@@ -3792,7 +3792,7 @@ export const CARRY_TRACES: readonly CarryTrace[] = [
    "width": 116,
    "category": "ACCUMULATE",
    "label": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000:\u2026",
-   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000:",
+   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000",
    "index": 170,
    "container": false,
    "muted": false
@@ -3803,7 +3803,7 @@ export const CARRY_TRACES: readonly CarryTrace[] = [
    "width": 116,
    "category": "ACCUMULATE",
    "label": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000:\u2026",
-   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000:",
+   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000",
    "index": 171,
    "container": false,
    "muted": false
@@ -3814,7 +3814,7 @@ export const CARRY_TRACES: readonly CarryTrace[] = [
    "width": 116,
    "category": "ACCUMULATE",
    "label": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000:\u2026",
-   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000:",
+   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000",
    "index": 172,
    "container": false,
    "muted": false
@@ -3825,7 +3825,7 @@ export const CARRY_TRACES: readonly CarryTrace[] = [
    "width": 116,
    "category": "ACCUMULATE",
    "label": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000:\u2026",
-   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000:",
+   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000",
    "index": 173,
    "container": false,
    "muted": false
@@ -3836,7 +3836,7 @@ export const CARRY_TRACES: readonly CarryTrace[] = [
    "width": 116,
    "category": "ACCUMULATE",
    "label": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000:\u2026",
-   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000:",
+   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000",
    "index": 174,
    "container": false,
    "muted": false
@@ -3847,7 +3847,7 @@ export const CARRY_TRACES: readonly CarryTrace[] = [
    "width": 116,
    "category": "ACCUMULATE",
    "label": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000:\u2026",
-   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000:",
+   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000",
    "index": 175,
    "container": false,
    "muted": false
@@ -3858,7 +3858,7 @@ export const CARRY_TRACES: readonly CarryTrace[] = [
    "width": 116,
    "category": "ACCUMULATE",
    "label": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000:\u2026",
-   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000:",
+   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000",
    "index": 176,
    "container": false,
    "muted": false
@@ -3869,7 +3869,7 @@ export const CARRY_TRACES: readonly CarryTrace[] = [
    "width": 116,
    "category": "ACCUMULATE",
    "label": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000:\u2026",
-   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000:",
+   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000",
    "index": 177,
    "container": false,
    "muted": false
@@ -3880,7 +3880,7 @@ export const CARRY_TRACES: readonly CarryTrace[] = [
    "width": 116,
    "category": "ACCUMULATE",
    "label": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000:\u2026",
-   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000:",
+   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000",
    "index": 178,
    "container": false,
    "muted": false
@@ -3891,7 +3891,7 @@ export const CARRY_TRACES: readonly CarryTrace[] = [
    "width": 116,
    "category": "ACCUMULATE",
    "label": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000:\u2026",
-   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000:",
+   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000",
    "index": 179,
    "container": false,
    "muted": false
@@ -3902,7 +3902,7 @@ export const CARRY_TRACES: readonly CarryTrace[] = [
    "width": 116,
    "category": "ACCUMULATE",
    "label": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000:\u2026",
-   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000:",
+   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000",
    "index": 180,
    "container": false,
    "muted": false
@@ -3913,7 +3913,7 @@ export const CARRY_TRACES: readonly CarryTrace[] = [
    "width": 116,
    "category": "ACCUMULATE",
    "label": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000:\u2026",
-   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000:",
+   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000",
    "index": 181,
    "container": false,
    "muted": false
@@ -3924,7 +3924,7 @@ export const CARRY_TRACES: readonly CarryTrace[] = [
    "width": 116,
    "category": "ACCUMULATE",
    "label": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000:\u2026",
-   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000:",
+   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000",
    "index": 182,
    "container": false,
    "muted": false
@@ -3935,7 +3935,7 @@ export const CARRY_TRACES: readonly CarryTrace[] = [
    "width": 116,
    "category": "ACCUMULATE",
    "label": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000:\u2026",
-   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000:",
+   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000",
    "index": 183,
    "container": false,
    "muted": false
@@ -3946,7 +3946,7 @@ export const CARRY_TRACES: readonly CarryTrace[] = [
    "width": 116,
    "category": "ACCUMULATE",
    "label": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000:\u2026",
-   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000:",
+   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000",
    "index": 184,
    "container": false,
    "muted": false
@@ -3957,7 +3957,7 @@ export const CARRY_TRACES: readonly CarryTrace[] = [
    "width": 116,
    "category": "ACCUMULATE",
    "label": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000:\u2026",
-   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000:",
+   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000",
    "index": 185,
    "container": false,
    "muted": false
@@ -3968,7 +3968,7 @@ export const CARRY_TRACES: readonly CarryTrace[] = [
    "width": 116,
    "category": "ACCUMULATE",
    "label": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000:\u2026",
-   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000:",
+   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000",
    "index": 186,
    "container": false,
    "muted": false
@@ -3979,7 +3979,7 @@ export const CARRY_TRACES: readonly CarryTrace[] = [
    "width": 116,
    "category": "ACCUMULATE",
    "label": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000:\u2026",
-   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000:",
+   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000",
    "index": 187,
    "container": false,
    "muted": false
@@ -3990,7 +3990,7 @@ export const CARRY_TRACES: readonly CarryTrace[] = [
    "width": 116,
    "category": "ACCUMULATE",
    "label": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000:\u2026",
-   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000:",
+   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000",
    "index": 188,
    "container": false,
    "muted": false
@@ -4001,7 +4001,7 @@ export const CARRY_TRACES: readonly CarryTrace[] = [
    "width": 116,
    "category": "ACCUMULATE",
    "label": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000:\u2026",
-   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000:",
+   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000",
    "index": 189,
    "container": false,
    "muted": false
@@ -4012,7 +4012,7 @@ export const CARRY_TRACES: readonly CarryTrace[] = [
    "width": 116,
    "category": "ACCUMULATE",
    "label": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000:\u2026",
-   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000:",
+   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000",
    "index": 190,
    "container": false,
    "muted": false
@@ -4023,7 +4023,7 @@ export const CARRY_TRACES: readonly CarryTrace[] = [
    "width": 116,
    "category": "ACCUMULATE",
    "label": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000:\u2026",
-   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000:",
+   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000",
    "index": 191,
    "container": false,
    "muted": false
@@ -4034,7 +4034,7 @@ export const CARRY_TRACES: readonly CarryTrace[] = [
    "width": 116,
    "category": "ACCUMULATE",
    "label": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000:\u2026",
-   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000:",
+   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000",
    "index": 192,
    "container": false,
    "muted": false
@@ -4045,7 +4045,7 @@ export const CARRY_TRACES: readonly CarryTrace[] = [
    "width": 116,
    "category": "ACCUMULATE",
    "label": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000:\u2026",
-   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000:",
+   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000",
    "index": 193,
    "container": false,
    "muted": false
@@ -4056,7 +4056,7 @@ export const CARRY_TRACES: readonly CarryTrace[] = [
    "width": 116,
    "category": "ACCUMULATE",
    "label": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000:\u2026",
-   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000:",
+   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000",
    "index": 194,
    "container": false,
    "muted": false
@@ -4067,7 +4067,7 @@ export const CARRY_TRACES: readonly CarryTrace[] = [
    "width": 116,
    "category": "ACCUMULATE",
    "label": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000:\u2026",
-   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000:",
+   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000",
    "index": 195,
    "container": false,
    "muted": false
@@ -4078,7 +4078,7 @@ export const CARRY_TRACES: readonly CarryTrace[] = [
    "width": 116,
    "category": "ACCUMULATE",
    "label": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000:\u2026",
-   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000:",
+   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000",
    "index": 196,
    "container": false,
    "muted": false
@@ -4089,7 +4089,7 @@ export const CARRY_TRACES: readonly CarryTrace[] = [
    "width": 116,
    "category": "ACCUMULATE",
    "label": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000:\u2026",
-   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000:",
+   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000",
    "index": 197,
    "container": false,
    "muted": false
@@ -4100,7 +4100,7 @@ export const CARRY_TRACES: readonly CarryTrace[] = [
    "width": 116,
    "category": "ACCUMULATE",
    "label": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000:\u2026",
-   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000:",
+   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000",
    "index": 198,
    "container": false,
    "muted": false
@@ -4111,7 +4111,7 @@ export const CARRY_TRACES: readonly CarryTrace[] = [
    "width": 116,
    "category": "ACCUMULATE",
    "label": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000:\u2026",
-   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000:",
+   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000",
    "index": 199,
    "container": false,
    "muted": false
@@ -4122,7 +4122,7 @@ export const CARRY_TRACES: readonly CarryTrace[] = [
    "width": 116,
    "category": "ACCUMULATE",
    "label": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000:\u2026",
-   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000:",
+   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000",
    "index": 200,
    "container": false,
    "muted": false
@@ -4133,7 +4133,7 @@ export const CARRY_TRACES: readonly CarryTrace[] = [
    "width": 116,
    "category": "ACCUMULATE",
    "label": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000:\u2026",
-   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000:",
+   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000",
    "index": 201,
    "container": false,
    "muted": false
@@ -4144,7 +4144,7 @@ export const CARRY_TRACES: readonly CarryTrace[] = [
    "width": 116,
    "category": "ACCUMULATE",
    "label": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000:\u2026",
-   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000:",
+   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000",
    "index": 202,
    "container": false,
    "muted": false
@@ -4155,7 +4155,7 @@ export const CARRY_TRACES: readonly CarryTrace[] = [
    "width": 116,
    "category": "ACCUMULATE",
    "label": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000:\u2026",
-   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000:",
+   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000",
    "index": 203,
    "container": false,
    "muted": false
@@ -4166,7 +4166,7 @@ export const CARRY_TRACES: readonly CarryTrace[] = [
    "width": 116,
    "category": "ACCUMULATE",
    "label": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000:\u2026",
-   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000:",
+   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000",
    "index": 204,
    "container": false,
    "muted": false
@@ -4177,7 +4177,7 @@ export const CARRY_TRACES: readonly CarryTrace[] = [
    "width": 116,
    "category": "ACCUMULATE",
    "label": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000:\u2026",
-   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000:",
+   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000",
    "index": 205,
    "container": false,
    "muted": false
@@ -4188,7 +4188,7 @@ export const CARRY_TRACES: readonly CarryTrace[] = [
    "width": 116,
    "category": "ACCUMULATE",
    "label": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000:\u2026",
-   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000:",
+   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000",
    "index": 206,
    "container": false,
    "muted": false
@@ -4199,7 +4199,7 @@ export const CARRY_TRACES: readonly CarryTrace[] = [
    "width": 116,
    "category": "ACCUMULATE",
    "label": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000:\u2026",
-   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000:",
+   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000",
    "index": 207,
    "container": false,
    "muted": false
@@ -4210,7 +4210,7 @@ export const CARRY_TRACES: readonly CarryTrace[] = [
    "width": 116,
    "category": "ACCUMULATE",
    "label": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000:\u2026",
-   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000:",
+   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000",
    "index": 208,
    "container": false,
    "muted": false
@@ -4221,7 +4221,7 @@ export const CARRY_TRACES: readonly CarryTrace[] = [
    "width": 116,
    "category": "ACCUMULATE",
    "label": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000:\u2026",
-   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000:",
+   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000",
    "index": 209,
    "container": false,
    "muted": false
@@ -4232,7 +4232,7 @@ export const CARRY_TRACES: readonly CarryTrace[] = [
    "width": 116,
    "category": "ACCUMULATE",
    "label": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000:\u2026",
-   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000:",
+   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000",
    "index": 210,
    "container": false,
    "muted": false
@@ -4243,7 +4243,7 @@ export const CARRY_TRACES: readonly CarryTrace[] = [
    "width": 116,
    "category": "ACCUMULATE",
    "label": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000:\u2026",
-   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000:",
+   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000",
    "index": 211,
    "container": false,
    "muted": false
@@ -4254,7 +4254,7 @@ export const CARRY_TRACES: readonly CarryTrace[] = [
    "width": 116,
    "category": "ACCUMULATE",
    "label": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000:\u2026",
-   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000:",
+   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000",
    "index": 212,
    "container": false,
    "muted": false
@@ -4265,7 +4265,7 @@ export const CARRY_TRACES: readonly CarryTrace[] = [
    "width": 116,
    "category": "ACCUMULATE",
    "label": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000:\u2026",
-   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000:",
+   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000",
    "index": 213,
    "container": false,
    "muted": false
@@ -4276,7 +4276,7 @@ export const CARRY_TRACES: readonly CarryTrace[] = [
    "width": 116,
    "category": "ACCUMULATE",
    "label": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000:\u2026",
-   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000:",
+   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000",
    "index": 214,
    "container": false,
    "muted": false
@@ -4287,7 +4287,7 @@ export const CARRY_TRACES: readonly CarryTrace[] = [
    "width": 116,
    "category": "ACCUMULATE",
    "label": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000:\u2026",
-   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000:",
+   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000",
    "index": 215,
    "container": false,
    "muted": false
@@ -4298,7 +4298,7 @@ export const CARRY_TRACES: readonly CarryTrace[] = [
    "width": 116,
    "category": "ACCUMULATE",
    "label": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000:\u2026",
-   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000:",
+   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000",
    "index": 216,
    "container": false,
    "muted": false
@@ -4309,7 +4309,7 @@ export const CARRY_TRACES: readonly CarryTrace[] = [
    "width": 116,
    "category": "ACCUMULATE",
    "label": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000:\u2026",
-   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000:",
+   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000",
    "index": 217,
    "container": false,
    "muted": false
@@ -4320,7 +4320,7 @@ export const CARRY_TRACES: readonly CarryTrace[] = [
    "width": 116,
    "category": "ACCUMULATE",
    "label": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000:\u2026",
-   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000:",
+   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000",
    "index": 218,
    "container": false,
    "muted": false
@@ -4331,7 +4331,7 @@ export const CARRY_TRACES: readonly CarryTrace[] = [
    "width": 116,
    "category": "ACCUMULATE",
    "label": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000:\u2026",
-   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000:",
+   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000",
    "index": 219,
    "container": false,
    "muted": false
@@ -4342,7 +4342,7 @@ export const CARRY_TRACES: readonly CarryTrace[] = [
    "width": 116,
    "category": "ACCUMULATE",
    "label": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000:\u2026",
-   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000:",
+   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000",
    "index": 220,
    "container": false,
    "muted": false
@@ -4353,7 +4353,7 @@ export const CARRY_TRACES: readonly CarryTrace[] = [
    "width": 116,
    "category": "ACCUMULATE",
    "label": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000:\u2026",
-   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000:",
+   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000",
    "index": 221,
    "container": false,
    "muted": false
@@ -4364,7 +4364,7 @@ export const CARRY_TRACES: readonly CarryTrace[] = [
    "width": 116,
    "category": "ACCUMULATE",
    "label": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000:\u2026",
-   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000:",
+   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000",
    "index": 222,
    "container": false,
    "muted": false
@@ -4375,7 +4375,7 @@ export const CARRY_TRACES: readonly CarryTrace[] = [
    "width": 116,
    "category": "ACCUMULATE",
    "label": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000:\u2026",
-   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000:",
+   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000",
    "index": 223,
    "container": false,
    "muted": false
@@ -4386,7 +4386,7 @@ export const CARRY_TRACES: readonly CarryTrace[] = [
    "width": 116,
    "category": "ACCUMULATE",
    "label": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000:\u2026",
-   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000:",
+   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000",
    "index": 224,
    "container": false,
    "muted": false
@@ -4397,7 +4397,7 @@ export const CARRY_TRACES: readonly CarryTrace[] = [
    "width": 116,
    "category": "ACCUMULATE",
    "label": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000:\u2026",
-   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000:",
+   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000",
    "index": 225,
    "container": false,
    "muted": false
@@ -4408,7 +4408,7 @@ export const CARRY_TRACES: readonly CarryTrace[] = [
    "width": 116,
    "category": "ACCUMULATE",
    "label": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000:\u2026",
-   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000:",
+   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000",
    "index": 226,
    "container": false,
    "muted": false
@@ -4419,7 +4419,7 @@ export const CARRY_TRACES: readonly CarryTrace[] = [
    "width": 116,
    "category": "ACCUMULATE",
    "label": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000:\u2026",
-   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000:",
+   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000",
    "index": 227,
    "container": false,
    "muted": false
@@ -4430,7 +4430,7 @@ export const CARRY_TRACES: readonly CarryTrace[] = [
    "width": 116,
    "category": "ACCUMULATE",
    "label": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000:\u2026",
-   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000:",
+   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000",
    "index": 228,
    "container": false,
    "muted": false
@@ -4441,7 +4441,7 @@ export const CARRY_TRACES: readonly CarryTrace[] = [
    "width": 116,
    "category": "ACCUMULATE",
    "label": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000:\u2026",
-   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000:",
+   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000",
    "index": 229,
    "container": false,
    "muted": false
@@ -4452,7 +4452,7 @@ export const CARRY_TRACES: readonly CarryTrace[] = [
    "width": 116,
    "category": "ACCUMULATE",
    "label": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000:\u2026",
-   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000:",
+   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000",
    "index": 230,
    "container": false,
    "muted": false
@@ -4463,7 +4463,7 @@ export const CARRY_TRACES: readonly CarryTrace[] = [
    "width": 116,
    "category": "ACCUMULATE",
    "label": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000:\u2026",
-   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000:",
+   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000",
    "index": 231,
    "container": false,
    "muted": false
@@ -4474,7 +4474,7 @@ export const CARRY_TRACES: readonly CarryTrace[] = [
    "width": 116,
    "category": "ACCUMULATE",
    "label": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000:\u2026",
-   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000:",
+   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000",
    "index": 232,
    "container": false,
    "muted": false
@@ -4485,7 +4485,7 @@ export const CARRY_TRACES: readonly CarryTrace[] = [
    "width": 116,
    "category": "ACCUMULATE",
    "label": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000:\u2026",
-   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000:",
+   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000",
    "index": 233,
    "container": false,
    "muted": false
@@ -4496,7 +4496,7 @@ export const CARRY_TRACES: readonly CarryTrace[] = [
    "width": 116,
    "category": "ACCUMULATE",
    "label": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000:\u2026",
-   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000:",
+   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000",
    "index": 234,
    "container": false,
    "muted": false
@@ -4507,7 +4507,7 @@ export const CARRY_TRACES: readonly CarryTrace[] = [
    "width": 116,
    "category": "ACCUMULATE",
    "label": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000:\u2026",
-   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000:",
+   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000",
    "index": 235,
    "container": false,
    "muted": false
@@ -4518,7 +4518,7 @@ export const CARRY_TRACES: readonly CarryTrace[] = [
    "width": 116,
    "category": "ACCUMULATE",
    "label": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000:\u2026",
-   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000:",
+   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000",
    "index": 236,
    "container": false,
    "muted": false
@@ -4529,7 +4529,7 @@ export const CARRY_TRACES: readonly CarryTrace[] = [
    "width": 116,
    "category": "ACCUMULATE",
    "label": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000:\u2026",
-   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000:",
+   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000",
    "index": 237,
    "container": false,
    "muted": false
@@ -4540,7 +4540,7 @@ export const CARRY_TRACES: readonly CarryTrace[] = [
    "width": 116,
    "category": "ACCUMULATE",
    "label": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000:\u2026",
-   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000:",
+   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000",
    "index": 238,
    "container": false,
    "muted": false
@@ -4551,7 +4551,7 @@ export const CARRY_TRACES: readonly CarryTrace[] = [
    "width": 116,
    "category": "ACCUMULATE",
    "label": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000:\u2026",
-   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000:",
+   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000",
    "index": 239,
    "container": false,
    "muted": false
@@ -4562,7 +4562,7 @@ export const CARRY_TRACES: readonly CarryTrace[] = [
    "width": 116,
    "category": "ACCUMULATE",
    "label": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000:\u2026",
-   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000:",
+   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000",
    "index": 240,
    "container": false,
    "muted": false
@@ -4573,7 +4573,7 @@ export const CARRY_TRACES: readonly CarryTrace[] = [
    "width": 116,
    "category": "ACCUMULATE",
    "label": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000:\u2026",
-   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000:",
+   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000",
    "index": 241,
    "container": false,
    "muted": false
@@ -4584,7 +4584,7 @@ export const CARRY_TRACES: readonly CarryTrace[] = [
    "width": 116,
    "category": "ACCUMULATE",
    "label": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000:\u2026",
-   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000:",
+   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000",
    "index": 242,
    "container": false,
    "muted": false
@@ -4595,7 +4595,7 @@ export const CARRY_TRACES: readonly CarryTrace[] = [
    "width": 116,
    "category": "ACCUMULATE",
    "label": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000:\u2026",
-   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000:",
+   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000",
    "index": 243,
    "container": false,
    "muted": false
@@ -4606,7 +4606,7 @@ export const CARRY_TRACES: readonly CarryTrace[] = [
    "width": 116,
    "category": "ACCUMULATE",
    "label": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000:\u2026",
-   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000:",
+   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000",
    "index": 244,
    "container": false,
    "muted": false
@@ -4617,7 +4617,7 @@ export const CARRY_TRACES: readonly CarryTrace[] = [
    "width": 116,
    "category": "ACCUMULATE",
    "label": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000:\u2026",
-   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000:",
+   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000",
    "index": 245,
    "container": false,
    "muted": false
@@ -4628,7 +4628,7 @@ export const CARRY_TRACES: readonly CarryTrace[] = [
    "width": 116,
    "category": "ACCUMULATE",
    "label": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000:\u2026",
-   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000:",
+   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000",
    "index": 246,
    "container": false,
    "muted": false
@@ -4639,7 +4639,7 @@ export const CARRY_TRACES: readonly CarryTrace[] = [
    "width": 116,
    "category": "ACCUMULATE",
    "label": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000:\u2026",
-   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000:",
+   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000",
    "index": 247,
    "container": false,
    "muted": false
@@ -4650,7 +4650,7 @@ export const CARRY_TRACES: readonly CarryTrace[] = [
    "width": 116,
    "category": "ACCUMULATE",
    "label": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000:\u2026",
-   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000:",
+   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000",
    "index": 248,
    "container": false,
    "muted": false
@@ -4661,7 +4661,7 @@ export const CARRY_TRACES: readonly CarryTrace[] = [
    "width": 116,
    "category": "ACCUMULATE",
    "label": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000:\u2026",
-   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000:",
+   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000",
    "index": 249,
    "container": false,
    "muted": false
@@ -4672,7 +4672,7 @@ export const CARRY_TRACES: readonly CarryTrace[] = [
    "width": 116,
    "category": "ACCUMULATE",
    "label": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000:\u2026",
-   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000:",
+   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000",
    "index": 250,
    "container": false,
    "muted": false
@@ -4683,7 +4683,7 @@ export const CARRY_TRACES: readonly CarryTrace[] = [
    "width": 116,
    "category": "ACCUMULATE",
    "label": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000:\u2026",
-   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000:",
+   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000",
    "index": 251,
    "container": false,
    "muted": false
@@ -4694,7 +4694,7 @@ export const CARRY_TRACES: readonly CarryTrace[] = [
    "width": 116,
    "category": "ACCUMULATE",
    "label": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000:\u2026",
-   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000:",
+   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000",
    "index": 252,
    "container": false,
    "muted": false
@@ -4705,7 +4705,7 @@ export const CARRY_TRACES: readonly CarryTrace[] = [
    "width": 116,
    "category": "ACCUMULATE",
    "label": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000:\u2026",
-   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000:",
+   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000",
    "index": 253,
    "container": false,
    "muted": false
@@ -4716,7 +4716,7 @@ export const CARRY_TRACES: readonly CarryTrace[] = [
    "width": 116,
    "category": "ACCUMULATE",
    "label": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000:\u2026",
-   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000:",
+   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000",
    "index": 254,
    "container": false,
    "muted": false
@@ -4727,7 +4727,7 @@ export const CARRY_TRACES: readonly CarryTrace[] = [
    "width": 116,
    "category": "ACCUMULATE",
    "label": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000:\u2026",
-   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000:",
+   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000",
    "index": 255,
    "container": false,
    "muted": false
@@ -4738,7 +4738,7 @@ export const CARRY_TRACES: readonly CarryTrace[] = [
    "width": 116,
    "category": "ACCUMULATE",
    "label": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000:\u2026",
-   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000:",
+   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000",
    "index": 256,
    "container": false,
    "muted": false
@@ -4749,7 +4749,7 @@ export const CARRY_TRACES: readonly CarryTrace[] = [
    "width": 116,
    "category": "ACCUMULATE",
    "label": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000:\u2026",
-   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000:",
+   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000",
    "index": 257,
    "container": false,
    "muted": false
@@ -4760,7 +4760,7 @@ export const CARRY_TRACES: readonly CarryTrace[] = [
    "width": 116,
    "category": "ACCUMULATE",
    "label": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000:\u2026",
-   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000:",
+   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000",
    "index": 258,
    "container": false,
    "muted": false
@@ -4771,7 +4771,7 @@ export const CARRY_TRACES: readonly CarryTrace[] = [
    "width": 116,
    "category": "ACCUMULATE",
    "label": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000:\u2026",
-   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000:",
+   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000",
    "index": 259,
    "container": false,
    "muted": false
@@ -4782,7 +4782,7 @@ export const CARRY_TRACES: readonly CarryTrace[] = [
    "width": 116,
    "category": "ACCUMULATE",
    "label": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000:\u2026",
-   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000:",
+   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000",
    "index": 260,
    "container": false,
    "muted": false
@@ -4793,7 +4793,7 @@ export const CARRY_TRACES: readonly CarryTrace[] = [
    "width": 116,
    "category": "ACCUMULATE",
    "label": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000:\u2026",
-   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000:",
+   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000",
    "index": 261,
    "container": false,
    "muted": false
@@ -4804,7 +4804,7 @@ export const CARRY_TRACES: readonly CarryTrace[] = [
    "width": 116,
    "category": "ACCUMULATE",
    "label": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000:\u2026",
-   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000:",
+   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000",
    "index": 262,
    "container": false,
    "muted": false
@@ -4815,7 +4815,7 @@ export const CARRY_TRACES: readonly CarryTrace[] = [
    "width": 116,
    "category": "ACCUMULATE",
    "label": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000:\u2026",
-   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000:",
+   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000",
    "index": 263,
    "container": false,
    "muted": false
@@ -4826,7 +4826,7 @@ export const CARRY_TRACES: readonly CarryTrace[] = [
    "width": 116,
    "category": "ACCUMULATE",
    "label": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000:\u2026",
-   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000:",
+   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000",
    "index": 264,
    "container": false,
    "muted": false
@@ -4837,7 +4837,7 @@ export const CARRY_TRACES: readonly CarryTrace[] = [
    "width": 116,
    "category": "ACCUMULATE",
    "label": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000:\u2026",
-   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000:",
+   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000",
    "index": 265,
    "container": false,
    "muted": false
@@ -4848,7 +4848,7 @@ export const CARRY_TRACES: readonly CarryTrace[] = [
    "width": 116,
    "category": "ACCUMULATE",
    "label": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000:\u2026",
-   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000:",
+   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000",
    "index": 266,
    "container": false,
    "muted": false
@@ -4859,7 +4859,7 @@ export const CARRY_TRACES: readonly CarryTrace[] = [
    "width": 116,
    "category": "ACCUMULATE",
    "label": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000:\u2026",
-   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000:",
+   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000",
    "index": 267,
    "container": false,
    "muted": false
@@ -4870,7 +4870,7 @@ export const CARRY_TRACES: readonly CarryTrace[] = [
    "width": 116,
    "category": "ACCUMULATE",
    "label": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000:\u2026",
-   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000:",
+   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000",
    "index": 268,
    "container": false,
    "muted": false
@@ -4881,7 +4881,7 @@ export const CARRY_TRACES: readonly CarryTrace[] = [
    "width": 116,
    "category": "ACCUMULATE",
    "label": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000:\u2026",
-   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000:",
+   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000",
    "index": 269,
    "container": false,
    "muted": false
@@ -4892,7 +4892,7 @@ export const CARRY_TRACES: readonly CarryTrace[] = [
    "width": 116,
    "category": "ACCUMULATE",
    "label": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000:\u2026",
-   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000:",
+   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000",
    "index": 270,
    "container": false,
    "muted": false
@@ -4903,7 +4903,7 @@ export const CARRY_TRACES: readonly CarryTrace[] = [
    "width": 116,
    "category": "ACCUMULATE",
    "label": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000:\u2026",
-   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000:",
+   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000",
    "index": 271,
    "container": false,
    "muted": false
@@ -4914,7 +4914,7 @@ export const CARRY_TRACES: readonly CarryTrace[] = [
    "width": 116,
    "category": "ACCUMULATE",
    "label": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000:\u2026",
-   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000:",
+   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000",
    "index": 272,
    "container": false,
    "muted": false
@@ -4925,7 +4925,7 @@ export const CARRY_TRACES: readonly CarryTrace[] = [
    "width": 116,
    "category": "ACCUMULATE",
    "label": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000:\u2026",
-   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000:",
+   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000",
    "index": 273,
    "container": false,
    "muted": false
@@ -4936,7 +4936,7 @@ export const CARRY_TRACES: readonly CarryTrace[] = [
    "width": 116,
    "category": "ACCUMULATE",
    "label": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000:\u2026",
-   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000:",
+   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000",
    "index": 274,
    "container": false,
    "muted": false
@@ -4947,7 +4947,7 @@ export const CARRY_TRACES: readonly CarryTrace[] = [
    "width": 116,
    "category": "ACCUMULATE",
    "label": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000:\u2026",
-   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000:",
+   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000",
    "index": 275,
    "container": false,
    "muted": false
@@ -4958,7 +4958,7 @@ export const CARRY_TRACES: readonly CarryTrace[] = [
    "width": 116,
    "category": "ACCUMULATE",
    "label": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000:\u2026",
-   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000:",
+   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000",
    "index": 276,
    "container": false,
    "muted": false
@@ -4969,7 +4969,7 @@ export const CARRY_TRACES: readonly CarryTrace[] = [
    "width": 116,
    "category": "ACCUMULATE",
    "label": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000:\u2026",
-   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000:",
+   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000",
    "index": 277,
    "container": false,
    "muted": false
@@ -4980,7 +4980,7 @@ export const CARRY_TRACES: readonly CarryTrace[] = [
    "width": 116,
    "category": "ACCUMULATE",
    "label": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000:\u2026",
-   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000:",
+   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000",
    "index": 278,
    "container": false,
    "muted": false
@@ -4991,7 +4991,7 @@ export const CARRY_TRACES: readonly CarryTrace[] = [
    "width": 116,
    "category": "ACCUMULATE",
    "label": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000:\u2026",
-   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000:",
+   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000",
    "index": 279,
    "container": false,
    "muted": false
@@ -5002,7 +5002,7 @@ export const CARRY_TRACES: readonly CarryTrace[] = [
    "width": 116,
    "category": "ACCUMULATE",
    "label": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000:\u2026",
-   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000:",
+   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000",
    "index": 280,
    "container": false,
    "muted": false
@@ -5013,7 +5013,7 @@ export const CARRY_TRACES: readonly CarryTrace[] = [
    "width": 116,
    "category": "ACCUMULATE",
    "label": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000:\u2026",
-   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000:",
+   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000",
    "index": 281,
    "container": false,
    "muted": false
@@ -5024,7 +5024,7 @@ export const CARRY_TRACES: readonly CarryTrace[] = [
    "width": 116,
    "category": "ACCUMULATE",
    "label": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000:\u2026",
-   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000:",
+   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000",
    "index": 282,
    "container": false,
    "muted": false
@@ -5035,7 +5035,7 @@ export const CARRY_TRACES: readonly CarryTrace[] = [
    "width": 116,
    "category": "ACCUMULATE",
    "label": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000:\u2026",
-   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000:",
+   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000",
    "index": 283,
    "container": false,
    "muted": false
@@ -5046,7 +5046,7 @@ export const CARRY_TRACES: readonly CarryTrace[] = [
    "width": 116,
    "category": "ACCUMULATE",
    "label": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000:\u2026",
-   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000:",
+   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000",
    "index": 284,
    "container": false,
    "muted": false
@@ -5057,7 +5057,7 @@ export const CARRY_TRACES: readonly CarryTrace[] = [
    "width": 116,
    "category": "ACCUMULATE",
    "label": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000:\u2026",
-   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000:",
+   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000",
    "index": 285,
    "container": false,
    "muted": false
@@ -5068,7 +5068,7 @@ export const CARRY_TRACES: readonly CarryTrace[] = [
    "width": 116,
    "category": "ACCUMULATE",
    "label": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000:\u2026",
-   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000:",
+   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000",
    "index": 286,
    "container": false,
    "muted": false
@@ -5079,7 +5079,7 @@ export const CARRY_TRACES: readonly CarryTrace[] = [
    "width": 116,
    "category": "ACCUMULATE",
    "label": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000:\u2026",
-   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000:",
+   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000",
    "index": 287,
    "container": false,
    "muted": false
@@ -5090,7 +5090,7 @@ export const CARRY_TRACES: readonly CarryTrace[] = [
    "width": 116,
    "category": "ACCUMULATE",
    "label": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000:\u2026",
-   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000:",
+   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000",
    "index": 288,
    "container": false,
    "muted": false
@@ -5101,7 +5101,7 @@ export const CARRY_TRACES: readonly CarryTrace[] = [
    "width": 116,
    "category": "ACCUMULATE",
    "label": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000:\u2026",
-   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000:",
+   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000",
    "index": 289,
    "container": false,
    "muted": false
@@ -5112,7 +5112,7 @@ export const CARRY_TRACES: readonly CarryTrace[] = [
    "width": 116,
    "category": "ACCUMULATE",
    "label": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000:\u2026",
-   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000:",
+   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000",
    "index": 290,
    "container": false,
    "muted": false
@@ -5123,7 +5123,7 @@ export const CARRY_TRACES: readonly CarryTrace[] = [
    "width": 116,
    "category": "ACCUMULATE",
    "label": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000:\u2026",
-   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000:",
+   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000",
    "index": 291,
    "container": false,
    "muted": false
@@ -5134,7 +5134,7 @@ export const CARRY_TRACES: readonly CarryTrace[] = [
    "width": 116,
    "category": "ACCUMULATE",
    "label": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000:\u2026",
-   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000:",
+   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000",
    "index": 292,
    "container": false,
    "muted": false
@@ -5145,7 +5145,7 @@ export const CARRY_TRACES: readonly CarryTrace[] = [
    "width": 116,
    "category": "ACCUMULATE",
    "label": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000:\u2026",
-   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000:",
+   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000",
    "index": 293,
    "container": false,
    "muted": false
@@ -5156,7 +5156,7 @@ export const CARRY_TRACES: readonly CarryTrace[] = [
    "width": 116,
    "category": "ACCUMULATE",
    "label": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000:\u2026",
-   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000:",
+   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000",
    "index": 294,
    "container": false,
    "muted": false
@@ -5167,7 +5167,7 @@ export const CARRY_TRACES: readonly CarryTrace[] = [
    "width": 116,
    "category": "ACCUMULATE",
    "label": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000:\u2026",
-   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000:",
+   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000",
    "index": 295,
    "container": false,
    "muted": false
@@ -5178,7 +5178,7 @@ export const CARRY_TRACES: readonly CarryTrace[] = [
    "width": 116,
    "category": "ACCUMULATE",
    "label": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000:\u2026",
-   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000:",
+   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000",
    "index": 296,
    "container": false,
    "muted": false
@@ -5189,7 +5189,7 @@ export const CARRY_TRACES: readonly CarryTrace[] = [
    "width": 116,
    "category": "ACCUMULATE",
    "label": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000:\u2026",
-   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000:",
+   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000",
    "index": 297,
    "container": false,
    "muted": false
@@ -5200,7 +5200,7 @@ export const CARRY_TRACES: readonly CarryTrace[] = [
    "width": 116,
    "category": "ACCUMULATE",
    "label": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000:\u2026",
-   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000:",
+   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000",
    "index": 298,
    "container": false,
    "muted": false
@@ -5211,7 +5211,7 @@ export const CARRY_TRACES: readonly CarryTrace[] = [
    "width": 116,
    "category": "ACCUMULATE",
    "label": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000:\u2026",
-   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000:",
+   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000",
    "index": 299,
    "container": false,
    "muted": false
@@ -5222,7 +5222,7 @@ export const CARRY_TRACES: readonly CarryTrace[] = [
    "width": 116,
    "category": "ACCUMULATE",
    "label": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000:\u2026",
-   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000:",
+   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000",
    "index": 300,
    "container": false,
    "muted": false
@@ -5233,7 +5233,7 @@ export const CARRY_TRACES: readonly CarryTrace[] = [
    "width": 116,
    "category": "ACCUMULATE",
    "label": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000:\u2026",
-   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000:",
+   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000",
    "index": 301,
    "container": false,
    "muted": false
@@ -5244,7 +5244,7 @@ export const CARRY_TRACES: readonly CarryTrace[] = [
    "width": 116,
    "category": "ACCUMULATE",
    "label": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000:\u2026",
-   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000:",
+   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000",
    "index": 302,
    "container": false,
    "muted": false
@@ -5255,7 +5255,7 @@ export const CARRY_TRACES: readonly CarryTrace[] = [
    "width": 116,
    "category": "ACCUMULATE",
    "label": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000:\u2026",
-   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000:",
+   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000",
    "index": 303,
    "container": false,
    "muted": false
@@ -5266,7 +5266,7 @@ export const CARRY_TRACES: readonly CarryTrace[] = [
    "width": 116,
    "category": "ACCUMULATE",
    "label": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000:\u2026",
-   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000:",
+   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000",
    "index": 304,
    "container": false,
    "muted": false
@@ -5277,7 +5277,7 @@ export const CARRY_TRACES: readonly CarryTrace[] = [
    "width": 116,
    "category": "ACCUMULATE",
    "label": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000:\u2026",
-   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000:",
+   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000",
    "index": 305,
    "container": false,
    "muted": false
@@ -5288,7 +5288,7 @@ export const CARRY_TRACES: readonly CarryTrace[] = [
    "width": 116,
    "category": "ACCUMULATE",
    "label": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000:\u2026",
-   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000:",
+   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000",
    "index": 306,
    "container": false,
    "muted": false
@@ -5299,7 +5299,7 @@ export const CARRY_TRACES: readonly CarryTrace[] = [
    "width": 116,
    "category": "ACCUMULATE",
    "label": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000:\u2026",
-   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000:",
+   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000",
    "index": 307,
    "container": false,
    "muted": false
@@ -5310,7 +5310,7 @@ export const CARRY_TRACES: readonly CarryTrace[] = [
    "width": 116,
    "category": "ACCUMULATE",
    "label": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000:\u2026",
-   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000:",
+   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000",
    "index": 308,
    "container": false,
    "muted": false
@@ -5321,7 +5321,7 @@ export const CARRY_TRACES: readonly CarryTrace[] = [
    "width": 116,
    "category": "ACCUMULATE",
    "label": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000:\u2026",
-   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000:",
+   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000",
    "index": 309,
    "container": false,
    "muted": false
@@ -5332,7 +5332,7 @@ export const CARRY_TRACES: readonly CarryTrace[] = [
    "width": 116,
    "category": "ACCUMULATE",
    "label": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000:\u2026",
-   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000:",
+   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000",
    "index": 310,
    "container": false,
    "muted": false
@@ -5343,7 +5343,7 @@ export const CARRY_TRACES: readonly CarryTrace[] = [
    "width": 116,
    "category": "ACCUMULATE",
    "label": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000:\u2026",
-   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000:",
+   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000",
    "index": 311,
    "container": false,
    "muted": false
@@ -5354,7 +5354,7 @@ export const CARRY_TRACES: readonly CarryTrace[] = [
    "width": 116,
    "category": "ACCUMULATE",
    "label": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000:\u2026",
-   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000:",
+   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000",
    "index": 312,
    "container": false,
    "muted": false
@@ -5365,7 +5365,7 @@ export const CARRY_TRACES: readonly CarryTrace[] = [
    "width": 116,
    "category": "ACCUMULATE",
    "label": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000:\u2026",
-   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000:",
+   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000",
    "index": 313,
    "container": false,
    "muted": false
@@ -5376,7 +5376,7 @@ export const CARRY_TRACES: readonly CarryTrace[] = [
    "width": 116,
    "category": "ACCUMULATE",
    "label": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000:\u2026",
-   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000:",
+   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000",
    "index": 314,
    "container": false,
    "muted": false
@@ -5387,7 +5387,7 @@ export const CARRY_TRACES: readonly CarryTrace[] = [
    "width": 116,
    "category": "ACCUMULATE",
    "label": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000:\u2026",
-   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000:",
+   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000",
    "index": 315,
    "container": false,
    "muted": false
@@ -5398,7 +5398,7 @@ export const CARRY_TRACES: readonly CarryTrace[] = [
    "width": 116,
    "category": "ACCUMULATE",
    "label": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000:\u2026",
-   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000:",
+   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000",
    "index": 316,
    "container": false,
    "muted": false
@@ -5409,7 +5409,7 @@ export const CARRY_TRACES: readonly CarryTrace[] = [
    "width": 116,
    "category": "ACCUMULATE",
    "label": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000:\u2026",
-   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000:",
+   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000",
    "index": 317,
    "container": false,
    "muted": false
@@ -5420,7 +5420,7 @@ export const CARRY_TRACES: readonly CarryTrace[] = [
    "width": 116,
    "category": "ACCUMULATE",
    "label": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000:\u2026",
-   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000:",
+   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000",
    "index": 318,
    "container": false,
    "muted": false
@@ -5431,7 +5431,7 @@ export const CARRY_TRACES: readonly CarryTrace[] = [
    "width": 116,
    "category": "ACCUMULATE",
    "label": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000:\u2026",
-   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000:",
+   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000",
    "index": 319,
    "container": false,
    "muted": false
@@ -5442,7 +5442,7 @@ export const CARRY_TRACES: readonly CarryTrace[] = [
    "width": 116,
    "category": "ACCUMULATE",
    "label": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000:\u2026",
-   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000:",
+   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000",
    "index": 320,
    "container": false,
    "muted": false
@@ -5453,7 +5453,7 @@ export const CARRY_TRACES: readonly CarryTrace[] = [
    "width": 116,
    "category": "ACCUMULATE",
    "label": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000:\u2026",
-   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000:",
+   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000",
    "index": 321,
    "container": false,
    "muted": false
@@ -5464,7 +5464,7 @@ export const CARRY_TRACES: readonly CarryTrace[] = [
    "width": 116,
    "category": "ACCUMULATE",
    "label": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000:\u2026",
-   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000:",
+   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000",
    "index": 322,
    "container": false,
    "muted": false
@@ -5475,7 +5475,7 @@ export const CARRY_TRACES: readonly CarryTrace[] = [
    "width": 116,
    "category": "ACCUMULATE",
    "label": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000:\u2026",
-   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000:",
+   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000",
    "index": 323,
    "container": false,
    "muted": false
@@ -5486,7 +5486,7 @@ export const CARRY_TRACES: readonly CarryTrace[] = [
    "width": 116,
    "category": "ACCUMULATE",
    "label": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000:\u2026",
-   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000:",
+   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000",
    "index": 324,
    "container": false,
    "muted": false
@@ -5497,7 +5497,7 @@ export const CARRY_TRACES: readonly CarryTrace[] = [
    "width": 116,
    "category": "ACCUMULATE",
    "label": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000:\u2026",
-   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000:",
+   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000",
    "index": 325,
    "container": false,
    "muted": false
@@ -5508,7 +5508,7 @@ export const CARRY_TRACES: readonly CarryTrace[] = [
    "width": 116,
    "category": "ACCUMULATE",
    "label": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000:\u2026",
-   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000:",
+   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000",
    "index": 326,
    "container": false,
    "muted": false
@@ -5519,7 +5519,7 @@ export const CARRY_TRACES: readonly CarryTrace[] = [
    "width": 116,
    "category": "ACCUMULATE",
    "label": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000:\u2026",
-   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000:",
+   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000",
    "index": 327,
    "container": false,
    "muted": false
@@ -5530,7 +5530,7 @@ export const CARRY_TRACES: readonly CarryTrace[] = [
    "width": 116,
    "category": "ACCUMULATE",
    "label": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000:\u2026",
-   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000:",
+   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000",
    "index": 328,
    "container": false,
    "muted": false
@@ -5541,7 +5541,7 @@ export const CARRY_TRACES: readonly CarryTrace[] = [
    "width": 116,
    "category": "ACCUMULATE",
    "label": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000:\u2026",
-   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000:",
+   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000",
    "index": 329,
    "container": false,
    "muted": false
@@ -5552,7 +5552,7 @@ export const CARRY_TRACES: readonly CarryTrace[] = [
    "width": 116,
    "category": "ACCUMULATE",
    "label": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000:\u2026",
-   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000:",
+   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000",
    "index": 330,
    "container": false,
    "muted": false
@@ -5563,7 +5563,7 @@ export const CARRY_TRACES: readonly CarryTrace[] = [
    "width": 116,
    "category": "ACCUMULATE",
    "label": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000:\u2026",
-   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000:",
+   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000",
    "index": 331,
    "container": false,
    "muted": false
@@ -5574,7 +5574,7 @@ export const CARRY_TRACES: readonly CarryTrace[] = [
    "width": 116,
    "category": "ACCUMULATE",
    "label": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000:\u2026",
-   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000:",
+   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000",
    "index": 332,
    "container": false,
    "muted": false
@@ -5585,7 +5585,7 @@ export const CARRY_TRACES: readonly CarryTrace[] = [
    "width": 116,
    "category": "ACCUMULATE",
    "label": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000:\u2026",
-   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000:",
+   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000",
    "index": 333,
    "container": false,
    "muted": false
@@ -5596,7 +5596,7 @@ export const CARRY_TRACES: readonly CarryTrace[] = [
    "width": 116,
    "category": "ACCUMULATE",
    "label": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000:\u2026",
-   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000:",
+   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000",
    "index": 334,
    "container": false,
    "muted": false
@@ -5607,7 +5607,7 @@ export const CARRY_TRACES: readonly CarryTrace[] = [
    "width": 116,
    "category": "ACCUMULATE",
    "label": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000:\u2026",
-   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000:",
+   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000",
    "index": 335,
    "container": false,
    "muted": false
@@ -5618,7 +5618,7 @@ export const CARRY_TRACES: readonly CarryTrace[] = [
    "width": 116,
    "category": "ACCUMULATE",
    "label": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000:\u2026",
-   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000:",
+   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000",
    "index": 336,
    "container": false,
    "muted": false
@@ -5629,7 +5629,7 @@ export const CARRY_TRACES: readonly CarryTrace[] = [
    "width": 116,
    "category": "ACCUMULATE",
    "label": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000:\u2026",
-   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000:",
+   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000",
    "index": 337,
    "container": false,
    "muted": false
@@ -5640,7 +5640,7 @@ export const CARRY_TRACES: readonly CarryTrace[] = [
    "width": 116,
    "category": "ACCUMULATE",
    "label": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000:\u2026",
-   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000:",
+   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000",
    "index": 338,
    "container": false,
    "muted": false
@@ -5651,7 +5651,7 @@ export const CARRY_TRACES: readonly CarryTrace[] = [
    "width": 116,
    "category": "ACCUMULATE",
    "label": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000:\u2026",
-   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000:",
+   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000",
    "index": 339,
    "container": false,
    "muted": false
@@ -5662,7 +5662,7 @@ export const CARRY_TRACES: readonly CarryTrace[] = [
    "width": 116,
    "category": "ACCUMULATE",
    "label": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000:\u2026",
-   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000:",
+   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000",
    "index": 340,
    "container": false,
    "muted": false
@@ -5673,7 +5673,7 @@ export const CARRY_TRACES: readonly CarryTrace[] = [
    "width": 116,
    "category": "ACCUMULATE",
    "label": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000:\u2026",
-   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000:",
+   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000",
    "index": 341,
    "container": false,
    "muted": false
@@ -5684,7 +5684,7 @@ export const CARRY_TRACES: readonly CarryTrace[] = [
    "width": 116,
    "category": "ACCUMULATE",
    "label": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000:\u2026",
-   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000:",
+   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000",
    "index": 342,
    "container": false,
    "muted": false
@@ -5695,7 +5695,7 @@ export const CARRY_TRACES: readonly CarryTrace[] = [
    "width": 116,
    "category": "ACCUMULATE",
    "label": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000:\u2026",
-   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000:",
+   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000",
    "index": 343,
    "container": false,
    "muted": false
@@ -5706,7 +5706,7 @@ export const CARRY_TRACES: readonly CarryTrace[] = [
    "width": 116,
    "category": "ACCUMULATE",
    "label": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000:\u2026",
-   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000:",
+   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000",
    "index": 344,
    "container": false,
    "muted": false
@@ -5717,7 +5717,7 @@ export const CARRY_TRACES: readonly CarryTrace[] = [
    "width": 116,
    "category": "ACCUMULATE",
    "label": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000:\u2026",
-   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000:",
+   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000",
    "index": 345,
    "container": false,
    "muted": false
@@ -5728,7 +5728,7 @@ export const CARRY_TRACES: readonly CarryTrace[] = [
    "width": 116,
    "category": "ACCUMULATE",
    "label": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000:\u2026",
-   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000:",
+   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000",
    "index": 346,
    "container": false,
    "muted": false
@@ -5739,7 +5739,7 @@ export const CARRY_TRACES: readonly CarryTrace[] = [
    "width": 116,
    "category": "ACCUMULATE",
    "label": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000:\u2026",
-   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000:",
+   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000",
    "index": 347,
    "container": false,
    "muted": false
@@ -5750,7 +5750,7 @@ export const CARRY_TRACES: readonly CarryTrace[] = [
    "width": 116,
    "category": "ACCUMULATE",
    "label": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000:\u2026",
-   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000:",
+   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000",
    "index": 348,
    "container": false,
    "muted": false
@@ -5761,7 +5761,7 @@ export const CARRY_TRACES: readonly CarryTrace[] = [
    "width": 116,
    "category": "ACCUMULATE",
    "label": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000:\u2026",
-   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000:",
+   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000",
    "index": 349,
    "container": false,
    "muted": false
@@ -5772,7 +5772,7 @@ export const CARRY_TRACES: readonly CarryTrace[] = [
    "width": 116,
    "category": "ACCUMULATE",
    "label": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000:\u2026",
-   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000:",
+   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000",
    "index": 350,
    "container": false,
    "muted": false
@@ -5783,7 +5783,7 @@ export const CARRY_TRACES: readonly CarryTrace[] = [
    "width": 116,
    "category": "ACCUMULATE",
    "label": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000:\u2026",
-   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000:",
+   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000",
    "index": 351,
    "container": false,
    "muted": false
@@ -5794,7 +5794,7 @@ export const CARRY_TRACES: readonly CarryTrace[] = [
    "width": 116,
    "category": "ACCUMULATE",
    "label": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000:\u2026",
-   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000:",
+   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000",
    "index": 352,
    "container": false,
    "muted": false
@@ -5805,7 +5805,7 @@ export const CARRY_TRACES: readonly CarryTrace[] = [
    "width": 116,
    "category": "ACCUMULATE",
    "label": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000:\u2026",
-   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000:",
+   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000",
    "index": 353,
    "container": false,
    "muted": false
@@ -5816,7 +5816,7 @@ export const CARRY_TRACES: readonly CarryTrace[] = [
    "width": 116,
    "category": "ACCUMULATE",
    "label": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000:\u2026",
-   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000:",
+   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000",
    "index": 354,
    "container": false,
    "muted": false
@@ -5827,7 +5827,7 @@ export const CARRY_TRACES: readonly CarryTrace[] = [
    "width": 116,
    "category": "ACCUMULATE",
    "label": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000:\u2026",
-   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000:",
+   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000",
    "index": 355,
    "container": false,
    "muted": false
@@ -5838,7 +5838,7 @@ export const CARRY_TRACES: readonly CarryTrace[] = [
    "width": 116,
    "category": "ACCUMULATE",
    "label": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000:\u2026",
-   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000:",
+   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000",
    "index": 356,
    "container": false,
    "muted": false
@@ -5849,7 +5849,7 @@ export const CARRY_TRACES: readonly CarryTrace[] = [
    "width": 116,
    "category": "ACCUMULATE",
    "label": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000:\u2026",
-   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000:",
+   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000",
    "index": 357,
    "container": false,
    "muted": false
@@ -5860,7 +5860,7 @@ export const CARRY_TRACES: readonly CarryTrace[] = [
    "width": 116,
    "category": "ACCUMULATE",
    "label": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000:\u2026",
-   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000:",
+   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000",
    "index": 358,
    "container": false,
    "muted": false
@@ -5871,7 +5871,7 @@ export const CARRY_TRACES: readonly CarryTrace[] = [
    "width": 116,
    "category": "ACCUMULATE",
    "label": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000:\u2026",
-   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000:",
+   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000",
    "index": 359,
    "container": false,
    "muted": false
@@ -5882,7 +5882,7 @@ export const CARRY_TRACES: readonly CarryTrace[] = [
    "width": 116,
    "category": "ACCUMULATE",
    "label": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000:\u2026",
-   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000:",
+   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000",
    "index": 360,
    "container": false,
    "muted": false
@@ -5893,7 +5893,7 @@ export const CARRY_TRACES: readonly CarryTrace[] = [
    "width": 116,
    "category": "ACCUMULATE",
    "label": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000:\u2026",
-   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000:",
+   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000",
    "index": 361,
    "container": false,
    "muted": false
@@ -5904,7 +5904,7 @@ export const CARRY_TRACES: readonly CarryTrace[] = [
    "width": 116,
    "category": "ACCUMULATE",
    "label": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000:\u2026",
-   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000:",
+   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000",
    "index": 362,
    "container": false,
    "muted": false
@@ -5915,7 +5915,7 @@ export const CARRY_TRACES: readonly CarryTrace[] = [
    "width": 116,
    "category": "ACCUMULATE",
    "label": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000:\u2026",
-   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000:",
+   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000",
    "index": 363,
    "container": false,
    "muted": false
@@ -5926,7 +5926,7 @@ export const CARRY_TRACES: readonly CarryTrace[] = [
    "width": 116,
    "category": "ACCUMULATE",
    "label": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000:\u2026",
-   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000:",
+   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000",
    "index": 364,
    "container": false,
    "muted": false
@@ -5937,7 +5937,7 @@ export const CARRY_TRACES: readonly CarryTrace[] = [
    "width": 116,
    "category": "ACCUMULATE",
    "label": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000:\u2026",
-   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000:",
+   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000",
    "index": 365,
    "container": false,
    "muted": false
@@ -5948,7 +5948,7 @@ export const CARRY_TRACES: readonly CarryTrace[] = [
    "width": 116,
    "category": "ACCUMULATE",
    "label": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000:\u2026",
-   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000:",
+   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000",
    "index": 366,
    "container": false,
    "muted": false
@@ -5959,7 +5959,7 @@ export const CARRY_TRACES: readonly CarryTrace[] = [
    "width": 116,
    "category": "ACCUMULATE",
    "label": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000:\u2026",
-   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000:",
+   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000",
    "index": 367,
    "container": false,
    "muted": false
@@ -5970,7 +5970,7 @@ export const CARRY_TRACES: readonly CarryTrace[] = [
    "width": 116,
    "category": "ACCUMULATE",
    "label": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000:\u2026",
-   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000:",
+   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000",
    "index": 368,
    "container": false,
    "muted": false
@@ -5981,7 +5981,7 @@ export const CARRY_TRACES: readonly CarryTrace[] = [
    "width": 116,
    "category": "ACCUMULATE",
    "label": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000:\u2026",
-   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000:",
+   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000",
    "index": 369,
    "container": false,
    "muted": false
@@ -5992,7 +5992,7 @@ export const CARRY_TRACES: readonly CarryTrace[] = [
    "width": 116,
    "category": "ACCUMULATE",
    "label": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000:\u2026",
-   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000:",
+   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000",
    "index": 370,
    "container": false,
    "muted": false
@@ -6003,7 +6003,7 @@ export const CARRY_TRACES: readonly CarryTrace[] = [
    "width": 116,
    "category": "ACCUMULATE",
    "label": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000:\u2026",
-   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000:",
+   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000",
    "index": 371,
    "container": false,
    "muted": false
@@ -6014,7 +6014,7 @@ export const CARRY_TRACES: readonly CarryTrace[] = [
    "width": 116,
    "category": "ACCUMULATE",
    "label": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000:\u2026",
-   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000:",
+   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000",
    "index": 372,
    "container": false,
    "muted": false
@@ -6025,7 +6025,7 @@ export const CARRY_TRACES: readonly CarryTrace[] = [
    "width": 116,
    "category": "ACCUMULATE",
    "label": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000:\u2026",
-   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000:",
+   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000",
    "index": 373,
    "container": false,
    "muted": false
@@ -6036,7 +6036,7 @@ export const CARRY_TRACES: readonly CarryTrace[] = [
    "width": 116,
    "category": "ACCUMULATE",
    "label": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000:\u2026",
-   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000:",
+   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000",
    "index": 374,
    "container": false,
    "muted": false
@@ -6047,7 +6047,7 @@ export const CARRY_TRACES: readonly CarryTrace[] = [
    "width": 116,
    "category": "ACCUMULATE",
    "label": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000:\u2026",
-   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000:",
+   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000",
    "index": 375,
    "container": false,
    "muted": false
@@ -6058,7 +6058,7 @@ export const CARRY_TRACES: readonly CarryTrace[] = [
    "width": 116,
    "category": "ACCUMULATE",
    "label": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000:\u2026",
-   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000:",
+   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000",
    "index": 376,
    "container": false,
    "muted": false
@@ -6069,7 +6069,7 @@ export const CARRY_TRACES: readonly CarryTrace[] = [
    "width": 116,
    "category": "ACCUMULATE",
    "label": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000:\u2026",
-   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000:",
+   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000",
    "index": 377,
    "container": false,
    "muted": false
@@ -6080,7 +6080,7 @@ export const CARRY_TRACES: readonly CarryTrace[] = [
    "width": 116,
    "category": "ACCUMULATE",
    "label": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000:\u2026",
-   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000:",
+   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000",
    "index": 378,
    "container": false,
    "muted": false
@@ -6091,7 +6091,7 @@ export const CARRY_TRACES: readonly CarryTrace[] = [
    "width": 116,
    "category": "ACCUMULATE",
    "label": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000:\u2026",
-   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000:",
+   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000",
    "index": 379,
    "container": false,
    "muted": false
@@ -6102,7 +6102,7 @@ export const CARRY_TRACES: readonly CarryTrace[] = [
    "width": 116,
    "category": "ACCUMULATE",
    "label": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000:\u2026",
-   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000:",
+   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000",
    "index": 380,
    "container": false,
    "muted": false
@@ -6113,7 +6113,7 @@ export const CARRY_TRACES: readonly CarryTrace[] = [
    "width": 116,
    "category": "ACCUMULATE",
    "label": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000:\u2026",
-   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000:",
+   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000",
    "index": 381,
    "container": false,
    "muted": false
@@ -6124,7 +6124,7 @@ export const CARRY_TRACES: readonly CarryTrace[] = [
    "width": 116,
    "category": "ACCUMULATE",
    "label": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000:\u2026",
-   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000:",
+   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000",
    "index": 382,
    "container": false,
    "muted": false
@@ -6135,7 +6135,7 @@ export const CARRY_TRACES: readonly CarryTrace[] = [
    "width": 116,
    "category": "ACCUMULATE",
    "label": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000:\u2026",
-   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000:",
+   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000",
    "index": 383,
    "container": false,
    "muted": false
@@ -6146,7 +6146,7 @@ export const CARRY_TRACES: readonly CarryTrace[] = [
    "width": 116,
    "category": "ACCUMULATE",
    "label": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000:\u2026",
-   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000:",
+   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000",
    "index": 384,
    "container": false,
    "muted": false
@@ -6157,7 +6157,7 @@ export const CARRY_TRACES: readonly CarryTrace[] = [
    "width": 116,
    "category": "ACCUMULATE",
    "label": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000:\u2026",
-   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000:",
+   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000",
    "index": 385,
    "container": false,
    "muted": false
@@ -6168,7 +6168,7 @@ export const CARRY_TRACES: readonly CarryTrace[] = [
    "width": 116,
    "category": "ACCUMULATE",
    "label": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000:\u2026",
-   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000:",
+   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000",
    "index": 386,
    "container": false,
    "muted": false
@@ -6179,7 +6179,7 @@ export const CARRY_TRACES: readonly CarryTrace[] = [
    "width": 116,
    "category": "ACCUMULATE",
    "label": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000:\u2026",
-   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000:",
+   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000",
    "index": 387,
    "container": false,
    "muted": false
@@ -6190,7 +6190,7 @@ export const CARRY_TRACES: readonly CarryTrace[] = [
    "width": 116,
    "category": "ACCUMULATE",
    "label": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000:\u2026",
-   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000:",
+   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000",
    "index": 388,
    "container": false,
    "muted": false
@@ -6201,7 +6201,7 @@ export const CARRY_TRACES: readonly CarryTrace[] = [
    "width": 116,
    "category": "ACCUMULATE",
    "label": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000:\u2026",
-   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000:",
+   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000",
    "index": 389,
    "container": false,
    "muted": false
@@ -6212,7 +6212,7 @@ export const CARRY_TRACES: readonly CarryTrace[] = [
    "width": 116,
    "category": "ACCUMULATE",
    "label": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000:\u2026",
-   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000:",
+   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000",
    "index": 390,
    "container": false,
    "muted": false
@@ -6223,7 +6223,7 @@ export const CARRY_TRACES: readonly CarryTrace[] = [
    "width": 116,
    "category": "ACCUMULATE",
    "label": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000:\u2026",
-   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000:",
+   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000",
    "index": 391,
    "container": false,
    "muted": false
@@ -6234,7 +6234,7 @@ export const CARRY_TRACES: readonly CarryTrace[] = [
    "width": 116,
    "category": "ACCUMULATE",
    "label": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000:\u2026",
-   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000:",
+   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000",
    "index": 392,
    "container": false,
    "muted": false
@@ -6245,7 +6245,7 @@ export const CARRY_TRACES: readonly CarryTrace[] = [
    "width": 116,
    "category": "ACCUMULATE",
    "label": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000:\u2026",
-   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000:",
+   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000",
    "index": 393,
    "container": false,
    "muted": false
@@ -6256,7 +6256,7 @@ export const CARRY_TRACES: readonly CarryTrace[] = [
    "width": 116,
    "category": "ACCUMULATE",
    "label": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000:\u2026",
-   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000:",
+   "text": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000: Let me add 42,177,834,871,396 to 31,633,376,153,547,000",
    "index": 394,
    "container": false,
    "muted": false
