@@ -49,28 +49,28 @@ export const CATEGORY_PHASE: Record<string, OodaPhase> = {
 const meta: Record<OodaPhase, SchemeMeta> = {
   OBSERVE: {
     label: 'Observe',
-    color: '#2d7d6a',
+    color: '#1f7d68',
     symbol: 'O',
     description:
       'Reading the problem, and every kind of checking — both re-deriving a value the same way and validating it a way that could fail differently. The distinction that decides these runs lives inside this one band.',
   },
   ORIENT: {
     label: 'Orient',
-    color: '#c48b3f',
+    color: '#b8925a',
     symbol: 'O',
     description:
       'Choosing how to decompose the problem, and tracking where it is. A quarter of every trace.',
   },
   DECIDE: {
     label: 'Decide',
-    color: '#bf4536',
+    color: '#c0392b',
     symbol: 'D',
     description:
       'Changing a value already written down. Zero segments in 524 — the loop these models run has no decide phase at all.',
   },
   ACT: {
     label: 'Act',
-    color: '#4a6d8c',
+    color: '#3f5f92',
     symbol: 'A',
     description: 'Computing a partial product, summing, stating the answer.',
   },

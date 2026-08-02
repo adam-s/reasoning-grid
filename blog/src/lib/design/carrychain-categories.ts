@@ -17,12 +17,32 @@
  *   products and summing them in one long dependent chain are different phases,
  *   and the error in run B is in the second.
  *
- * Colour: one saturated hue in the whole scale, spent on CROSSCHECK, because
- * that is what the reader is meant to find. RECHECK sits opposite it in warmth
- * so the two read as different activities rather than as more and less of the
- * same one. Everything else is desaturated and stays out of the way — STRATEGY
- * especially, which is a quarter of both traces and would shout if it were
- * given a real colour.
+ * Colour. Three rules, in order:
+ *
+ * 1. RECHECK and CROSSCHECK are the argument, so they are the only two
+ *    saturated colours and they are separated on every axis at once — amber
+ *    against emerald in hue, warm against cool in temperature, and light
+ *    against dark in VALUE at a measured 3.9:1. The value gap is the one that
+ *    matters: it is what keeps them apart in greyscale and for the ~8% of men
+ *    with red-green deficiency, for whom hue alone may carry nothing.
+ *
+ *    Every ratio here was measured, because the first pass at this palette
+ *    asserted the same separation without checking and had it at 2.1:1. Two
+ *    other pairs were worse and invisible until measured: CROSSCHECK against
+ *    ERROR_CORRECTION at 1.09:1 — the exact green-against-red that most needs
+ *    a value gap — and RECHECK against STRATEGY at 1.02:1, the argument colour
+ *    against the quarter of every trace it has to stand out from.
+ * 1b. Blue against orange (PARTIAL_PRODUCT against RECHECK) is close in value
+ *    on purpose. It is the one hue pair that survives every common form of
+ *    colour blindness, so hue carries it and the value budget goes elsewhere.
+ * 2. PARTIAL_PRODUCT and ACCUMULATE borrow the reliability surface's own ramp,
+ *    mid-tone and deep. Doing the arithmetic looks the same in both figures.
+ * 3. Everything else is chromatically quiet and separated by VALUE, not hue.
+ *    The previous palette had TASK_SETUP, STATE_TRACKING and RESULT as three
+ *    warm greys within a few points of each other and of STRATEGY, which is a
+ *    quarter of every trace — four near-identical washes doing most of the
+ *    area. They are now a warm grey, a cool grey and a dark neutral, at
+ *    distinctly different lightnesses.
  *
  * Rubric: ../../../../.agents/reference/flame-rubric-carrychain.md
  */
@@ -56,7 +76,7 @@ export type CarryCategoryMeta = {
 export const carryCategoryMeta = {
   TASK_SETUP: {
     label: 'Setup',
-    color: '#9a9384',
+    color: '#948d80',
     symbol: 'S',
     ooda: ['observe'],
     description: 'Reading the problem, restating it, naming the operands.',
@@ -64,7 +84,7 @@ export const carryCategoryMeta = {
   },
   STRATEGY: {
     label: 'Strategy',
-    color: '#c9b99c',
+    color: '#e0d8c8',
     symbol: 'D',
     ooda: ['orient', 'decide'],
     description:
@@ -73,7 +93,7 @@ export const carryCategoryMeta = {
   },
   PARTIAL_PRODUCT: {
     label: 'Partial',
-    color: '#8aa4b0',
+    color: '#8fa8cb',
     symbol: '×',
     ooda: ['act'],
     description: 'Computing one piece: a digit times a chunk, one row of the long multiplication.',
@@ -81,7 +101,7 @@ export const carryCategoryMeta = {
   },
   ACCUMULATE: {
     label: 'Sum',
-    color: '#587f92',
+    color: '#3f5f92',
     symbol: '+',
     ooda: ['act'],
     description:
@@ -90,7 +110,7 @@ export const carryCategoryMeta = {
   },
   STATE_TRACKING: {
     label: 'State',
-    color: '#b3afa4',
+    color: '#adb2b8',
     symbol: 'T',
     ooda: ['orient'],
     description: 'Naming where it is — which chunk, which power of ten. Bookkeeping, not computing.',
@@ -98,7 +118,7 @@ export const carryCategoryMeta = {
   },
   RECHECK: {
     label: 'Recheck',
-    color: '#d29a5c',
+    color: '#f0b45f',
     symbol: 'R',
     ooda: ['observe'],
     description:
@@ -107,7 +127,7 @@ export const carryCategoryMeta = {
   },
   CROSSCHECK: {
     label: 'Crosscheck',
-    color: '#2d7d6a',
+    color: '#17624f',
     symbol: 'C',
     ooda: ['observe'],
     description:
@@ -116,7 +136,7 @@ export const carryCategoryMeta = {
   },
   ERROR_CORRECTION: {
     label: 'Correction',
-    color: '#bf4536',
+    color: '#d4503c',
     symbol: '!',
     ooda: ['decide'],
     description:
@@ -125,7 +145,7 @@ export const carryCategoryMeta = {
   },
   RESULT: {
     label: 'Result',
-    color: '#767165',
+    color: '#5d574d',
     symbol: '=',
     ooda: ['act'],
     description: 'Stating the final product, including the write-up after the thinking ends.',
