@@ -268,7 +268,9 @@
     };
   });
 
-  // playback
+  // Playback runs once and stops on the last frame. Looping would restart the
+  // surface from a single trial every few seconds, and the whole claim is that
+  // it stops moving -- an animation that keeps resetting says the opposite.
   $effect(() => {
     if (!playing) return;
     let raf = 0;
@@ -276,13 +278,23 @@
     const step = (now: number) => {
       if (now - last > 130) {
         last = now;
-        t = t >= MAXT ? 1 : t + 1;
+        if (t >= MAXT) {
+          playing = false; // button falls back to play; the frame stays put
+          return;
+        }
+        t += 1;
       }
       raf = requestAnimationFrame(step);
     };
     raf = requestAnimationFrame(step);
     return () => cancelAnimationFrame(raf);
   });
+
+  function togglePlay() {
+    // pressing play on the last frame replays rather than doing nothing
+    if (!playing && t >= MAXT) t = 1;
+    playing = !playing;
+  }
 
   // orbit
   let dragging = false;
@@ -334,8 +346,12 @@
   </div>
 
   <div class="controls">
-    <button class="play" onclick={() => (playing = !playing)} aria-label={playing ? 'Pause' : 'Play'}>
-      {playing ? '❚❚' : '▶'}
+    <button
+      class="play"
+      onclick={togglePlay}
+      aria-label={playing ? 'Pause' : t >= MAXT ? 'Replay from the first trial' : 'Play'}
+    >
+      {playing ? '❚❚' : t >= MAXT ? '↺' : '▶'}
     </button>
     <input
       type="range"
