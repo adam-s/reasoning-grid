@@ -96,7 +96,7 @@ argument, not the order they were built.
 
 | slot | ports from | what it settles |
 |---|---|---|
-| `Surface3D` | `render_grid.py`, `render_animation.py` | x = digits of A, y = digits of B, z = P(correct). Breaks at 8.56 digits; 100% → 3%; nine cells at 0/12 |
+| `SurfaceCanvas` **(built)** | `probe/build_surface.py` | x = digits of A, y = digits of B, z = P(correct), scrubbable over trial count and orbitable. Breaks at 8.56 digits; 100% → 3% |
 | `BlindSpots` | `render_blindspots.py` | **the core argument.** Qwen wins outright (McNemar 58) *and* Phi solves 104 problems it misses — 34% of its failures. Coverage 71% → 81% |
 | `Convergence` | `render_convergence.py` | one cell's number as 17 trials; then eight cells as small multiples. No cell converges alone |
 | `EffortPrice` | `render_effort.py` | reasoning scales effort 7× with difficulty; without it the line is **flat**. Price per correct answer crosses over at ~30 operations |

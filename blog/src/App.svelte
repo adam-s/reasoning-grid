@@ -8,6 +8,7 @@
   import Placeholder from './lib/components/Placeholder.svelte';
   import FlamePanel from './lib/viz/flame/FlamePanel.svelte';
   import ThreeTraces from './lib/viz/flame/ThreeTraces.svelte';
+  import SurfaceCanvas from './lib/viz/surface/SurfaceCanvas.svelte';
   import { LAMBDA_TRACE } from './lib/data/lambda-trace';
 </script>
 
@@ -18,8 +19,18 @@
     </Prose>
   </Section>
 
-  <Section eyebrow="01 · the surface" title="The grid">
-    <Placeholder name="Surface3D" ports="probe/render_grid.py + render_animation.py" />
+  <Section eyebrow="01 · the surface" title="The grid" width="figure">
+    <Prose>
+      <p>
+        One cell per problem size: how many digits in each factor, and how often the
+        model returns the exactly correct product. Scrub the trial count and watch it
+        assemble. After one trial the shape is roughly right but reads as a cliff,
+        because every cell is either 0% or 100% &mdash; there is no middle to be in yet.
+        The middle fills over the next few trials, and by about eight the terrain stops
+        changing shape and only jitters.
+      </p>
+    </Prose>
+    <SurfaceCanvas />
   </Section>
 
   <Section eyebrow="02 · blind spots" title="Do they fail in the same places?">
