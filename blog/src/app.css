@@ -1,0 +1,120 @@
+/* Design tokens. Copied from ~/Projects/grpo/post/src/app.css so this post
+   matches grpo, clap and separate on adamsohn.com. Do not re-pick these:
+   the house style is the point, and a post that invents its own palette
+   reads as a different site.
+
+   The one thing that IS ours to choose is the semantic mapping at the bottom
+   -- each post assigns the shared hues to its own quantities and then uses
+   them consistently start to finish. */
+:root {
+  --font-serif: "Source Serif 4", "Source Serif Pro", Georgia, serif;
+  --font-sans: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --font-mono: "JetBrains Mono", "SF Mono", ui-monospace, monospace;
+
+  --bg: #fdfcf9;
+  --panel: #f7f5f0;
+  --panel-2: #f0ede5;
+  --line: #e8e4dc;
+  --line-strong: #d8d2c4;
+  --ink: #1a1a1a;
+  --ink-dim: #5a5a5a;
+  --ink-faint: #9a9a9a;
+  --accent: #1f3a5f;
+  --accent-hover: #2d4a73;
+
+  --pos: #b0423e;
+  --neg: #2f6db0;
+
+  --space-xs: 4px;
+  --space-sm: 8px;
+  --space-md: 16px;
+  --space-lg: 24px;
+  --space-xl: 40px;
+  --space-2xl: 64px;
+  --space-3xl: 96px;
+
+  /* Two widths, the way agent-capability-threshold does it: a wide page shell
+     with children opting into their own width. Prose holds the reading measure;
+     figures are allowed to breathe. clap and grpo use a single 640px shell
+     because they are text-heavy explainers -- this post is chart-heavy, and the
+     flame graph was authored against a 1100px shell. */
+  --maxw: 640px;        /* the reading measure -- prose, headings, notes */
+  --maxw-fig: 880px;    /* a figure that needs room; matches ThinkingOps */
+  --maxw-page: 1100px;  /* the shell */
+
+  /* ---- aliases the ported flame-graph components expect ----
+     Those files came from agent-capability-threshold, which names some tokens
+     differently. Aliasing here rather than editing them keeps the copies
+     byte-identical to their source, so a future diff against that repo still
+     works. Delete these only if the components are rewritten. */
+  --surface: var(--panel);
+  --border: var(--line);
+  --ink-muted: var(--ink-dim);
+  --ink-subtle: var(--ink-faint);
+  --radius-sm: 3px;
+  --radius-md: 5px;
+  --text-xs: 0.72rem;
+  --text-sm: 0.82rem;
+  --text-base: 0.94rem;
+  --text-lg: 1.08rem;
+  --weight-medium: 500;
+  --leading-snug: 1.35;
+  --leading-relaxed: 1.6;
+
+  /* ---- carrychain's semantic assignment of the shared hues ----
+     ONE language, start to finish. See blog/README.md.
+       reliability  a single warm ramp, pale -> deep. Sequential data gets one
+                    hue; a rainbow invents boundaries the numbers do not have.
+       model A      cool  -- Qwen3-4B
+       model B      warm  -- Phi-4-reasoning
+       fitted line  navy accent, reserved for the boundary and UI focus
+       absent       faint grey, never a low score */
+  --ramp-lo: #f2ece2;
+  --ramp-hi: #7a3b12;
+  --model-a: #3b6ea5;
+  --model-b: #b8551f;
+  --fit: var(--accent);
+  --absent: #cfcabf;
+
+  color: var(--ink);
+  background: var(--bg);
+  font-synthesis: none;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+* { box-sizing: border-box; }
+html, body { margin: 0; padding: 0; background: var(--bg); }
+
+/* A figure wider than the phone must scroll inside its own box, never drag the
+   page sideways with it. Without this a single 880px chart makes the whole
+   article scrollable horizontally, which breaks reading everywhere else. */
+html, body { overflow-x: hidden; }
+body { -webkit-text-size-adjust: 100%; }
+
+body {
+  font-family: var(--font-serif);
+  font-size: 1.0625rem;
+  line-height: 1.7;
+  color: var(--ink);
+}
+
+@media (max-width: 600px) {
+  body { font-size: 1rem; line-height: 1.65; }
+}
+
+h1, h2, h3 {
+  font-family: var(--font-serif);
+  line-height: 1.2;
+  letter-spacing: -0.015em;
+  font-weight: 700;
+  color: var(--ink);
+}
+
+a { color: var(--accent); }
+
+.mono {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+}

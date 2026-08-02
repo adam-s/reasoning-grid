@@ -1,0 +1,74 @@
+{
+  "trace": "A",
+  "uid": "2a5d6f4d7556b739",
+  "cell": "7x11",
+  "outcome": "converged_right",
+  "rubric": ".agents/reference/flame-rubric-carrychain.md",
+  "labelled_blind": false,
+  "note": "Labelled second, after B's labels were written and locked. No B label was revised afterward. Where the same borderline appeared in both traces -- a place-value doubt resolved by converting to scientific notation (B[10], A[11], A[14]) -- both got CROSSCHECK.",
+
+  "labels": [
+    "TASK_SETUP",
+    "STRATEGY", "STRATEGY", "STRATEGY", "STRATEGY", "STRATEGY", "STRATEGY", "STRATEGY", "STRATEGY",
+    "PARTIAL_PRODUCT", "PARTIAL_PRODUCT",
+    "CROSSCHECK",
+    "STRATEGY",
+    "PARTIAL_PRODUCT",
+    "CROSSCHECK",
+    "PARTIAL_PRODUCT",
+    "STRATEGY",
+    "PARTIAL_PRODUCT",
+    "STRATEGY", "STRATEGY", "STRATEGY",
+    "TASK_SETUP",
+    "STRATEGY",
+    "STATE_TRACKING",
+    "STRATEGY", "STRATEGY",
+    "PARTIAL_PRODUCT", "PARTIAL_PRODUCT", "PARTIAL_PRODUCT", "PARTIAL_PRODUCT",
+    "ACCUMULATE", "ACCUMULATE", "ACCUMULATE", "ACCUMULATE", "ACCUMULATE", "ACCUMULATE", "ACCUMULATE",
+    "RECHECK", "RECHECK", "RECHECK",
+    "STRATEGY",
+    "CROSSCHECK", "CROSSCHECK",
+    "STRATEGY", "STRATEGY", "STRATEGY", "STRATEGY",
+    "CROSSCHECK", "CROSSCHECK", "CROSSCHECK", "CROSSCHECK", "CROSSCHECK", "CROSSCHECK",
+    "CROSSCHECK", "CROSSCHECK", "CROSSCHECK", "CROSSCHECK", "CROSSCHECK", "CROSSCHECK",
+    "CROSSCHECK",
+    "RESULT", "RESULT", "RESULT", "RESULT"
+  ],
+
+  "subtasks": [
+    { "start": 0,  "end": 20, "label": "Look for a shortcut" },
+    { "start": 4,  "end": 5,  "label": "Try factoring out 2" },
+    { "start": 7,  "end": 18, "label": "Split the multiplier, abandoned partway" },
+    { "start": 21, "end": 39, "label": "Digit-by-digit, carried to the end" },
+    { "start": 26, "end": 29, "label": "Compute the eleven partial products" },
+    { "start": 30, "end": 36, "label": "Sum them" },
+    { "start": 37, "end": 39, "label": "Re-add and re-derive every term" },
+    { "start": 40, "end": 59, "label": "Independent checks" },
+    { "start": 41, "end": 42, "label": "Digit-count false alarm" },
+    { "start": 46, "end": 51, "label": "Casting out nines" },
+    { "start": 52, "end": 59, "label": "Residues mod 10, 100, 1000" },
+    { "start": 60, "end": 63, "label": "Report" }
+  ],
+
+  "annotations": [
+    { "segment": 5, "kind": "error_never_caught",
+      "text": "'I divided both numbers by 2 ... so now the problem becomes multiplying 1,026,948 by 15,478,561,889.' That product is the answer divided by 4. A never notices. It escapes by abandoning the route as unhelpful, not by catching the mistake -- so the correct run is not the careful one, it is the one whose surviving path got checked."},
+    { "segment": 18, "kind": "abandoned",
+      "text": "The first decomposition is dropped mid-way -- 'this is getting really complex' -- with no total ever produced from it. This is why the recomputation at 26-29 is PARTIAL_PRODUCT and not RECHECK: nothing finished was being re-derived." },
+    { "segment": 41, "kind": "false_alarm",
+      "text": "7 digits + 11 digits predicts up to 18; the answer has 17. A treats the mismatch as possible evidence of error -- the mirror of B[53]. Both traces raise exactly one false alarm and both resolve it correctly." },
+    { "segment": 46, "kind": "the_check_B_declined",
+      "text": "'maybe I can use modular arithmetic to check the result ... let me try modulo 9.' This is the same move B named and dropped at its segment 58. A spends six segments on it." },
+    { "segment": 51, "kind": "check_that_could_have_caught_B",
+      "text": "Digit sum 87, residue 6, matching 6x7=42=6 mod 9. Run against B's answer this check returns 4 against an expected 3, and B's error is exposed." },
+    { "segment": 59, "kind": "resolution_depth",
+      "text": "A's checks reach mod 1000 -- the last three digits, 088. B's deepest was the last single digit. Depth of residue is what decides whether a middle-digit error is visible, and neither trace reasons about that; A just kept going." }
+  ],
+
+  "verified": {
+    "answer": 63582712699139088,
+    "truth": 63582712699139088,
+    "correct": true,
+    "halving_both_operands_error_at_seg5": true
+  }
+}

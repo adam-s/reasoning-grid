@@ -16,3 +16,9 @@ temp/
 #   python probe/reduce_grid.py --sweep 10-grid12 --pool 11-ext14 --out derived
 #   python probe/render_*.py ...
 derived/
+
+# blog/ is the post source (Vite + Svelte). Its build output is not tracked
+# here -- ~/Projects/blog holds built dist/ copies and is the deploy manifest.
+blog/node_modules/
+blog/dist/
+blog/.svelte-kit/
