@@ -50,9 +50,11 @@
         whole figure.
       </p>
       <p>
-        The run that got it right ran <strong>17 crosschecks to 3 rechecks</strong>. The
-        run that got it wrong ran <strong>9 to 14</strong> &mdash; and gave more of its
-        trace to checking, not less. Volume is not the variable.
+        The run that got it wrong ran <strong>14 rechecks against 9 crosschecks</strong>.
+        The run that got it right ran that ratio the other way, and by a wider margin.
+        Both gave a similar share of the trace to checking &mdash; so the variable is not
+        how much a model checks. It is whether the check can fail differently from the
+        thing being checked.
       </p>
     </Prose>
     <ThreeTraces />

@@ -129,11 +129,29 @@ category appears in one trace and not the other.
 | `CROSSCHECK` : `RECHECK`, segments | **17 : 3** | 9 : 14 |
 | `ERROR_CORRECTION` | 0 | 0 |
 
-**B verified more, not less.** The volume of checking does not separate these
-runs; the kind does. A put two thirds of its verification into methods with
-different failure modes and reached mod 1000. B put more than half into
-re-deriving what it had already derived, and its deepest independent check was
-one digit.
+**The kind of checking separates these runs, not the volume.** A put most of its
+verification into methods with different failure modes and reached mod 1000. B
+put more than half into re-deriving what it had already derived, and its deepest
+independent check was one digit.
+
+**Two of those numbers are load-bearing on one unaudited judgment.** The
+amendment above decides four segments, `A[26]`–`A[29]`. Removing it moves A to
+17:7 and lifts A's verification share to 46%, which reverses "B verified more":
+
+| | with the amendment | strict rule 3 |
+|---|---|---|
+| A crosscheck : recheck | 17 : 3 | 17 : 7 |
+| A verification share | 36% | 46% |
+
+B's 9:14 and 40% do not move. What survives either labelling is the direction —
+A is crosscheck-dominant, B is recheck-dominant, and the two spend a similar
+share of the trace checking. **Only that is safe to publish** until a blind pass
+settles those four segments, and the post is written to the safe version.
+
+A mechanical cross-trace consistency check found no other exposure: all 201
+distinct segments compared pairwise with digits stripped produced three
+similar-but-differently-labelled pairs, and all three are correct under the
+rules. The scientific-notation calls are consistent across all three traces.
 
 **A prediction in the traps section missed.** It expected roughly four
 corrections per trace and got zero in 128 segments — neither model ever changed
