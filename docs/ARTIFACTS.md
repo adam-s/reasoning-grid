@@ -293,6 +293,18 @@ Paired one run per problem per arm: **58.2% on, 24.0% off** over 1,566 identical
 problems. Reasoning solves **569** that the immediate answer misses; the
 immediate answer solves **33** that reasoning misses, about 17 to 1.
 
+**Also says:** the benefit has its own axis. Whether the model is *right* tracks
+total digits; how much reasoning *helps* tracks `min(a,b)` &mdash; the number of
+partial products long multiplication has to generate and add. Bucketed that way
+it explains 56% of cell-level gap variance against 46% for the product and 27%
+for the sum, and the benefit peaks at **+62 points at six steps**. The axis
+toggle folds the grid onto (shorter, longer), which straightens the ridge; the
+fold is only legitimate because the swap test found no order effect.
+
 **Trap it avoids:** pooling every run instead lifts the reasoning arm to 62.8%,
 because that arm was sampled more. It looks like a bigger effect and is an
 artefact of allocation.
+
+**Flagged, not acted on:** on the reasoning-on surface a logistic fit gives
+deviance 1276 for `a+b` against 1373 for `a&times;b`. The project's difficulty
+parameter is `N = a&times;b`, and total digits fits better.

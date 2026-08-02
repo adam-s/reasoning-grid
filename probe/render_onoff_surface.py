@@ -17,6 +17,24 @@ blog/src/lib/viz/surface/project.ts for the full argument.
 Pairing is one run per problem per arm, so both sheets answer the same 1,566
 problems exactly once. Using every run instead inflates the reasoning arm to
 62.8%, because that arm was sampled more.
+
+TWO AXES, because two different quantities.
+
+Whether the model is RIGHT tracks total digits. Fitting logit p = a + b*log(x)
+on the reasoning-on surface: a+b gives deviance 1276, a*b 1373, min(a,b) 1612.
+The project's N = a*b is not the best of those, which is worth a look, but this
+file does not act on it.
+
+How much reasoning HELPS tracks min(a,b), which is a different thing. Bucketed,
+min(a,b) explains 56% of cell-level gap variance against 46% for the product and
+27% for the sum. That is the number of partial products long multiplication has
+to generate and add -- the length of the chain -- so the benefit scales with how
+many steps the method needs, not with how big the answer is.
+
+Hence the axis toggle. On (a,b) the ridge runs along L-shaped nested corners and
+the eye does not read it. On (shorter, longer) it straightens out. The folded
+view averages the two orders of each pair, which is only legitimate because the
+swap test found no order effect -- see probe/analyze_order.py.
 """
 import argparse
 import collections
@@ -63,6 +81,48 @@ def collect(runs="runs"):
         g[0] += v["on"]; g[1] += 1; g[2] += v["off"]; g[3] += 1
         tab[(v["on"], v["off"])] += 1
     return paired, grid, tab
+
+
+def gap_svg(by_min, W=880, H=290):
+    """The finding as a line: both arms, and the gap between them, against the
+    number of partial products the procedure needs."""
+    pts = [(m, g) for m, g in sorted(by_min.items()) if g[1] >= 20]
+    lo, hi = pts[0][0], pts[-1][0]
+    L, R, T, B = 48, 20, 18, 42
+    x = lambda m: L + (m - lo) / (hi - lo) * (W - L - R)
+    y = lambda p: T + (1 - p) * (H - T - B)
+
+    on = [(x(m), y(g[0] / g[1])) for m, g in pts]
+    off = [(x(m), y(g[2] / g[3])) for m, g in pts]
+    band = " ".join(f"{px:.1f},{py:.1f}" for px, py in on) + " " + \
+           " ".join(f"{px:.1f},{py:.1f}" for px, py in reversed(off))
+    path = lambda ps: "M" + " L".join(f"{px:.1f},{py:.1f}" for px, py in ps)
+
+    peak = max(pts, key=lambda t: t[1][0] / t[1][1] - t[1][2] / t[1][3])
+    pm, pg = peak[0], peak[1][0] / peak[1][1] - peak[1][2] / peak[1][3]
+
+    out = [f'<svg viewBox="0 0 {W} {H}" role="img" aria-label="Reasoning benefit '
+           f'against the number of partial products, peaking at {pm} steps.">']
+    for t in (0, .25, .5, .75, 1):
+        out.append(f'<line x1="{L}" y1="{y(t):.1f}" x2="{W-R}" y2="{y(t):.1f}" '
+                   f'stroke="var(--line)" stroke-dasharray="2 4"/>')
+        out.append(f'<text x="{L-9}" y="{y(t)+4:.1f}" text-anchor="end" class="tk">'
+                   f'{int(t*100)}%</text>')
+    out.append(f'<polygon points="{band}" fill="var(--off)" opacity=".16"/>')
+    out.append(f'<path d="{path(off)}" fill="none" stroke="var(--off)" stroke-width="2.4"/>')
+    out.append(f'<path d="{path(on)}" fill="none" stroke="var(--on-hi)" stroke-width="2.4"/>')
+    for m, g in pts:
+        out.append(f'<circle cx="{x(m):.1f}" cy="{y(g[0]/g[1]):.1f}" r="3" fill="var(--on-hi)"/>')
+        out.append(f'<circle cx="{x(m):.1f}" cy="{y(g[2]/g[3]):.1f}" r="3" fill="var(--off)"/>')
+        out.append(f'<text x="{x(m):.1f}" y="{H-22}" text-anchor="middle" class="tk">{m}</text>')
+    out.append(f'<line x1="{x(pm):.1f}" y1="{T}" x2="{x(pm):.1f}" y2="{H-B}" '
+               f'stroke="var(--ink)" stroke-width="1" stroke-dasharray="3 3" opacity=".35"/>')
+    out.append(f'<text x="{x(pm)+7:.1f}" y="{T+13}" class="tk" fill="var(--ink)">'
+               f'widest at {pm} steps &#183; {pg:.0%}</text>')
+    out.append(f'<text x="{(L+W-R)/2:.0f}" y="{H-4}" text-anchor="middle" class="tk">'
+               f'digits in the SHORTER factor &#183; how many partial products the method needs</text>')
+    out.append('</svg>')
+    return "\n".join(out)
 
 
 PAGE = """<title>carrychain &mdash; where reasoning earns its tokens</title>
@@ -117,6 +177,13 @@ canvas:active{cursor:grabbing}
   font-family:system-ui,sans-serif;font-size:12px;color:var(--dim)}
 .sw{display:inline-block;width:22px;height:9px;border-radius:2px;vertical-align:-1px;
   margin-right:6px}
+.tk{font-family:ui-monospace,"SF Mono",Menlo,monospace;font-size:10.5px;fill:var(--faint)}
+.axes{display:inline-flex;gap:1px;padding:1px;margin-bottom:12px;border:1px solid var(--line);
+  border-radius:4px;background:var(--panel)}
+.axes button{padding:4px 11px;border:0;border-radius:2px;background:transparent;cursor:pointer;
+  font-family:system-ui,sans-serif;font-size:12px;color:var(--faint)}
+.axes button:hover{color:var(--ink)}
+.axes button.on{background:var(--ink);color:var(--paper)}
 .foot{margin-top:56px;padding-top:18px;border-top:1px solid var(--line);
   font-family:system-ui,sans-serif;font-size:13px;line-height:1.6;color:var(--faint);
   max-width:920px}
@@ -136,16 +203,37 @@ canvas:active{cursor:grabbing}
   </div>
 
   <figure>
+    <div class="axes">
+      <button id="m-ab" class="on">digits in A &times; B</button>
+      <button id="m-mm">shorter &times; longer</button>
+    </div>
     <div class="plot"><canvas id="c"></canvas><span class="hint">drag to rotate</span></div>
     <div class="key">
       <span><span class="sw" style="background:linear-gradient(90deg,var(--on-lo),var(--on-hi))"></span>reasoning on</span>
       <span><span class="sw" style="background:var(--off);opacity:.5"></span>reasoning off</span>
       <span class="mono" style="color:var(--faint)">x, y = digits in each factor &middot; height = P(exactly correct)</span>
     </div>
-    <figcaption>Two 14&times;14 sheets over the same grid. The lower one is the model
-    answering immediately; the upper one is the same model allowed to think first. Drag to
-    look along the ridge &mdash; the sheets meet at both ends and separate most in the
-    middle.</figcaption>
+    <figcaption>Two sheets over the same grid: the lower is the model answering
+    immediately, the upper is the same model allowed to think first. On
+    <em>A&nbsp;&times;&nbsp;B</em> the gap runs along L-shaped corners and the eye slides
+    off it. Switch to <em>shorter&nbsp;&times;&nbsp;longer</em> and it straightens into one
+    ridge &mdash; that fold averages the two orders of each pair, which is only allowed
+    because the swap test found no order effect.</figcaption>
+  </figure>
+
+  <h2>The benefit has its own axis</h2>
+  <div class="col">
+    <p>Whether the model is <em>right</em> tracks total digits. How much reasoning
+    <em>helps</em> tracks something else: the digits in the shorter factor, which is
+    exactly how many partial products long multiplication has to generate and add.
+    It is the length of the chain.</p>
+  </div>
+  <figure>
+    __GAPSVG__
+    <figcaption>At one or two steps the weights already have the answer and thinking buys
+    nothing. Past ten the chain is too long to finish either way. Everything reasoning is
+    worth sits between, and bucketed this way it explains 56% of the cell-to-cell variation
+    in the gap &mdash; against 46% for the product and 27% for the sum.</figcaption>
   </figure>
 
   <h2>What the shape says</h2>
@@ -171,6 +259,15 @@ canvas:active{cursor:grabbing}
     lifts the reasoning arm to 62.8%, because that arm was sampled more &mdash; a real
     trap, since it looks like a bigger effect. Scoring is exact string match, re-derived
     from raw text. Cells with no data in an arm are dropped from both.</p>
+    <p><strong>Axes.</strong> The two questions here have different natural axes, and
+    conflating them is easy. Whether the model is right tracks total digits: fitting
+    <span class="mono">logit p = &alpha; + &beta;&middot;log x</span> on the reasoning-on
+    surface gives deviance 1276 for <span class="mono">a+b</span>, 1373 for
+    <span class="mono">a&times;b</span>, 1612 for <span class="mono">min(a,b)</span>. How
+    much reasoning helps tracks <span class="mono">min(a,b)</span> instead, which explains
+    56% of cell-level gap variance against 46% and 27%. Worth noting in passing that this
+    project's difficulty parameter is <span class="mono">N = a&times;b</span>, and
+    <span class="mono">a+b</span> fits the surface better &mdash; flagged, not acted on.</p>
     <p><strong>Rendering.</strong> Perspective projection with a real camera, so it
     orbits; back-to-front ordering keyed on the ground plane only, which is exact for a
     heightfield rather than the usual approximation. Regenerated by
@@ -191,8 +288,14 @@ function proj(x,y,z,cx,cy,fit){
   const s=900/(900+d*26);
   return {sx:cx+x1*26*s*fit, sy:cy-vy*26*s*fit, d};
 }
-function rate(k,a,b){ const g=D.grid[a+'x'+b]; if(!g) return null;
+let mode='ab';
+function rate(k,a,b){ const g=(mode==='ab'?D.grid:D.fold)[a+'x'+b]; if(!g) return null;
   return k==='on' ? (g[1]?g[0]/g[1]:null) : (g[3]?g[2]/g[3]:null); }
+const AX = {ab:['digits in A','digits in B'], mm:['shorter factor','longer factor']};
+for(const [id,m] of [['m-ab','ab'],['m-mm','mm']])
+  document.getElementById(id).onclick=()=>{ mode=m;
+    document.getElementById('m-ab').classList.toggle('on',m==='ab');
+    document.getElementById('m-mm').classList.toggle('on',m==='mm'); draw(); };
 
 function draw(){
   const dpr=Math.min(devicePixelRatio||1,2);
@@ -251,7 +354,7 @@ function draw(){
   const out=(x,y,by)=>{const dx=x-ctr.sx,dy=y-ctr.sy,m=Math.hypot(dx,dy)||1;
     return [x+dx/m*by, y+dy/m*by];};
   ctx.textBaseline='middle'; ctx.textAlign='center';
-  for(const ax of [{t:'digits in A',f:near[1],al:'a'},{t:'digits in B',f:near[0],al:'b'}]){
+  for(const ax of [{t:AX[mode][0],f:near[1],al:'a'},{t:AX[mode][1],f:near[0],al:'b'}]){
     const at=v=>ax.al==='a'?P(v,ax.f,0):P(ax.f,v,0);
     const e0=at(1), e1=at(DIM);
     ctx.strokeStyle=css('--dim'); ctx.globalAlpha=.5; ctx.lineWidth=1;
@@ -297,15 +400,31 @@ def main():
     paired, grid, tab = collect(args.runs)
     kon = sum(g[0] for g in grid.values()); non = sum(g[1] for g in grid.values())
     kof = sum(g[2] for g in grid.values()); nof = sum(g[3] for g in grid.values())
+    # Folded onto (shorter, longer). Legitimate only because the swap test
+    # found no order effect; it also halves the binomial noise per cell.
+    fold = collections.defaultdict(lambda: [0, 0, 0, 0])
+    for (a, b), g in grid.items():
+        f = fold[(min(a, b), max(a, b))]
+        for i in range(4):
+            f[i] += g[i]
+
+    by_min = collections.defaultdict(lambda: [0, 0, 0, 0])
+    for (a, b), g in grid.items():
+        m = by_min[min(a, b)]
+        for i in range(4):
+            m[i] += g[i]
+
     data = {"dim": max(max(c) for c in grid),
-            "grid": {f"{a}x{b}": grid[(a, b)] for (a, b) in sorted(grid)}}
+            "grid": {f"{a}x{b}": grid[(a, b)] for (a, b) in sorted(grid)},
+            "fold": {f"{a}x{b}": fold[(a, b)] for (a, b) in sorted(fold)}}
 
     html = (PAGE.replace("__DATA__", json.dumps(data, separators=(",", ":")))
                 .replace("__PROBS__", f"{len(paired):,}")
                 .replace("__ON__", f"{kon/non:.1%}")
                 .replace("__OFF__", f"{kof/nof:.1%}")
                 .replace("__ONLYON__", str(tab[(True, False)]))
-                .replace("__ONLYOFF__", str(tab[(False, True)])))
+                .replace("__ONLYOFF__", str(tab[(False, True)]))
+                .replace("__GAPSVG__", gap_svg(by_min)))
     os.makedirs(os.path.dirname(os.path.abspath(args.out)), exist_ok=True)
     open(args.out, "w").write(html)
 
