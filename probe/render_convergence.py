@@ -73,6 +73,11 @@ text{font-family:ui-monospace,"SF Mono",Menlo,monospace;fill:var(--muted)}
 .stat .v{font-family:ui-monospace,"SF Mono",Menlo,monospace;font-size:23px;
   font-variant-numeric:tabular-nums;margin-top:3px}
 .hr{height:1px;background:var(--line);border:0;margin:0}
+.sub{font-size:10px}\n.panelttl{font-size:12.5px;fill:var(--ink)}
+:root{--easy:#4a8cf0;--hard:#8c2f39}
+@media (prefers-color-scheme:dark){:root{--easy:#6fa4f5;--hard:#e07070}}
+:root[data-theme="dark"]{--easy:#6fa4f5;--hard:#e07070}
+:root[data-theme="light"]{--easy:#4a8cf0;--hard:#8c2f39}
 """
 
 
@@ -138,6 +143,72 @@ def convergence(outcomes, label, W=940, H=430):
     return "\n".join(o)
 
 
+def small_multiples(series, cols=4, PW=222, PH=158, GAP=14):
+    """One panel per cell instead of one axis for all of them.
+
+    Overlaid, eight running-rate lines cross constantly and the eye cannot
+    follow any single one; the reader gets an impression of noise and no
+    individual story. Split into panels each line is legible, and the
+    comparison survives because every panel shares the same axes -- so the
+    shapes can still be read against each other at a glance.
+
+    Panels are ordered by N, so difficulty increases left to right and top to
+    bottom, and the drop across the sequence is the surface itself.
+    """
+    rows = (len(series) + cols - 1) // cols
+    W = cols * PW + (cols - 1) * GAP
+    H = rows * PH + (rows - 1) * GAP
+    o = [f'<svg viewBox="0 0 {W} {H}" role="img" aria-label="running pass rate for '
+         f'each of the {len(series)} best-sampled cells, one panel each">']
+    L, T, B, Rr = 34, 26, 30, 8
+
+    for idx, (label, outcomes, N) in enumerate(sorted(series, key=lambda s: s[2])):
+        ox = (idx % cols) * (PW + GAP)
+        oy = (idx // cols) * (PH + GAP)
+        pw, ph = PW - L - Rr, PH - T - B
+        n = len(outcomes)
+        run, k = [], 0
+        for i, ok in enumerate(outcomes, 1):
+            k += 1 if ok else 0
+            run.append(wilson(k, i))
+
+        def X(i):
+            return ox + L + pw * (i - 1) / max(n - 1, 1)
+
+        def Y(v):
+            return oy + T + ph * (1 - v)
+
+        t = min(N / 110, 1.0)
+        col = f"color-mix(in oklab, var(--hard) {t*100:.0f}%, var(--easy))"
+        o.append(f'<rect x="{ox}" y="{oy}" width="{PW}" height="{PH}" fill="var(--card)" '
+                 f'stroke="var(--line)" rx="3"/>')
+        band = ([f"{X(i+1):.1f},{Y(hi):.1f}" for i, (_, _, hi) in enumerate(run)]
+                + [f"{X(i+1):.1f},{Y(lo):.1f}"
+                   for i, (_, lo, _) in reversed(list(enumerate(run)))])
+        o.append(f'<polygon points="{" ".join(band)}" fill="{col}" opacity=".14"/>')
+        for v in (0, .5, 1):
+            o.append(f'<line x1="{ox+L}" y1="{Y(v):.1f}" x2="{ox+L+pw}" y2="{Y(v):.1f}" '
+                     f'class="grid"/>')
+            o.append(f'<text class="sub" x="{ox+L-5}" y="{Y(v)+3.5:.1f}" '
+                     f'text-anchor="end">{v*100:.0f}</text>')
+        d = " ".join(f"{'M' if i == 0 else 'L'}{X(i+1):.1f},{Y(p):.1f}"
+                     for i, (p, _, _) in enumerate(run))
+        o.append(f'<path d="{d}" fill="none" stroke="{col}" stroke-width="2.1" '
+                 f'stroke-linejoin="round"/>')
+        fin = run[-1][0]
+        o.append(f'<circle cx="{X(n):.1f}" cy="{Y(fin):.1f}" r="4" fill="{col}"/>')
+        o.append(f'<text class="panelttl" x="{ox+L}" y="{oy+16}">{label}</text>')
+        o.append(f'<text class="sub" x="{ox+PW-8}" y="{oy+16}" text-anchor="end">'
+                 f'N={N}</text>')
+        lo_, hi_ = run[-1][1], run[-1][2]
+        o.append(f'<text class="sub" x="{ox+L}" y="{oy+PH-9}">'
+                 f'{k}/{n} = {fin:.0%}</text>')
+        o.append(f'<text class="sub" x="{ox+PW-8}" y="{oy+PH-9}" text-anchor="end">'
+                 f'[{lo_:.0%}, {hi_:.0%}]</text>')
+    o.append("</svg>")
+    return "\n".join(o)
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--runs", default="runs")
@@ -145,6 +216,8 @@ def main():
     ap.add_argument("--cell", default=None, help="e.g. 7x7; default = best sampled")
     ap.add_argument("--glob", default="1[01]-*,07-grid12-*")
     ap.add_argument("-o", "--out", default="derived/convergence.html")
+    ap.add_argument("--top", type=int, default=8,
+                    help="how many best-sampled cells to overlay in the second panel")
     args = ap.parse_args()
 
     paths = []
@@ -166,6 +239,13 @@ def main():
     grinds = sum(1 for r in rs if r.get("finish_reason") == "length")
     label = f"{a}d &times; {b}d"
     mname = args.model.split("/")[-1]
+
+    top = sorted(by.items(), key=lambda kv: -len(kv[1]))[:args.top]
+    series = []
+    for (ca, cb), rs2 in top:
+        rs2 = sorted(rs2, key=lambda r: (r["instance_id"], r.get("sweep_id", "")))
+        series.append((f"{ca}x{cb}", [bool(r["correct"]) for r in rs2], ca * cb))
+    n_cells = len(by)
 
     # how much the estimate moved over the second half -- a crude convergence read
     half = n // 2
@@ -191,6 +271,20 @@ def main():
   </div>
 
   <figure>{convergence(outcomes, label)}</figure>
+
+  <hr class="hr"/>
+  <section>
+    <h2>The {len(series)} best-sampled cells at once</h2>
+    <p class="note" style="margin-bottom:14px">One panel per cell, ordered by problem
+      size, all sharing the same axes. Shaded is the 95% interval after each trial;
+      darker lines are harder cells.</p>
+    <figure>{small_multiples(series)}</figure>
+    <p class="note" style="margin-top:14px">What the single chart cannot show: the lines
+      finish <em>ordered by problem size</em> and stay ordered well before any one of them
+      has converged. That is the whole reason a grid works. Individual cells are noisy
+      measurements, and the surface they form is still legible &mdash; which is why the
+      boundary is fitted across all {n_cells} cells rather than read off any of them.</p>
+  </section>
 
   <hr class="hr"/>
   <section>

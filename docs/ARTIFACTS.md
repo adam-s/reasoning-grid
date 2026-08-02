@@ -154,6 +154,26 @@ Not available from this data: **temperature 0 against 0.7.** The temp-0 grid run
 died in sweep 05, and what remains is at the wrong `top_p` or has thinking
 unrecorded. A clean comparison needs a fresh pass.
 
+### 8. The surface settling — animated over trial count
+
+[Open the chart](https://claude.ai/code/artifact/8c8cd53d-dd1e-4325-bed2-1e159cd043db)
+
+`probe/render_animation.py` &rarr; `derived/animation.html`
+
+The 3D surface redrawn at every trial count, with a scrubber and a play control.
+Same projection and painter's algorithm as chart 1, moved into inline JS so the
+geometry can be rebuilt per frame. 12 KB total — the 1,566 individual outcomes
+are embedded as an array; no library, no canvas, no CDN.
+
+**Says:** the shape is roughly right after one trial but reads as a cliff,
+because every cell is 0% or 100%. The middle fills in over the next few trials,
+and by about eight the terrain stops changing shape and only jitters.
+
+**Also makes the sampling plan visible.** A readout counts how many cells are
+still measuring. Saturated corners got three trials and freeze; transition-band
+cells got twelve and keep moving. The regions still shifting late are exactly
+the ones the allocation decided were worth spending on.
+
 ## Encoding rules used across all of them
 
 - **Sequential ramp, one hue** for probability. A rainbow invents boundaries the
