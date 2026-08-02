@@ -71,7 +71,7 @@ export const CARRY_TRACES: readonly CarryTrace[] = [
    "width": 5419,
    "category": "STRATEGY",
    "label": "Look for a shortcut",
-   "text": "Look for a shortcut \u00b7 segments 0\u201320",
+   "text": "Look for a shortcut",
    "index": 0,
    "container": true,
    "muted": true
@@ -82,7 +82,7 @@ export const CARRY_TRACES: readonly CarryTrace[] = [
    "width": 6260,
    "category": "RECHECK",
    "label": "Digit-by-digit, carried to the end",
-   "text": "Digit-by-digit, carried to the end \u00b7 segments 21\u201339",
+   "text": "Digit-by-digit, carried to the end",
    "index": 21,
    "container": true,
    "muted": true
@@ -93,7 +93,7 @@ export const CARRY_TRACES: readonly CarryTrace[] = [
    "width": 4420,
    "category": "CROSSCHECK",
    "label": "Independent checks",
-   "text": "Independent checks \u00b7 segments 40\u201359",
+   "text": "Independent checks",
    "index": 40,
    "container": true,
    "muted": true
@@ -104,7 +104,7 @@ export const CARRY_TRACES: readonly CarryTrace[] = [
    "width": 1891,
    "category": "RESULT",
    "label": "Report",
-   "text": "Report \u00b7 segments 60\u201363",
+   "text": "Report",
    "index": 60,
    "container": true,
    "muted": true
@@ -159,7 +159,7 @@ export const CARRY_TRACES: readonly CarryTrace[] = [
    "width": 926,
    "category": "STRATEGY",
    "label": "Try factoring out 2",
-   "text": "Try factoring out 2 \u00b7 segments 4\u20135",
+   "text": "Try factoring out 2",
    "index": 4,
    "container": true,
    "muted": true
@@ -181,7 +181,7 @@ export const CARRY_TRACES: readonly CarryTrace[] = [
    "width": 3126,
    "category": "PARTIAL_PRODUCT",
    "label": "Split the multiplier, abandoned partway",
-   "text": "Split the multiplier, abandoned partway \u00b7 segments 7\u201318",
+   "text": "Split the multiplier, abandoned partway",
    "index": 7,
    "container": true,
    "muted": true
@@ -269,7 +269,7 @@ export const CARRY_TRACES: readonly CarryTrace[] = [
    "width": 1755,
    "category": "PARTIAL_PRODUCT",
    "label": "Compute the eleven partial products",
-   "text": "Compute the eleven partial products \u00b7 segments 26\u201329",
+   "text": "Compute the eleven partial products",
    "index": 26,
    "container": true,
    "muted": true
@@ -280,7 +280,7 @@ export const CARRY_TRACES: readonly CarryTrace[] = [
    "width": 1314,
    "category": "ACCUMULATE",
    "label": "Sum them",
-   "text": "Sum them \u00b7 segments 30\u201336",
+   "text": "Sum them",
    "index": 30,
    "container": true,
    "muted": true
@@ -291,7 +291,7 @@ export const CARRY_TRACES: readonly CarryTrace[] = [
    "width": 2126,
    "category": "RECHECK",
    "label": "Re-add and re-derive every term",
-   "text": "Re-add and re-derive every term \u00b7 segments 37\u201339",
+   "text": "Re-add and re-derive every term",
    "index": 37,
    "container": true,
    "muted": true
@@ -313,7 +313,7 @@ export const CARRY_TRACES: readonly CarryTrace[] = [
    "width": 1087,
    "category": "CROSSCHECK",
    "label": "Digit-count false alarm",
-   "text": "Digit-count false alarm \u00b7 segments 41\u201342",
+   "text": "Digit-count false alarm",
    "index": 41,
    "container": true,
    "muted": true
@@ -357,7 +357,7 @@ export const CARRY_TRACES: readonly CarryTrace[] = [
    "width": 1186,
    "category": "CROSSCHECK",
    "label": "Casting out nines",
-   "text": "Casting out nines \u00b7 segments 46\u201351",
+   "text": "Casting out nines",
    "index": 46,
    "container": true,
    "muted": true
@@ -368,7 +368,7 @@ export const CARRY_TRACES: readonly CarryTrace[] = [
    "width": 1517,
    "category": "CROSSCHECK",
    "label": "Residues mod 10, 100, 1000",
-   "text": "Residues mod 10, 100, 1000 \u00b7 segments 52\u201359",
+   "text": "Residues mod 10, 100, 1000",
    "index": 52,
    "container": true,
    "muted": true
@@ -958,7 +958,7 @@ export const CARRY_TRACES: readonly CarryTrace[] = [
    "width": 6600,
    "category": "PARTIAL_PRODUCT",
    "label": "First method: place-value decomposition",
-   "text": "First method: place-value decomposition \u00b7 segments 0\u201325",
+   "text": "First method: place-value decomposition",
    "index": 0,
    "container": true,
    "muted": true
@@ -969,7 +969,7 @@ export const CARRY_TRACES: readonly CarryTrace[] = [
    "width": 3521,
    "category": "RECHECK",
    "label": "Second method: digit by digit",
-   "text": "Second method: digit by digit \u00b7 segments 26\u201343",
+   "text": "Second method: digit by digit",
    "index": 26,
    "container": true,
    "muted": true
@@ -980,7 +980,7 @@ export const CARRY_TRACES: readonly CarryTrace[] = [
    "width": 1300,
    "category": "STRATEGY",
    "label": "Search for a third method",
-   "text": "Search for a third method \u00b7 segments 44\u201350",
+   "text": "Search for a third method",
    "index": 44,
    "container": true,
    "muted": true
@@ -991,7 +991,7 @@ export const CARRY_TRACES: readonly CarryTrace[] = [
    "width": 3531,
    "category": "CROSSCHECK",
    "label": "Structural checks",
-   "text": "Structural checks \u00b7 segments 51\u201359",
+   "text": "Structural checks",
    "index": 51,
    "container": true,
    "muted": true
@@ -1002,7 +1002,7 @@ export const CARRY_TRACES: readonly CarryTrace[] = [
    "width": 1415,
    "category": "RESULT",
    "label": "Report",
-   "text": "Report \u00b7 segments 60\u201363",
+   "text": "Report",
    "index": 60,
    "container": true,
    "muted": true
@@ -1079,7 +1079,7 @@ export const CARRY_TRACES: readonly CarryTrace[] = [
    "width": 2893,
    "category": "PARTIAL_PRODUCT",
    "label": "Compute the seven partial products",
-   "text": "Compute the seven partial products \u00b7 segments 6\u201312",
+   "text": "Compute the seven partial products",
    "index": 6,
    "container": true,
    "muted": true
@@ -1090,7 +1090,7 @@ export const CARRY_TRACES: readonly CarryTrace[] = [
    "width": 1179,
    "category": "ACCUMULATE",
    "label": "Sum them",
-   "text": "Sum them \u00b7 segments 13\u201320",
+   "text": "Sum them",
    "index": 13,
    "container": true,
    "muted": true
@@ -1101,7 +1101,7 @@ export const CARRY_TRACES: readonly CarryTrace[] = [
    "width": 906,
    "category": "RECHECK",
    "label": "Re-add, step by step",
-   "text": "Re-add, step by step \u00b7 segments 21\u201325",
+   "text": "Re-add, step by step",
    "index": 21,
    "container": true,
    "muted": true
@@ -1189,7 +1189,7 @@ export const CARRY_TRACES: readonly CarryTrace[] = [
    "width": 2178,
    "category": "RECHECK",
    "label": "Recompute and re-sum",
-   "text": "Recompute and re-sum \u00b7 segments 33\u201342",
+   "text": "Recompute and re-sum",
    "index": 33,
    "container": true,
    "muted": true
@@ -1310,7 +1310,7 @@ export const CARRY_TRACES: readonly CarryTrace[] = [
    "width": 1772,
    "category": "CROSSCHECK",
    "label": "Last-digit false alarm",
-   "text": "Last-digit false alarm \u00b7 segments 53\u201356",
+   "text": "Last-digit false alarm",
    "index": 53,
    "container": true,
    "muted": true
@@ -1823,7 +1823,7 @@ export const CARRY_TRACES: readonly CarryTrace[] = [
    "width": 2286,
    "category": "STRATEGY",
    "label": "Look for a shortcut",
-   "text": "Look for a shortcut \u00b7 segments 0\u20133",
+   "text": "Look for a shortcut",
    "index": 0,
    "container": true,
    "muted": true
@@ -1834,7 +1834,7 @@ export const CARRY_TRACES: readonly CarryTrace[] = [
    "width": 4719,
    "category": "ACCUMULATE",
    "label": "First part: 21,000 x",
-   "text": "First part: 21,000 x \u00b7 segments 4\u201323",
+   "text": "First part: 21,000 x",
    "index": 4,
    "container": true,
    "muted": true
@@ -1845,7 +1845,7 @@ export const CARRY_TRACES: readonly CarryTrace[] = [
    "width": 4150,
    "category": "PARTIAL_PRODUCT",
    "label": "Second part: 28 x",
-   "text": "Second part: 28 x \u00b7 segments 24\u201343",
+   "text": "Second part: 28 x",
    "index": 24,
    "container": true,
    "muted": true
@@ -1856,7 +1856,7 @@ export const CARRY_TRACES: readonly CarryTrace[] = [
    "width": 1314,
    "category": "ACCUMULATE",
    "label": "Add the two parts",
-   "text": "Add the two parts \u00b7 segments 44\u201350",
+   "text": "Add the two parts",
    "index": 44,
    "container": true,
    "muted": true
@@ -1867,7 +1867,7 @@ export const CARRY_TRACES: readonly CarryTrace[] = [
    "width": 1339,
    "category": "STRATEGY",
    "label": "Recheck",
-   "text": "Recheck \u00b7 segments 51\u201358",
+   "text": "Recheck",
    "index": 51,
    "container": true,
    "muted": true
@@ -1878,7 +1878,7 @@ export const CARRY_TRACES: readonly CarryTrace[] = [
    "width": 1886,
    "category": "CROSSCHECK",
    "label": "Scientific-notation crosscheck",
-   "text": "Scientific-notation crosscheck \u00b7 segments 59\u201363",
+   "text": "Scientific-notation crosscheck",
    "index": 59,
    "container": true,
    "muted": true
@@ -1889,7 +1889,7 @@ export const CARRY_TRACES: readonly CarryTrace[] = [
    "width": 1325,
    "category": "ACCUMULATE",
    "label": "Try to reconcile",
-   "text": "Try to reconcile \u00b7 segments 64\u201372",
+   "text": "Try to reconcile",
    "index": 64,
    "container": true,
    "muted": true
@@ -1900,7 +1900,7 @@ export const CARRY_TRACES: readonly CarryTrace[] = [
    "width": 39994,
    "category": "ACCUMULATE",
    "label": "Locked",
-   "text": "Locked \u00b7 segments 73\u2013395",
+   "text": "Locked",
    "index": 73,
    "container": true,
    "muted": true
@@ -3231,7 +3231,7 @@ export const CARRY_TRACES: readonly CarryTrace[] = [
    "width": 31950,
    "category": "ACCUMULATE",
    "label": "One sentence, 275 times, to the end of the context",
-   "text": "One sentence, 275 times, to the end of the context \u00b7 segments 120\u2013395",
+   "text": "One sentence, 275 times, to the end of the context",
    "index": 120,
    "container": true,
    "muted": true

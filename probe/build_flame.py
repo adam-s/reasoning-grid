@@ -105,8 +105,10 @@ def build(segs, labels, subtasks):
                          width=segs[b]["end"] - segs[a]["start"],
                          category=dominant(a, b), label=r["label"],
                          # FlameGraph draws `text` on the bar, so the subtask name
-                         # has to live there; the range trails it for the tooltip.
-                         text=f'{r["label"]} · segments {a}–{b}',
+                         # lives there. The segment range used to trail it and was
+                         # cut: the bar already shows the span, which is the only
+                         # thing those numbers were saying.
+                         text=r["label"],
                          index=a, container=True, muted=True))
 
     for i, s in enumerate(segs):

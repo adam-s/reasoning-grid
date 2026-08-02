@@ -49,6 +49,11 @@
         the faculty doing the checking is the one that slipped. That distinction is the
         whole figure.
       </p>
+      <p>
+        The run that got it right ran <strong>17 crosschecks to 3 rechecks</strong>. The
+        run that got it wrong ran <strong>9 to 14</strong> &mdash; and gave more of its
+        trace to checking, not less. Volume is not the variable.
+      </p>
     </Prose>
     <ThreeTraces />
   </Section>
