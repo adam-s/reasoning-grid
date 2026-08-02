@@ -255,3 +255,21 @@ Both pre-run predictions on this page were wrong, and the page says so.
   submission-position confound
 - [.agents/reference/dataviz/](../.agents/reference/dataviz/) — the charting
   approaches already in use across the surrounding projects
+
+### 9. Commutativity — does reversing the operands change the answer?
+
+[Open the chart](https://claude.ai/code/artifact/0808dbc4-5bd2-479d-8465-d4ad8fa9b5bc)
+
+`probe/analyze_order.py` &rarr; every number on the page
+
+The same 168 problems asked both ways, against a control of the same problem
+asked twice in the same order. Qwen, T=0.7, reasoning on, 14 cells in the
+unreliable band.
+
+**Says:** a double null. Neither order is better (254 mirror-pairs, 4,985
+generations, pooled gap &minus;1.5% with CI [&minus;4.2, +1.3]), and reversing
+flips the verdict no more often than re-asking does (36.3% vs 36.0%, p=0.98).
+The finding is the control: **re-asking the identical question flips the answer
+about a third of the time**, which is a floor no order effect this size could
+show above. An earlier baseline read 17.5% and was wrong — it drew from
+whichever cells got re-run, and those skew easy.
