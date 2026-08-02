@@ -23,6 +23,12 @@
   import { OODA_SCHEME, CATEGORY_PHASE } from '../../design/ooda';
   import { CARRY_TRACES } from '../../data/carrychain-traces';
 
+  // No minimaps. They were on for the 396-segment trace and off for the two
+  // 64-segment ones, which made the three panels of a comparison look like
+  // different kinds of chart. Turning it on everywhere would cost ~80px per
+  // panel to overview charts that are two levels deep and already fully
+  // visible. Zoom is still there: click a block, then Reset.
+
   // Two lenses on one set of events, not two figures. Switching recolours the
   // same bars, which is the point being made: the OODA view and the move view
   // describe identical spans and only one of them can tell the runs apart.
@@ -77,7 +83,7 @@
       have already written. Switch back to <em>by move</em> to split Observe into the two
       kinds of checking, which is where the difference actually is.
     {:else}
-      Position is share of each trace, not time. Click a marker, or any bar, for what it says.
+      Position is share of each trace, not time. Click any bar to read it.
     {/if}
   </p>
 
@@ -96,15 +102,15 @@
       trace={{ ...trace, name: trace.verdict, stepCount: trace.segments }}
       {scheme}
       header={head}
-      annotations={trace.annotations}
-      initialAnnotation={0}
       formatTick={(v) => `${Math.round((v / trace.chars) * 100)}%`}
       tickValues={(d) =>
         [0, 0.25, 0.5, 0.75, 1]
           .map((f) => f * trace.chars)
           .filter((v) => v >= d[0] - 1 && v <= d[1] + 1)}
       showLegend={false}
-      showMinimap={trace.segments > 100}
+      showMinimap={false}
+      showInspectorHint={false}
+      showZoomHint={false}
       {hiddenCategories}
     />
   {/each}

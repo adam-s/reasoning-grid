@@ -21,12 +21,6 @@ export type CarryFlameRow = {
   readonly muted: boolean;
 };
 
-export type CarryAnnotation = {
-  readonly segment: number;
-  readonly kind: string;
-  readonly text: string;
-};
-
 export type CarryTrace = {
   readonly key: 'A' | 'B' | 'C';
   readonly cell: string;
@@ -44,7 +38,6 @@ export type CarryTrace = {
   readonly chars: number;
   readonly segments: number;
   readonly rows: readonly CarryFlameRow[];
-  readonly annotations: readonly CarryAnnotation[];
 };
 
 export const CARRY_TRACES: readonly CarryTrace[] = [
@@ -901,38 +894,6 @@ export const CARRY_TRACES: readonly CarryTrace[] = [
    "container": false,
    "muted": false
   }
- ],
- "annotations": [
-  {
-   "segment": 5,
-   "kind": "error_never_caught",
-   "text": "'I divided both numbers by 2 ... so now the problem becomes multiplying 1,026,948 by 15,478,561,889.' That product is the answer divided by 4. A never notices. It escapes by abandoning the route as unhelpful, not by catching the mistake -- so the correct run is not the careful one, it is the one whose surviving path got checked."
-  },
-  {
-   "segment": 18,
-   "kind": "abandoned",
-   "text": "The first decomposition is dropped mid-way -- 'this is getting really complex' -- with no total ever produced from it. This is why the recomputation at 26-29 is PARTIAL_PRODUCT and not RECHECK: nothing finished was being re-derived."
-  },
-  {
-   "segment": 41,
-   "kind": "false_alarm",
-   "text": "7 digits + 11 digits predicts up to 18; the answer has 17. A treats the mismatch as possible evidence of error -- the mirror of B[53]. Both traces raise exactly one false alarm and both resolve it correctly."
-  },
-  {
-   "segment": 46,
-   "kind": "the_check_B_declined",
-   "text": "'maybe I can use modular arithmetic to check the result ... let me try modulo 9.' This is the same move B named and dropped at its segment 58. A spends six segments on it."
-  },
-  {
-   "segment": 51,
-   "kind": "check_that_could_have_caught_B",
-   "text": "Digit sum 87, residue 6, matching 6x7=42=6 mod 9. Run against B's answer this check returns 4 against an expected 3, and B's error is exposed."
-  },
-  {
-   "segment": 59,
-   "kind": "resolution_depth",
-   "text": "A's checks reach mod 1000 -- the last three digits, 088. B's deepest was the last single digit. Depth of residue is what decides whether a middle-digit error is visible, and neither trace reasons about that; A just kept going."
-  }
  ]
 },
 {
@@ -1765,38 +1726,6 @@ export const CARRY_TRACES: readonly CarryTrace[] = [
    "index": 56,
    "container": false,
    "muted": false
-  }
- ],
- "annotations": [
-  {
-   "segment": 20,
-   "kind": "error_born",
-   "text": "371,499,719,344,600 + 80,379,530 stated as 371,499,719,424,970. The addend lands 1,000x low: the digits written are consistent with adding 80,370. Every other step in the trace is correct."
-  },
-  {
-   "segment": 25,
-   "kind": "check_passed_on_the_error",
-   "text": "The recheck decomposes the addend correctly in words -- 'adding 80 million and 379,530' -- and then confirms a total that adds neither. Its own sentence contains the right answer."
-  },
-  {
-   "segment": 42,
-   "kind": "not_independent",
-   "text": "The 'second method' reproduces the identical wrong total, because it is the same decomposition in a different order and ends in the same misaligned addition."
-  },
-  {
-   "segment": 47,
-   "kind": "noticed_and_dropped",
-   "text": "'that's the same as before, which is what I did earlier' -- the model sees that its new method reduces to the old one, and abandons it without drawing the conclusion."
-  },
-  {
-   "segment": 49,
-   "kind": "false_confirmation",
-   "text": "'two different methods gave me the same answer, maybe that's sufficient.' They were not different methods. This is the inference that closes the loop early."
-  },
-  {
-   "segment": 58,
-   "kind": "the_check_it_declined",
-   "text": "'let me check the sum of the digits, but that might not help.' Casting out nines gives 3 for the answer and 4 for the truth. It was the one check that could see the error, and it was named and dropped in the same sentence. What it did instead was re-verify the seven partial products -- all of which were already correct."
   }
  ]
 },
@@ -6271,33 +6200,6 @@ export const CARRY_TRACES: readonly CarryTrace[] = [
    "index": 395,
    "container": false,
    "muted": false
-  }
- ],
- "annotations": [
-  {
-   "segment": 50,
-   "kind": "correct_answer_reached",
-   "text": "31,675,553,988,418,396 -- the exact truth -- written at 21% of the trace. It is written 21 times in total and never delivered."
-  },
-  {
-   "segment": 59,
-   "kind": "crosscheck_begins",
-   "text": "Converts both terms to scientific notation. This is the same move that saved run A, and here it is the cause of everything that follows."
-  },
-  {
-   "segment": 63,
-   "kind": "false_contradiction",
-   "text": "'this suggests that my previous addition was wrong.' It was not. The crosscheck wrote 42,177,834,871,396 as 0.00042177834871396 x 10^16; the correct coefficient is 0.0042177834871396. One zero too many makes the smaller term 10x too small and produces 31,637,593,937,034,000, a plausible rival to the right answer."
-  },
-  {
-   "segment": 73,
-   "kind": "lockup",
-   "text": "From here the model holds two answers it cannot choose between and re-derives both. Neither ever wins, because the bug is in the checker rather than in the sum, so every honest re-derivation confirms both sides."
-  },
-  {
-   "segment": 120,
-   "kind": "collapse",
-   "text": "Greedy decoding has no way out of a repeating state: the same context yields the same next token, so the cycle is closed. The remaining context is spent on one sentence."
   }
  ]
 }

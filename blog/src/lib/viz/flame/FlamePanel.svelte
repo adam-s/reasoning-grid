@@ -33,9 +33,6 @@
 
   type Outcome = { label: string; tone: 'ok' | 'err' | 'neutral' };
 
-  /** A moment worth calling out, pinned to the segment where it happens. */
-  export type PanelAnnotation = { segment: number; kind: string; text: string };
-
   type Props = {
     trace: AnyTrace & { stepCount?: number; model?: string; algorithmId?: string;
                         detail?: string; elapsedSeconds?: number; outputTokens?: number };
@@ -71,13 +68,17 @@
      *  displayed unit instead is the caller's job, because only the caller knows
      *  what the unit is. */
     tickValues?: (domain: readonly [number, number]) => number[];
-    /** Numbered markers above the flame. Clicking one pins its note. */
-    annotations?: readonly PanelAnnotation[];
-    /** Which annotation is open on first mount. */
-    initialAnnotation?: number | null;
     /** The minimap is worth its 64px on a long trace and repeats the chart on a
      *  short one. */
     showMinimap?: boolean;
+    /** Reserve the inspector and its "click a block" hint when nothing is
+     *  selected. One panel wants it. Three stacked panels turn it into three
+     *  identical empty boxes, and the hint only needs saying once. */
+    showInspectorHint?: boolean;
+    /** Keep the zoom hint and Reset visible when there is nothing to reset.
+     *  With several panels stacked it is the same sentence three times beside a
+     *  disabled button; off, the row appears exactly when it does something. */
+    showZoomHint?: boolean;
     /** Controlled category filter. Omit and the panel keeps its own, which is
      *  what a lone panel wants; pass it when several panels share one legend so
      *  hiding a category hides it in all of them at once. */
@@ -98,15 +99,12 @@
     header = undefined,
     formatTick = undefined,
     tickValues = undefined,
-    annotations = [],
-    initialAnnotation = null,
     showMinimap = true,
+    showInspectorHint = true,
+    showZoomHint = true,
     hiddenCategories: hiddenProp = undefined,
     onToggleCategory = undefined,
   }: Props = $props();
-
-  // svelte-ignore state_referenced_locally
-  let openAnnotation: number | null = $state(initialAnnotation);
 
   const stepCount = $derived(trace.stepCount ?? trace.rows.length);
 
@@ -194,36 +192,6 @@
     tickValues ? tickValues(viewport.domain) : axisScale.ticks(6),
   );
 
-  // Leaves carry the segment indices annotations point at. A container row
-  // shares an index with the first segment it spans, so match on the un-muted
-  // row first and only fall back if there is none.
-  function rowForSegment(seg: number): FlameRow | undefined {
-    return trace.rows.find((r) => r.index === seg && !r.muted)
-        ?? trace.rows.find((r) => r.index === seg);
-  }
-
-  // Annotations can land within a few characters of each other -- one trace has
-  // four inside a tenth of its length -- and overlapping circles hide their own
-  // numbers. Push each right until it clears the last.
-  const MARK_W = 17;
-  const placedMarks = $derived.by(() => {
-    let last = -Infinity;
-    return annotations
-      .map((a, i) => ({ a, i, at: axisScale(rowForSegment(a.segment)?.start ?? 0) }))
-      .sort((x, y) => x.at - y.at)
-      .map((m) => {
-        const x = Math.max(m.at, last + MARK_W);
-        last = x;
-        return { ...m, x };
-      });
-  });
-
-  function openMark(i: number): void {
-    openAnnotation = openAnnotation === i ? null : i;
-    const seg = annotations[i]?.segment;
-    const row = seg === undefined ? undefined : rowForSegment(seg);
-    selectedIndex = row ? trace.rows.indexOf(row) : null;
-  }
 
   const TOOLTIP_W_EST = 320;
   const TOOLTIP_H_EST = 96;
@@ -383,23 +351,8 @@
     <CategoryLegend {hiddenCategories} onToggle={toggleCategory} rows={trace.rows} {scheme} />
   {/if}
 
-  {#if placedMarks.length}
-    <div class="marks">
-      {#each placedMarks as m (m.i)}
-        <button
-          type="button"
-          class="mark"
-          class:is-open={openAnnotation === m.i}
-          style:left="{m.x}px"
-          onclick={() => openMark(m.i)}
-          aria-expanded={openAnnotation === m.i}
-          aria-label="{m.a.kind.replace(/_/g, ' ')}"
-          title="{m.a.kind.replace(/_/g, ' ')}"
-        >{m.i + 1}</button>
-      {/each}
-    </div>
-  {/if}
 
+  {#if showZoomHint || viewport.isZoomed || selectedIndex !== null}
   <div class="chart-toolbar">
     <div class="toolbar-left">
       {#if viewport.isZoomed}
@@ -425,6 +378,7 @@
       Reset
     </button>
   </div>
+  {/if}
 
   <div
     class="flame-scroll"
@@ -512,17 +466,8 @@
   </div>
   {/if}
 
+  {#if selectedRow || showInspectorHint}
   <div class="inspector" aria-live="polite">
-    {#if openAnnotation !== null && annotations[openAnnotation]}
-      {@const a = annotations[openAnnotation]}
-      <div class="inspector-note">
-        <span class="note-n">{openAnnotation + 1}</span>
-        <span>
-          <span class="note-kind">{a.kind.replace(/_/g, ' ')}</span>
-          {a.text}
-        </span>
-      </div>
-    {/if}
     {#if selectedRow}
       {@const meta = metaFor(scheme, selectedRow.category)}
       <div class="inspector-header">
@@ -542,12 +487,13 @@
       </div>
       <div class="inspector-description">{meta.description}</div>
       <blockquote class="inspector-text">{selectedRow.text}</blockquote>
-    {:else if openAnnotation === null}
+    {:else}
       <div class="inspector-empty">
         Click any block above to pin it here and read the full thinking text.
       </div>
     {/if}
   </div>
+  {/if}
 </div>
 
 <style>
@@ -870,69 +816,6 @@
     max-height: 120px;
     overflow-y: auto;
   }
-  /* annotation markers */
-  .marks { position: relative; height: 18px; }
-  .mark {
-    position: absolute;
-    top: 0;
-    transform: translateX(-50%);
-    width: 16px;
-    height: 16px;
-    padding: 0;
-    border-radius: 50%;
-    border: 1px solid var(--line);
-    background: var(--bg);
-    color: var(--ink-dim);
-    font-family: var(--font-mono);
-    font-size: 9.5px;
-    font-weight: 600;
-    line-height: 14px;
-    cursor: pointer;
-    transition: background 130ms ease, color 130ms ease, border-color 130ms ease;
-  }
-  .mark:hover { border-color: var(--ink-dim); color: var(--ink); }
-  .mark.is-open { background: var(--ink); color: #fff; border-color: var(--ink); }
-  .mark::after {
-    content: '';
-    position: absolute;
-    left: 50%;
-    top: 100%;
-    width: 1px;
-    height: 3px;
-    background: var(--line);
-  }
-
-  .inspector-note {
-    display: flex;
-    gap: 8px;
-    margin-bottom: 8px;
-    font-size: var(--text-sm);
-    line-height: 1.5;
-    color: var(--ink-dim);
-  }
-  .note-n {
-    flex: 0 0 auto;
-    width: 16px;
-    height: 16px;
-    margin-top: 2px;
-    border-radius: 50%;
-    background: var(--ink);
-    color: var(--bg);
-    font-family: var(--font-mono);
-    font-size: 9.5px;
-    line-height: 16px;
-    text-align: center;
-  }
-  .note-kind {
-    display: block;
-    font-family: var(--font-mono);
-    font-size: 0.66rem;
-    letter-spacing: 0.04em;
-    text-transform: uppercase;
-    color: var(--ink-faint);
-    margin-bottom: 1px;
-  }
-
   .inspector-empty {
     font-family: var(--font-serif);
     font-style: italic;

@@ -138,7 +138,6 @@ def main():
             x=seg["x"], y=seg["y"], truth=seg["truth"], answer=seg["answer"],
             tokens=seg["completion_tokens"], chars=seg["total_chars"],
             segments=len(segs), rows=rows,
-            annotations=lab.get("annotations", []),
         ))
 
     body = ",\n".join(json.dumps(t, indent=1) for t in out)
@@ -165,12 +164,6 @@ export type CarryFlameRow = {{
   readonly muted: boolean;
 }};
 
-export type CarryAnnotation = {{
-  readonly segment: number;
-  readonly kind: string;
-  readonly text: string;
-}};
-
 export type CarryTrace = {{
   readonly key: 'A' | 'B' | 'C';
   readonly cell: string;
@@ -188,7 +181,6 @@ export type CarryTrace = {{
   readonly chars: number;
   readonly segments: number;
   readonly rows: readonly CarryFlameRow[];
-  readonly annotations: readonly CarryAnnotation[];
 }};
 
 export const CARRY_TRACES: readonly CarryTrace[] = [
