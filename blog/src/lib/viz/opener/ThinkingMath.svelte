@@ -27,12 +27,43 @@
   let which = $state(0);
   const trace = $derived(OPENER[which]);
 
-  /** Characters of `thinking` revealed so far. */
-  let cursor = $state(0);
-  let playing = $state(false);
-  let done = $derived(cursor >= trace.thinking.length);
+  /**
+   * THE CLAIMS ARE THE CLOCK, not the characters.
+   *
+   * At a constant character rate the right pane is at the mercy of how verbose
+   * the model happened to be between two equations. Measured on this data that
+   * means claims arriving a median 0.11s apart but a p90 of 2.2s: thirteen
+   * equations dumped inside one second, then nothing for thirteen seconds while
+   * the left pane races on. It is not a rhythm, it is a stutter — and the burst
+   * is also what broke the scrolling, since rendering thirteen KaTeX blocks
+   * stalls the frame long enough for the stream to jump past any "is the reader
+   * still at the bottom" threshold.
+   *
+   * So time is divided evenly across the claims instead. Each one gets a beat;
+   * the cursor sweeps whatever prose lies between them, fast across a dry
+   * stretch and slow through dense work, easing out so the text decelerates
+   * into the landing and the equation arrives ON the beat. Every run then takes
+   * the same time and has the same pulse, whatever its length.
+   */
+  const RUN_MS = 20_000;
 
-  const CPS = 900; // characters a second; the whole of A runs in about 18s
+  let elapsed = $state(0);
+  let playing = $state(false);
+
+  /** Offsets the cursor must pass through: 0, each claim's last character, the end. */
+  const knots = $derived([0, ...trace.claims.map((c) => c.end), trace.thinking.length]);
+  const beat = $derived(RUN_MS / Math.max(1, knots.length - 1));
+
+  function cursorAt(ms: number): number {
+    const k = knots;
+    const i = Math.min(Math.floor(ms / beat), k.length - 2);
+    const u = Math.max(0, Math.min(1, (ms - i * beat) / beat));
+    const e = 1 - Math.pow(1 - u, 3);   // decelerate into each landing
+    return Math.floor(k[i] + (k[i + 1] - k[i]) * e);
+  }
+
+  const cursor = $derived(cursorAt(elapsed));
+  const done = $derived(elapsed >= RUN_MS);
 
   /**
    * The stream is rendered as one node per SEGMENT, not one per character.
@@ -116,38 +147,48 @@
 
   let streamEl: HTMLDivElement | null = $state(null);
   let mathEl: HTMLDivElement | null = $state(null);
-  /** Follow the cursor, but only for a reader already at the bottom. Pinning
-   *  unconditionally fires ~60 times a second while playing, so anyone who
-   *  scrolls up to re-read a line is dragged straight back down. */
-  function follow(el: HTMLElement | null) {
-    if (!el) return;
-    if (el.scrollHeight - el.scrollTop - el.clientHeight < 48) {
-      el.scrollTop = el.scrollHeight;
-    }
+  /**
+   * Follow the cursor until the reader takes over.
+   *
+   * Inferring that from distance-to-bottom does not work: one slow frame — and
+   * rendering a burst of equations is exactly that — lets the pane grow past
+   * any threshold in a single step, and auto-follow latches off for the rest of
+   * the run with no way back. That is what made the left pane stop scrolling.
+   *
+   * So intent is read from the events only a person produces. Setting
+   * `scrollTop` fires `scroll` but never `wheel` or `touchmove`, so following
+   * cannot unpin itself.
+   */
+  let pinStream = $state(true);
+  let pinMath = $state(true);
+  const atBottom = (el: HTMLElement) =>
+    el.scrollHeight - el.scrollTop - el.clientHeight < 4;
+
+  function follow(el: HTMLElement | null, pinned: boolean) {
+    if (el && pinned) el.scrollTop = el.scrollHeight;
   }
   $effect(() => {
     cursor;
-    follow(streamEl);
-    follow(mathEl);
+    follow(streamEl, pinStream);
+    follow(mathEl, pinMath);
   });
 
   $effect(() => {
     if (!playing) return;
-    // `cursor` is read untracked: reading it normally would make this effect
+    // `elapsed` is read untracked: reading it normally would make this effect
     // depend on the value its own frame writes, so every frame would cancel and
     // restart the run with the clock reset, and it would crawl.
-    const from = untrack(() => cursor);
+    const from = untrack(() => elapsed);
     const t0 = performance.now();
-    const total = trace.thinking.length;
     let raf = 0;
     const step = (now: number) => {
-      const next = from + ((now - t0) / 1000) * CPS;
-      if (next >= total) {
-        cursor = total;
+      const next = from + (now - t0);
+      if (next >= RUN_MS) {
+        elapsed = RUN_MS;
         playing = false;
         return;
       }
-      cursor = Math.floor(next);
+      elapsed = next;
       raf = requestAnimationFrame(step);
     };
     raf = requestAnimationFrame(step);
@@ -165,12 +206,14 @@
    * nothing to say the way to fill it was to drag a slider.
    */
   function reset(autoplay: boolean) {
+    pinStream = true;
+    pinMath = true;
     if (lessMotion()) {
-      cursor = OPENER[which].thinking.length;
+      elapsed = RUN_MS;
       playing = false;
       return;
     }
-    cursor = 0;
+    elapsed = 0;
     playing = autoplay;
   }
 
@@ -228,8 +271,17 @@
          tabindex="0" on the region is how that is done. Deliberately no
          aria-live -- announcing a 36,000-character stream as it types would be
          unusable. -->
+    <!-- svelte-ignore a11y_no_noninteractive_element_interactions -->
+    <!-- The listeners are not making this interactive; they are detecting that
+         the reader took over the scroll, so following can stop. The element is
+         already focusable and already a region. -->
     <div
       class="pane stream" bind:this={streamEl} tabindex="0"
+      onwheel={() => (pinStream = false)}
+      ontouchmove={() => (pinStream = false)}
+      onkeydown={(e) => ['ArrowUp','ArrowDown','PageUp','PageDown','Home','End']
+        .includes(e.key) && (pinStream = false)}
+      onscroll={(e) => atBottom(e.currentTarget) && (pinStream = true)}
       role="region" aria-label="the model's thinking, as raw text">
       {#each shown as s (s.start)}<span
           class="seg" style:--c={s.colour}
@@ -237,8 +289,17 @@
     </div>
 
     <!-- svelte-ignore a11y_no_noninteractive_tabindex -->
+    <!-- svelte-ignore a11y_no_noninteractive_element_interactions -->
+    <!-- The listeners are not making this interactive; they are detecting that
+         the reader took over the scroll, so following can stop. The element is
+         already focusable and already a region. -->
     <div
       class="pane math" bind:this={mathEl} tabindex="0"
+      onwheel={() => (pinMath = false)}
+      ontouchmove={() => (pinMath = false)}
+      onkeydown={(e) => ['ArrowUp','ArrowDown','PageUp','PageDown','Home','End']
+        .includes(e.key) && (pinMath = false)}
+      onscroll={(e) => atBottom(e.currentTarget) && (pinMath = true)}
       role="region" aria-label="the arithmetic it stated, checked as it is stated">
       {#if landed.length === 0}
         <p class="wait">waiting for the first claim&hellip;</p>
@@ -263,12 +324,14 @@
       aria-label={playing ? 'Pause' : done ? 'Replay' : 'Play'}>
       {playing ? '❚❚' : done ? '↺' : '▶'}
     </button>
+    <!-- Scrubs TIME, not characters. The cursor is a function of the clock now,
+         so a character-indexed slider would be scrubbing the output. 200 steps
+         keeps it usable from the keyboard whatever the trace length. -->
     <input
-      type="range" min="0" max={trace.thinking.length}
-      step={Math.max(1, Math.round(trace.thinking.length / 200))}
-      bind:value={cursor} oninput={() => (playing = false)}
-      aria-label="position in the trace"
-      aria-valuetext="{Math.round((cursor / trace.thinking.length) * 100)}% through,
+      type="range" min="0" max={RUN_MS} step={RUN_MS / 200}
+      bind:value={elapsed} oninput={() => (playing = false)}
+      aria-label="position in the run"
+      aria-valuetext="{Math.round((elapsed / RUN_MS) * 100)}% through,
         {landed.length} of {trace.claims.length} claims" />
     <span class="tally mono" class:bad={wrong.length > 0}>
       {landed.length} claim{landed.length === 1 ? '' : 's'} &middot;
@@ -372,6 +435,13 @@
     gap: 2px 10px;
     padding: 4px 6px;
     border-radius: 3px;
+  }
+  @keyframes land {
+    from { opacity: 0; transform: translateY(6px); }
+    to   { opacity: 1; transform: none; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .claim { animation: none; }
   }
   .claim .ix { color: var(--ink-faint); font-size: 0.62rem; text-align: right; }
   .claim .eq { font-size: 0.82rem; overflow-x: auto; }
