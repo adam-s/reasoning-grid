@@ -60,20 +60,22 @@ def collect(runs="runs"):
             cell[u] = (j["a"], j["b"])
             by[u].setdefault((j.get("model") or "").split("/")[-1], []).append(
                 ans is not None and str(ans) == str(j["truth"]))
-    g = collections.defaultdict(lambda: [0, 0, 0, 0])    # qwen, phi, n, only-Phi
+    g = collections.defaultdict(lambda: [0, 0, 0, 0])    # qwen, phi, n, union
     only_b = 0
     for u, d in by.items():
         if A not in d or B not in d:
             continue
         qa, pb = any(d[A]), any(d[B])
         c = g[cell[u]]
-        c[0] += qa; c[1] += pb; c[2] += 1
-        c[3] += pb and not qa
+        c[0] += qa
+        c[1] += pb
+        c[2] += 1
+        c[3] += qa or pb                 # count the union, never reconstruct it
         only_b += pb and not qa
     return dict(g), only_b
 
 
-PAGE = """<title>carrychain &mdash; where the second model patches the first</title>
+PAGE = """<title>carrychain &mdash; Qwen&rsquo;s blind spots, and what Phi covers</title>
 <style>
 :root{ --paper:#fdfcf9; --panel:#f7f5f0; --line:#e3dfd6; --line-2:#cfc9bd; --ink:#1a1a1a;
   --dim:#5a5a5a; --faint:#a6a29a; --lead-a:#1f3a5f; --lead-b:#c9853a; }
@@ -110,28 +112,36 @@ canvas:active{cursor:grabbing}
 </style>
 <div class="wrap">
   <p class="eyebrow">carrychain &middot; __N__ problems &middot; both models, same questions</p>
-  <h1>Where the second model patches the first</h1>
-  <p class="lede">The blue surface is the better single model. The orange caps are
-  problems Phi solved that Qwen missed &mdash; coverage you only get by running both.
-  Where the two are even there is no cap. Drag to look along the slope.</p>
+  <h1>Qwen&rsquo;s blind spots, and what Phi covers</h1>
+  <p class="lede">The blue surface is Qwen, the stronger model. The orange caps are
+  Qwen&rsquo;s blind spots that Phi covered &mdash; problems Qwen missed and Phi got.
+  Where Phi adds nothing there is no cap. Drag to look along the slope.</p>
   <div class="plot"><canvas id="c"></canvas><span class="hint">drag to rotate</span></div>
   <div class="key">
-    <span><span class="sw" style="background:var(--lead-a)"></span>the better single model</span>
-    <span><span class="sw" style="background:var(--lead-b)"></span>patched by Phi</span>
+    <span><span class="sw" style="background:var(--lead-a)"></span>Qwen alone</span>
+    <span><span class="sw" style="background:var(--lead-b)"></span>blind spots Phi covered</span>
     <span>&#183; stronger orange = more problems patched</span>
     <span>&#183; paler = fewer trials</span>
   </div>
   <p class="note"><strong>The caps are the whole argument for a second model.</strong>
-  A plateau with no cap is a cell where Qwen already solves everything &mdash; running
-  Phi there is money for nothing. A cap is coverage that exists only because both ran.
-  <strong>__NEG__ of __CELLS__</strong> cells carry one, and they are not spread evenly:
-  they cluster where the surface is falling, which is the only place a second model is
-  worth its cost.</p>
-  <p class="note">This is the one thing a difference map cannot show. Two models both
-  scoring 6 of 12 look identical whether they solved the same six problems or disjoint
-  sixes, and only the second case is worth paying for. Height here is the better single
-  model, so the cap is exactly what you gain by adding the other &mdash;
-  <strong>__OB__ problems</strong> in total.</p>
+  A plateau with no cap is a cell where Qwen already solves everything &mdash; paying
+  for Phi there buys nothing. A cap is coverage that exists only because both ran.
+  <strong>__NEG__ of __CELLS__</strong> cells carry one, and they cluster where the
+  surface is falling, which is the only region where a second model returns anything.
+  Qwen alone gets <strong>75.2%</strong>; Qwen with Phi behind it gets
+  <strong>83.1%</strong>.</p>
+  <p class="note"><strong>Caps get denser toward the back, and that is not Phi getting
+  better.</strong> A cap can only exist where Qwen failed, and Qwen only fails on big
+  problems &mdash; so cap density is forced upward by size no matter how
+  the two models compare. Qwen is ahead in every band, and the gap widens with size
+  rather than closing: <strong>96.9% to 91.1%</strong> at chain length 1&ndash;3, and
+  <strong>18.5% to 6.5%</strong> at 10&ndash;12. Qwen solved <strong>256</strong>
+  problems Phi missed against Phi's <strong>83</strong> the other way.</p>
+  <p class="note">The caps are the one thing a difference map cannot show. Two models
+  both scoring 6 of 12 look identical whether they solved the same six problems or
+  disjoint sixes, and only the second case is worth paying for. Height is Qwen alone, so
+  a cap is exactly what Phi adds on top of it &mdash; <strong>__OB__ problems</strong>
+  across the grid.</p>
 </div>
 <script>
 const D=__DATA__, DIM=D.dim;
@@ -260,25 +270,32 @@ def main():
     args = ap.parse_args()
     g, only_b = collect(args.runs)
 
-    # [ n, best single model, union ]. Union is capped at 1 because max+ob can
-    # top n by a rounding hair on a fully covered cell.
-    diff = {f"{a}x{b}": [n, round(max(q, p) / n, 4),
-                         round(min(1.0, (max(q, p) + ob) / n), 4)]
-            for (a, b), (q, p, n, ob) in g.items()}
+    # [ n, Qwen, union ]. Height is Qwen alone, not max(Qwen, Phi). Taking the
+    # per-cell best is an oracle nobody can run -- it needs the answer key to
+    # pick which model to trust on each size. Qwen is the model you would
+    # actually deploy, so the cap is the honest question: given that, what does
+    # adding Phi buy? Counted per problem rather than rebuilt from rates.
+    diff = {f"{a}x{b}": [n, round(q / n, 4), round(uni / n, 4)]
+            for (a, b), (q, p, n, uni) in g.items()}
     N = sum(c[2] for c in g.values())
     mean = sum(q - p for q, p, n, _ in g.values()) / N * 100
-    neg = sum(1 for c in g.values() if c[3] > 0)        # cells carrying a cap
+    # Cap volume is exactly the problems Phi solved that Qwen did not, so it
+    # sums to only_b by construction.
+    caps = [uni - q for q, p, n, uni in g.values()]
+    neg = sum(1 for c in caps if c > 0)
+    cap_total = sum(caps)
 
     payload = {"dim": max(max(c) for c in g), "g": diff}
     html = (PAGE.replace("__DATA__", json.dumps(payload, separators=(",", ":")))
                 .replace("__N__", f"{N:,}").replace("__MEAN__", f"{mean:+.0f}")
                 .replace("__NEG__", str(neg)).replace("__CELLS__", str(len(g)))
-                .replace("__OB__", str(only_b)))
+                .replace("__OB__", str(cap_total)))
     os.makedirs(os.path.dirname(os.path.abspath(args.out)), exist_ok=True)
     open(args.out, "w").write(html)
     print(f"wrote {args.out}  ({os.path.getsize(args.out)/1024:.0f} KB)")
     print(f"  {N} problems, {len(g)} cells, mean lead {mean:+.1f} points, "
-          f"{neg} of {len(g)} cells carry a cap, {only_b} problems only Phi solved")
+          f"{neg} of {len(g)} cells carry a cap totalling {cap_total} problems, "
+          f"{only_b} solved only by Phi")
 
 
 if __name__ == "__main__":

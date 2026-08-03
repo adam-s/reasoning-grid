@@ -352,33 +352,47 @@ to 33 points, so none is evidence Phi leads a region.
 comparison; the six did not. Kept because the case for running Phi is the 83
 individual problems in chart 11's alluvial, which a difference map cannot show.
 
-### 13. Where the second model patches the first
+### 13. Qwen's blind spots, and what Phi covers
 
 [Open the chart](https://claude.ai/code/artifact/85224357-e7c9-481b-96b5-dc3805cdb223)
 
 `probe/render_diff_surface.py` &rarr; `derived/diff-surface.html`
 
-Two sheets. The lower one is `max(Qwen, Phi)` &mdash; the best either model
-manages alone. The upper one is the union: problems at least one of them got.
-Union never sits below the better single model, so on an even cell the cap lands
-exactly on the surface and vanishes, and the cell is simply Qwen's colour with
-nothing on it. Where Phi solved problems Qwen missed, the cap lifts, and the gap
-is the coverage a second model buys. Cap opacity tracks the size of the lift.
+Two sheets. The lower one is **Qwen alone** &mdash; the model you would actually
+deploy. The upper one is the union: problems either model got. Where Phi adds
+nothing the cap lands flat on the surface and vanishes; where Phi solved
+something Qwen missed, the cap lifts, and that gap is the coverage a second
+model buys. Cap opacity tracks the size of the lift.
 
-**Says:** 53 of 144 cells carry a cap, totalling the 83 problems only Phi
-solved. They are not spread evenly &mdash; they cluster where the surface is
-falling, which is the only region where paying for a second model returns
-anything. The plateau is bare blue: Qwen already solves everything there.
+**Says:** 53 of 144 cells carry a cap, summing to exactly the 83 problems only
+Phi solved. Qwen alone reaches 75.2%; Qwen with Phi behind it reaches 83.1%. The
+caps cluster where the surface is falling, because that is the only region where
+a second model returns anything &mdash; on the plateau Qwen already solves
+everything.
 
-**The design point.** This is the quantity a difference map structurally cannot
-show. Two models both scoring 6 of 12 look identical whether they solved the
-same six problems or disjoint sixes, and only the second case is worth paying
-for &mdash; so chart 12 has to name the 83 in prose instead of drawing them.
+**Says also:** the caps get denser toward the back, and that is *not* Phi
+performing better on large numbers. A cap can only exist where Qwen failed, and
+Qwen only fails on big problems, so cap density is forced upward by size no
+matter how the two models compare. Qwen leads in every band and the gap widens
+with size rather than closing: 96.9% to 91.1% at chain length 1&ndash;3, 18.5%
+to 6.5% at 10&ndash;12. Qwen solved 256 problems Phi missed against Phi's 83 the
+other way. The chart carries a note saying so, because the shape invites the
+opposite reading.
 
-Two earlier versions of this chart were wrong in instructive ways. The first put
-the difference on the height axis and read as a mountain range of coin flips: at
-3&ndash;12 trials per cell, relief cannot separate a one-problem fluctuation from
-an effect, because both are a spike, and unlike chart 12 there is no printed
-number to discount against. The second moved the difference to colour, which was
-honest but answered "who is ahead" when the useful question is "what does the
-second one add".
+**The design point.** The caps are the quantity a difference map structurally
+cannot show. Two models both scoring 6 of 12 look identical whether they solved
+the same six problems or disjoint sixes, and only the second case is worth
+paying for &mdash; so chart 12 has to name the 83 in prose instead of drawing
+them.
+
+Three earlier versions were wrong in instructive ways. The first put the
+difference on the height axis and read as a mountain range of coin flips: at
+3&ndash;12 trials per cell, relief cannot separate a one-problem fluctuation
+from an effect, because both are a spike, and unlike chart 12 there is no
+printed number to discount against. The second moved the difference to colour,
+which was honest but answered "who is ahead" when the useful question is "what
+does the second one add". The third made the height `max(Qwen, Phi)`, which is
+an oracle nobody can run &mdash; picking the better model per cell needs the
+answer key &mdash; and it also broke the arithmetic: reconstructing the union as
+`max + only-Phi` double-counted in the nine cells where Phi leads, inflating
+three of them. The union is now counted per problem, never rebuilt from rates.
