@@ -126,6 +126,21 @@
   let seeking = $state(false);
   const idle = $derived(!playing && !seeking);
 
+  /**
+   * Bumped by every reset, and READ by the playback loop.
+   *
+   * Without it a reset while already playing is silently undone. `reset` sets
+   * elapsed to 0 and playing to true, but if playing was already true it does
+   * not change, so the effect never re-runs -- the rAF loop already in flight
+   * keeps its captured start time and start offset and writes the old position
+   * back on its next frame. Switching run therefore appeared to carry the
+   * previous run's position across, because it did.
+   *
+   * Two writers on one value, for the third time here. The counter gives the
+   * effect something that always changes, so a restart is a restart.
+   */
+  let runId = $state(0);
+
   /** Time at which the cursor reaches a character offset: cursorAt inverted. */
   function timeAt(offset: number): number {
     const at = schedule;
@@ -205,90 +220,29 @@
 
   const ordered = $derived([...trace.segments].sort((a, b) => a.start - b.start));
 
-  /** The category colour at a character offset. Binary search, not a scan: this
-   *  runs once per rendered run, on every frame. */
-  function colourAt(pos: number): string {
-    let lo = 0, hi = ordered.length - 1, best = 0;
-    while (lo <= hi) {
-      const mid = (lo + hi) >> 1;
-      if (ordered[mid].start <= pos) { best = mid; lo = mid + 1; } else hi = mid - 1;
-    }
-    return colourFor(ordered[best].category);
-  }
-
   /**
-   * The maths and markdown the model wrote, located once per trace.
+   * The stream is the response VERBATIM. Not rendered, not cleaned, not one
+   * character different.
    *
-   * Rendering these does NOT touch the alignment. The flame bars index which
-   * CHARACTERS are revealed, and that is still `text.slice(0, cursor)` exactly;
-   * only the paint changes. What rendering does constrain is timing -- half a
-   * formula is not valid LaTeX -- so a span stays raw until its closing
-   * delimiter has been typed, and then snaps into place.
-   *
-   * All of it lives in the final tenth of the two runs that answered, where the
-   * model writes its answer out properly. The run that never answered has none.
+   * It briefly rendered the model's markdown and LaTeX, because the raw
+   * `\times 10^{10}` in its final answer looks like a bug. That was the wrong
+   * trade: rendering dropped 528 of one run's 17,990 characters -- delimiters,
+   * asterisks, hashes -- so a pane promising VERBATIM was quietly deleting from
+   * what it displayed. The label is the contract, the flame graph beside it
+   * indexes these exact characters, and the whole point of the figure is that
+   * this is what the model actually emitted, LaTeX and all.
    */
-  const marks = $derived.by(() => {
-    const t = trace.text;
-    const out: Array<{ start: number; end: number; kind: 'display' | 'inline' }> = [];
-    for (const m of t.matchAll(/\$\$[\s\S]+?\$\$/g)) {
-      out.push({ start: m.index!, end: m.index! + m[0].length, kind: 'display' });
-    }
-    for (const m of t.matchAll(/(?<!\$)\$(?!\$)[^$\n]+?\$(?!\$)/g)) {
-      const st = m.index!, en = st + m[0].length;
-      if (!out.some((o) => st >= o.start && en <= o.end)) {
-        out.push({ start: st, end: en, kind: 'inline' });
-      }
-    }
-    return out.sort((x, y) => x.start - y.start);
-  });
-
-  type Item =
-    | { k: 'text'; text: string; colour: string; bold?: boolean }
-    | { k: 'head'; text: string; colour: string }
-    | { k: 'rule' }
-    | { k: 'math'; tex: string; display: boolean };
-
-  /** Split a plain run on headings, rules and bold, keeping it text nodes so
-   *  Svelte escapes it. Only KaTeX output is ever inserted as HTML. */
-  function plain(from: number, to: number, out: Item[]) {
-    const raw = trace.text.slice(from, to);
-    if (!raw) return;
-    const colour = colourAt(from);
-    for (const line of raw.split(/(?<=\n)/)) {
-      // `\s*$` rather than `$`: each line still carries its trailing newline
-      // from the split, and `.` cannot match it, so a plain `$` never anchored
-      // and every heading fell through as body text.
-      const h = line.match(/^(#{1,6}) +(.*?)\s*$/);
-      if (h) { out.push({ k: 'head', text: h[2], colour }); continue; }
-      if (/^-{3,}\s*$/.test(line)) { out.push({ k: 'rule' }); continue; }
-      for (const part of line.split(/(\*\*[^*\n]+\*\*)/)) {
-        if (!part) continue;
-        const b = part.match(/^\*\*([^*\n]+)\*\*$/);
-        out.push(b
-          ? { k: 'text', text: b[1], colour, bold: true }
-          : { k: 'text', text: part, colour });
-      }
-    }
-  }
-
   const shown = $derived.by(() => {
-    const out: Item[] = [];
-    let pos = 0;
-    for (const mk of marks) {
-      if (mk.start >= cursor) break;
-      if (mk.start > pos) plain(pos, Math.min(mk.start, cursor), out);
-      if (mk.end <= cursor) {
-        const body = trace.text.slice(mk.start, mk.end)
-          .replace(/^\$\$?|\$\$?$/g, '').trim();
-        out.push({ k: 'math', tex: body, display: mk.kind === 'display' });
-        pos = mk.end;
-      } else {
-        plain(mk.start, cursor, out);      // still being typed: show the source
-        return out;
-      }
+    const out: Array<{ start: number; text: string; colour: string; label: string }> = [];
+    for (const s of ordered) {
+      if (s.start >= cursor) break;
+      out.push({
+        start: s.start,
+        text: trace.text.slice(s.start, Math.min(s.end, cursor)),
+        colour: colourFor(s.category),
+        label: s.label,
+      });
     }
-    if (pos < cursor) plain(pos, cursor, out);
     return out;
   });
 
@@ -346,6 +300,7 @@
   });
 
   $effect(() => {
+    runId;                      // a reset must restart this loop, not be eaten by it
     if (!playing) return;
     // `elapsed` is read UNTRACKED: read normally this effect would depend on
     // the value its own frame writes, cancelling and restarting the run every
@@ -372,6 +327,7 @@
   function reset(autoplay: boolean) {
     cancelAnimationFrame(seekRaf);
     seeking = false;
+    runId += 1;
     if (lessMotion()) {
       elapsed = RUN_MS;
       playing = false;
@@ -466,12 +422,9 @@
       class="pane stream" bind:this={streamEl} tabindex="0"
       style:overflow-y={idle ? 'auto' : 'hidden'}
       role="region" aria-labelledby="lab-stream">
-      {#each shown as it, i (i)}{#if it.k === 'text'}<span
-          class="seg" class:b={it.bold} style:--c={it.colour}>{it.text}</span
-        >{:else if it.k === 'head'}<span class="mdh" style:--c={it.colour}>{it.text}</span
-        >{:else if it.k === 'rule'}<span class="mdr"></span
-        >{:else}<span class="mth" class:disp={it.display}>{@html render(it.tex, it.display)}</span
-        >{/if}{/each}{#if !done}<span class="caret"></span>{/if}
+      {#each shown as s (s.start)}<span
+          class="seg" style:--c={s.colour} title={s.label}>{s.text}</span
+        >{/each}{#if !done}<span class="caret"></span>{/if}
     </div>
 
     <!-- svelte-ignore a11y_no_noninteractive_tabindex -->
@@ -588,18 +541,6 @@
     white-space: pre-wrap; word-break: break-word; color: var(--ink-dim);
   }
   .seg { color: var(--c); }
-  .seg.b { font-weight: 700; color: var(--ink); }
-  .mdh {
-    display: block; font-family: var(--font-sans); font-weight: 650;
-    font-size: 0.86rem; color: var(--ink); margin: 0.7em 0 0.25em;
-  }
-  .mdr {
-    display: block; height: 1px; background: var(--line); margin: 0.7em 0;
-  }
-  /* Rendered maths sits on the mono baseline without stretching the line box,
-     which would make the stream jump as each formula lands. */
-  .mth { font-size: 0.94em; }
-  .mth.disp { display: block; margin: 0.45em 0; overflow-x: auto; }
   .caret {
     display: inline-block; width: 0.5em; height: 1em; vertical-align: -0.15em;
     background: var(--accent); animation: blink 1s steps(2, start) infinite;

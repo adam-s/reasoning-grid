@@ -47,7 +47,11 @@
   );
 </script>
 
-<ul class="legend">
+<!-- Two rows, always: the column count is half the entries, rounded up. A wrap
+     that depends on the container width puts the break in a different place at
+     every size, and a key is read as a block -- it should not reflow while the
+     figure beside it stays put. -->
+<ul class="legend" style:--cols={Math.ceil(present.length / 2)}>
   {#each present as cat (cat)}
     {@const meta = metaFor(scheme, cat)}
     <li class="item">
@@ -59,30 +63,37 @@
 
 <style>
   .legend {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 2px 14px;
+    display: grid;
+    grid-template-columns: repeat(var(--cols, 4), max-content);
+    gap: 8px 26px;
     margin: 0;
-    padding: var(--space-sm) 0 2px;
+    padding: var(--space-sm) 0 4px;
     list-style: none;
   }
   .item {
     display: inline-flex;
-    align-items: baseline;
-    gap: 6px;
+    align-items: center;
+    gap: 9px;
     font-family: var(--font-sans);
-    font-size: var(--text-xs);
+    font-size: 0.84rem;
     color: var(--ink);
   }
   /* A rule reads as a share of a length; a square reads as a bullet. */
   .rule {
-    width: 12px;
-    height: 3px;
-    border-radius: 1px;
+    width: 20px;
+    height: 4px;
+    border-radius: 2px;
     flex-shrink: 0;
-    align-self: center;
   }
   .label {
     white-space: nowrap;
+  }
+
+  @media (max-width: 640px) {
+    .legend {
+      grid-template-columns: repeat(2, max-content);
+      gap: 6px 20px;
+    }
+    .item { font-size: 0.78rem; }
   }
 </style>
