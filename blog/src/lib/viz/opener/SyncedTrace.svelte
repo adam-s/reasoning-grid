@@ -313,10 +313,45 @@
   // ---- panes follow the cursor while it runs ------------------------------
   let streamEl: HTMLDivElement | null = $state(null);
   let mathEl: HTMLDivElement | null = $state(null);
+  /**
+   * Follow the cursor by GLIDING, not snapping.
+   *
+   * Pinning scrollTop to the bottom looks continuous but is not: the text grows
+   * a character at a time while the box grows a LINE at a time, so the view
+   * lurches one line whenever the last line wraps. Measured, that was a median
+   * jump of 19px -- exactly one line -- and up to 57px, three lines at once.
+   * At sixty frames a second the eye reads that as the pane twitching.
+   *
+   * Easing a fraction of the remaining distance each frame turns one 19px jump
+   * into a dozen small ones and the motion becomes continuous. It also lags a
+   * little behind the caret while the text is coming fast, which is the right
+   * way round: the newest line is not jammed against the bottom edge.
+   *
+   * Idle snaps instead. Scrubbing should land where it was dragged, and with no
+   * frames arriving there is nothing to drive the glide.
+   */
+  function follow(el: HTMLElement | null, animate: boolean) {
+    if (!el) return;
+    const target = el.scrollHeight - el.clientHeight;
+    const gap = target - el.scrollTop;
+    if (!animate || Math.abs(gap) < 1) {
+      el.scrollTop = target;
+      return;
+    }
+    // Capped at three quarters of a line. Easing alone is not enough: the clock
+    // is paced by CLAIMS, so across a long stretch of prose between two of them
+    // the cursor can advance hundreds of characters in one frame, and 18% of
+    // that gap is still a line-and-a-half lurch. The cap costs a little lag on
+    // exactly those stretches, which are the ones with nothing to read.
+    const line = parseFloat(getComputedStyle(el).lineHeight) || 19;
+    const step = Math.min(Math.abs(gap) * 0.18, line * 0.75);
+    el.scrollTop += Math.sign(gap) * step;
+  }
   $effect(() => {
     cursor;
-    if (streamEl) streamEl.scrollTop = streamEl.scrollHeight;
-    if (mathEl) mathEl.scrollTop = mathEl.scrollHeight;
+    const glide = playing || seeking;
+    follow(streamEl, glide);
+    follow(mathEl, glide);
   });
 
   $effect(() => {

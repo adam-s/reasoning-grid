@@ -97,16 +97,21 @@
   }
 
   /* Driven by the playhead, not by a pointer: the entry for the step under the
-     cursor stays at full strength and the rest step back. Dimming the others
-     rather than brightening one keeps the swatches' colours true -- a
-     saturated swatch would no longer be the colour it is labelling. */
-  .item { transition: opacity 160ms ease; }
-  /* 0.45, not lower. This is still a key: a reader who glances at it to find
-     out what a colour means has to be able to read every entry, not only the
-     one the playhead happens to be in. */
+     cursor stays at full strength and the rest step back.
+     
+     OPACITY ONLY. Bolding the active label changed its width, which reflowed
+     the whole grid every time the playhead crossed into another category --
+     the legend visibly jumped, and it jumped most where the steps are shortest
+     and the crossings fastest. Nothing here may change a metric: no weight, no
+     size, no ring that adds to the box.
+     
+     Dimming the others rather than brightening one also keeps the swatches'
+     colours true -- a saturated swatch would no longer be the colour it is
+     labelling. And 0.45 rather than lower, because this is still a key: a
+     reader glancing at it to find out what a colour means has to be able to
+     read every entry, not only the one the run happens to be in. */
+  .item { transition: opacity 200ms ease; }
   .item.off { opacity: 0.45; }
-  .item.on .label { font-weight: 650; }
-  .item.on .rule { box-shadow: 0 0 0 2px color-mix(in srgb, currentColor 12%, transparent); }
 
   @media (prefers-reduced-motion: reduce) {
     .item { transition: none; }

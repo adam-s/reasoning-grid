@@ -194,6 +194,7 @@
 <!-- svelte-ignore a11y_no_noninteractive_element_interactions -->
 <svg
   class="flame-svg"
+  class:is-playing={playhead !== null}
   class:is-interactive={interactive}
   class:is-zoomable={enableZoom}
   viewBox="0 0 {width} {totalHeight}"
@@ -334,6 +335,15 @@
   }
 
   .flame-svg.is-zoomable:active .flame-rect {
+    transition: none;
+  }
+
+  /* No opacity easing under a playhead. The transition exists for hover, where
+     exactly one rect changes; with a playhead sweeping the chart every bar it
+     crosses starts its own 180ms animation, and a few hundred overlapping eases
+     read as the whole figure shimmering. A clean switch is calmer than a
+     staggered fade. */
+  .flame-svg.is-playing .flame-rect {
     transition: none;
   }
 
