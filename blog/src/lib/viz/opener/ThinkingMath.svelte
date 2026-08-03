@@ -9,9 +9,11 @@
    * out, can the model. The right pane grades every closed claim against real
    * arithmetic as it appears, which is the check the model is not doing.
    *
-   * Across the three runs there are 152 claims and exactly one is false, in the
-   * run that got the answer wrong. It is an ADDITION: every multiplication in
-   * every trace is correct. That is the whole opener.
+   * Across the three runs there is exactly one false claim, in the run that got
+   * the answer wrong, and it is an ADDITION: every multiplication in every trace
+   * is correct. That is the whole opener. The totals are computed below rather
+   * than written here, because this comment said 152 for a while after the real
+   * number became 160.
    *
    * Verdicts are computed in probe/build_opener.py, not here, and the numbers
    * run past Number.MAX_SAFE_INTEGER so they travel as decimal strings.
@@ -38,9 +40,14 @@
    * re-renders on a frame — 16,000 characters otherwise means rebuilding the
    * whole subtree sixty times a second.
    */
+  /** Sorted defensively. The generator sorts too, but this loop is only
+   *  correct on ascending input and the failure is silent: it renders a prefix
+   *  of the trace, in the wrong order, and the pane still looks full. */
+  const ordered = $derived([...trace.segments].sort((a, b) => a.start - b.start));
+
   const shown = $derived.by(() => {
     const out: Array<{ start: number; text: string; colour: string; label: string }> = [];
-    for (const s of trace.segments) {
+    for (const s of ordered) {
       if (s.start >= cursor) break;
       out.push({
         start: s.start,
@@ -95,14 +102,33 @@
     return html;
   }
 
+  /** Roving focus for the radio group: one tab stop, arrows move inside it. */
+  const tabEls: Array<HTMLButtonElement | null> = $state([]);
+  function arrows(e: KeyboardEvent) {
+    const d = e.key === 'ArrowRight' || e.key === 'ArrowDown' ? 1
+            : e.key === 'ArrowLeft' || e.key === 'ArrowUp' ? -1 : 0;
+    if (!d) return;
+    e.preventDefault();
+    const next = (which + d + OPENER.length) % OPENER.length;
+    pick(next);
+    tabEls[next]?.focus();
+  }
+
   let streamEl: HTMLDivElement | null = $state(null);
   let mathEl: HTMLDivElement | null = $state(null);
+  /** Follow the cursor, but only for a reader already at the bottom. Pinning
+   *  unconditionally fires ~60 times a second while playing, so anyone who
+   *  scrolls up to re-read a line is dragged straight back down. */
+  function follow(el: HTMLElement | null) {
+    if (!el) return;
+    if (el.scrollHeight - el.scrollTop - el.clientHeight < 48) {
+      el.scrollTop = el.scrollHeight;
+    }
+  }
   $effect(() => {
     cursor;
-    // Follow the cursor. Both panes are append-only, so pinning to the bottom
-    // is the whole behaviour.
-    if (streamEl) streamEl.scrollTop = streamEl.scrollHeight;
-    if (mathEl) mathEl.scrollTop = mathEl.scrollHeight;
+    follow(streamEl);
+    follow(mathEl);
   });
 
   $effect(() => {
@@ -148,8 +174,19 @@
     playing = autoplay;
   }
 
+  /** Thousands separators without going through Number(). These values travel
+   *  as strings because products here exceed MAX_SAFE_INTEGER; the operands are
+   *  short enough to be safe today, and parsing them anyway is a trap left for
+   *  the first 16-digit cell. */
+  const commas = (d: string) => d.replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+
   function toggle() {
-    if (!playing && done) cursor = 0;
+    // Replay from the start, unless the reader asked for less motion -- in
+    // which case they get the finished state, the same as every other path.
+    if (!playing && done) {
+      reset(true);
+      return;
+    }
     playing = !playing;
   }
 
@@ -164,27 +201,45 @@
 <figure class="opener">
   <div class="head">
     <div class="sum">
-      <span class="mono num">{Number(trace.x).toLocaleString()}</span>
+      <span class="mono num">{commas(trace.x)}</span>
       <span class="op">&times;</span>
-      <span class="mono num">{Number(trace.y).toLocaleString()}</span>
+      <span class="mono num">{commas(trace.y)}</span>
     </div>
-    <div class="tabs" role="group" aria-label="which run">
+    <!-- One of three, so a radio group: aria-pressed describes a toggle, and
+         three independent toggles is not what this is. Roving tabindex, so the
+         group is one tab stop and the arrows move within it. -->
+    <div
+      class="tabs" role="radiogroup" aria-label="which run" tabindex="-1"
+      onkeydown={arrows}>
       {#each OPENER as t, i}
-        <button class:on={i === which} aria-pressed={i === which} onclick={() => pick(i)}>
-          {t.verdict}
-        </button>
+        <button
+          role="radio" aria-checked={i === which} class:on={i === which}
+          tabindex={i === which ? 0 : -1}
+          bind:this={tabEls[i]}
+          onclick={() => pick(i)}>{t.verdict}</button>
       {/each}
     </div>
   </div>
 
   <div class="panes">
-    <div class="pane stream" bind:this={streamEl} aria-label="the model's thinking">
+    <!-- svelte-ignore a11y_no_noninteractive_tabindex -->
+    <!-- The rule and WCAG disagree here and WCAG wins: a 340px scrolling region
+         has to be reachable and scrollable from the keyboard (2.1.1), and
+         tabindex="0" on the region is how that is done. Deliberately no
+         aria-live -- announcing a 36,000-character stream as it types would be
+         unusable. -->
+    <div
+      class="pane stream" bind:this={streamEl} tabindex="0"
+      role="region" aria-label="the model's thinking, as raw text">
       {#each shown as s (s.start)}<span
           class="seg" style:--c={s.colour}
           title={s.label}>{s.text}</span>{/each}{#if !done}<span class="caret"></span>{/if}
     </div>
 
-    <div class="pane math" bind:this={mathEl} aria-label="the arithmetic it stated, checked">
+    <!-- svelte-ignore a11y_no_noninteractive_tabindex -->
+    <div
+      class="pane math" bind:this={mathEl} tabindex="0"
+      role="region" aria-label="the arithmetic it stated, checked as it is stated">
       {#if landed.length === 0}
         <p class="wait">waiting for the first claim&hellip;</p>
       {/if}
@@ -209,8 +264,12 @@
       {playing ? '❚❚' : done ? '↺' : '▶'}
     </button>
     <input
-      type="range" min="0" max={trace.thinking.length} bind:value={cursor}
-      oninput={() => (playing = false)} aria-label="position in the trace" />
+      type="range" min="0" max={trace.thinking.length}
+      step={Math.max(1, Math.round(trace.thinking.length / 200))}
+      bind:value={cursor} oninput={() => (playing = false)}
+      aria-label="position in the trace"
+      aria-valuetext="{Math.round((cursor / trace.thinking.length) * 100)}% through,
+        {landed.length} of {trace.claims.length} claims" />
     <span class="tally mono" class:bad={wrong.length > 0}>
       {landed.length} claim{landed.length === 1 ? '' : 's'} &middot;
       {wrong.length} wrong
@@ -281,6 +340,8 @@
     padding: 14px 16px;
     scrollbar-width: thin;
   }
+  .pane:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .tabs button:focus-visible { outline: 2px solid var(--accent); outline-offset: -2px; }
 
   .stream {
     font-family: var(--font-mono);

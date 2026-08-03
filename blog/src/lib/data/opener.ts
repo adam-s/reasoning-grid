@@ -801,102 +801,6 @@ export const OPENER: readonly OpenerTrace[] = [
     "label": "Second number: 30,957,123,778 Hmm, maybe I can express th…"
    },
    {
-    "start": 1878,
-    "end": 2056,
-    "category": "STRATEGY",
-    "label": "Alternatively, maybe use the calculator approach? But sin…"
-   },
-   {
-    "start": 5182,
-    "end": 5302,
-    "category": "STRATEGY",
-    "label": "Alternatively, perhaps using the original numbers and app…"
-   },
-   {
-    "start": 5302,
-    "end": 5419,
-    "category": "STRATEGY",
-    "label": "But given that both numbers are very large, maybe I need…"
-   },
-   {
-    "start": 5419,
-    "end": 5576,
-    "category": "TASK_SETUP",
-    "label": "First number: 2,053,896 Second number: 30,957,123,778 Let…"
-   },
-   {
-    "start": 5576,
-    "end": 5835,
-    "category": "STRATEGY",
-    "label": "But multiplying these directly would require multiple ste…"
-   },
-   {
-    "start": 5835,
-    "end": 6005,
-    "category": "STATE_TRACKING",
-    "label": "But given the second number is 30,957,123,778, which has…"
-   },
-   {
-    "start": 6005,
-    "end": 6202,
-    "category": "STRATEGY",
-    "label": "Let me note that the second number is 30,957,123,778. Let…"
-   },
-   {
-    "start": 6202,
-    "end": 6484,
-    "category": "STRATEGY",
-    "label": "Therefore, the product is: 2,053,896 × 3 * 10^10 + 2,053,…"
-   },
-   {
-    "start": 11679,
-    "end": 11921,
-    "category": "STRATEGY",
-    "label": "Wait, but let me check with another method. Alternatively…"
-   },
-   {
-    "start": 13008,
-    "end": 13119,
-    "category": "STRATEGY",
-    "label": "Alternatively, maybe I can check with another method. Let…"
-   },
-   {
-    "start": 13119,
-    "end": 13256,
-    "category": "STRATEGY",
-    "label": "Alternatively, perhaps use a calculator-like approach by…"
-   },
-   {
-    "start": 13256,
-    "end": 13396,
-    "category": "STRATEGY",
-    "label": "Alternatively, check the result by verifying with a small…"
-   },
-   {
-    "start": 16099,
-    "end": 16245,
-    "category": "RESULT",
-    "label": "Therefore, the result seems to be correct. So the exact p…"
-   },
-   {
-    "start": 16245,
-    "end": 16766,
-    "category": "RESULT",
-    "label": "To compute the exact product of the two large integers 2,…"
-   },
-   {
-    "start": 16766,
-    "end": 17682,
-    "category": "RESULT",
-    "label": "Then, we compute: 2,053,896 × (3 × 10^10 + 0 × 10^9 + 9 ×…"
-   },
-   {
-    "start": 17682,
-    "end": 17990,
-    "category": "RESULT",
-    "label": "Adding all of these values: 61,616,880,000,000,000 + 1,84…"
-   },
-   {
     "start": 952,
     "end": 1152,
     "category": "STRATEGY",
@@ -907,6 +811,12 @@ export const OPENER: readonly OpenerTrace[] = [
     "end": 1878,
     "category": "STRATEGY",
     "label": "So, 2,053,896 ÷ 2 = 1,026,948 30,957,123,778 ÷ 2 = 15,478…"
+   },
+   {
+    "start": 1878,
+    "end": 2056,
+    "category": "STRATEGY",
+    "label": "Alternatively, maybe use the calculator approach? But sin…"
    },
    {
     "start": 2056,
@@ -979,6 +889,48 @@ export const OPENER: readonly OpenerTrace[] = [
     "end": 5182,
     "category": "STRATEGY",
     "label": "Then 2,053,896 × 123,778. Hmm, this is getting really com…"
+   },
+   {
+    "start": 5182,
+    "end": 5302,
+    "category": "STRATEGY",
+    "label": "Alternatively, perhaps using the original numbers and app…"
+   },
+   {
+    "start": 5302,
+    "end": 5419,
+    "category": "STRATEGY",
+    "label": "But given that both numbers are very large, maybe I need…"
+   },
+   {
+    "start": 5419,
+    "end": 5576,
+    "category": "TASK_SETUP",
+    "label": "First number: 2,053,896 Second number: 30,957,123,778 Let…"
+   },
+   {
+    "start": 5576,
+    "end": 5835,
+    "category": "STRATEGY",
+    "label": "But multiplying these directly would require multiple ste…"
+   },
+   {
+    "start": 5835,
+    "end": 6005,
+    "category": "STATE_TRACKING",
+    "label": "But given the second number is 30,957,123,778, which has…"
+   },
+   {
+    "start": 6005,
+    "end": 6202,
+    "category": "STRATEGY",
+    "label": "Let me note that the second number is 30,957,123,778. Let…"
+   },
+   {
+    "start": 6202,
+    "end": 6484,
+    "category": "STRATEGY",
+    "label": "Therefore, the product is: 2,053,896 × 3 * 10^10 + 2,053,…"
    },
    {
     "start": 6484,
@@ -1065,6 +1017,12 @@ export const OPENER: readonly OpenerTrace[] = [
     "label": "So all the individual terms are correct. Then the additio…"
    },
    {
+    "start": 11679,
+    "end": 11921,
+    "category": "STRATEGY",
+    "label": "Wait, but let me check with another method. Alternatively…"
+   },
+   {
     "start": 11921,
     "end": 12606,
     "category": "CROSSCHECK",
@@ -1075,6 +1033,24 @@ export const OPENER: readonly OpenerTrace[] = [
     "end": 13008,
     "category": "CROSSCHECK",
     "label": "Let me approximate both numbers. 2,053,896 is about 2 mil…"
+   },
+   {
+    "start": 13008,
+    "end": 13119,
+    "category": "STRATEGY",
+    "label": "Alternatively, maybe I can check with another method. Let…"
+   },
+   {
+    "start": 13119,
+    "end": 13256,
+    "category": "STRATEGY",
+    "label": "Alternatively, perhaps use a calculator-like approach by…"
+   },
+   {
+    "start": 13256,
+    "end": 13396,
+    "category": "STRATEGY",
+    "label": "Alternatively, check the result by verifying with a small…"
    },
    {
     "start": 13396,
@@ -1159,6 +1135,30 @@ export const OPENER: readonly OpenerTrace[] = [
     "end": 16099,
     "category": "CROSSCHECK",
     "label": "Now, 697,088 mod 1000 is 088. But wait, our result's last…"
+   },
+   {
+    "start": 16099,
+    "end": 16245,
+    "category": "RESULT",
+    "label": "Therefore, the result seems to be correct. So the exact p…"
+   },
+   {
+    "start": 16245,
+    "end": 16766,
+    "category": "RESULT",
+    "label": "To compute the exact product of the two large integers 2,…"
+   },
+   {
+    "start": 16766,
+    "end": 17682,
+    "category": "RESULT",
+    "label": "Then, we compute: 2,053,896 × (3 × 10^10 + 0 × 10^9 + 9 ×…"
+   },
+   {
+    "start": 17682,
+    "end": 17990,
+    "category": "RESULT",
+    "label": "Adding all of these values: 61,616,880,000,000,000 + 1,84…"
    }
   ]
  },
@@ -1572,150 +1572,6 @@ export const OPENER: readonly OpenerTrace[] = [
     "label": "So, the product would be: 80,379,530 × 4,000,000 + 80,379…"
    },
    {
-    "start": 6600,
-    "end": 6747,
-    "category": "STRATEGY",
-    "label": "So the total product is 371,499,719,424,970. But let me c…"
-   },
-   {
-    "start": 6747,
-    "end": 6869,
-    "category": "STRATEGY",
-    "label": "Alternatively, maybe I can use another approach. Let me t…"
-   },
-   {
-    "start": 6869,
-    "end": 7044,
-    "category": "TASK_SETUP",
-    "label": "Let me write the numbers: Multiplicand: 80,379,530 Multip…"
-   },
-   {
-    "start": 7044,
-    "end": 7236,
-    "category": "STRATEGY",
-    "label": "But multiplying these manually would be tedious, but perh…"
-   },
-   {
-    "start": 7236,
-    "end": 7457,
-    "category": "STRATEGY",
-    "label": "Alternatively, maybe I can check using another breakdown.…"
-   },
-   {
-    "start": 7457,
-    "end": 7631,
-    "category": "STRATEGY",
-    "label": "Alternatively, perhaps I can use the fact that 80,379,530…"
-   },
-   {
-    "start": 7631,
-    "end": 7778,
-    "category": "STRATEGY",
-    "label": "Alternatively, I can use the fact that 80,379,530 × 4,621…"
-   },
-   {
-    "start": 9956,
-    "end": 10121,
-    "category": "RECHECK",
-    "label": "So, same result as before. Therefore, this confirms that…"
-   },
-   {
-    "start": 10121,
-    "end": 10405,
-    "category": "STRATEGY",
-    "label": "Alternatively, I can use the fact that 80,379,530 × 4,621…"
-   },
-   {
-    "start": 10405,
-    "end": 10533,
-    "category": "STRATEGY",
-    "label": "Alternatively, maybe I can use the fact that 80,379,530 ×…"
-   },
-   {
-    "start": 10533,
-    "end": 10732,
-    "category": "STRATEGY",
-    "label": "First compute 80,379,530 × 4,600,000. Then compute 80,379…"
-   },
-   {
-    "start": 10732,
-    "end": 10934,
-    "category": "STRATEGY",
-    "label": "But maybe breaking it down: 4,600,000 = 4,000,000 + 600,0…"
-   },
-   {
-    "start": 10934,
-    "end": 11045,
-    "category": "STRATEGY",
-    "label": "Alternatively, maybe I can compute 80,379,530 × 21,821. B…"
-   },
-   {
-    "start": 11045,
-    "end": 11235,
-    "category": "STRATEGY",
-    "label": "Alternatively, perhaps I can use the value I already calc…"
-   },
-   {
-    "start": 11235,
-    "end": 11421,
-    "category": "STRATEGY",
-    "label": "Alternatively, I can use the fact that 80,379,530 × 4,621…"
-   },
-   {
-    "start": 11421,
-    "end": 11804,
-    "category": "CROSSCHECK",
-    "label": "Alternatively, maybe I can check the number of digits. Le…"
-   },
-   {
-    "start": 11804,
-    "end": 12071,
-    "category": "CROSSCHECK",
-    "label": "Another check: the first few digits. Let me see, 80 milli…"
-   },
-   {
-    "start": 13843,
-    "end": 14235,
-    "category": "CROSSCHECK",
-    "label": "Another check: the number of digits. Let's see: The numbe…"
-   },
-   {
-    "start": 14235,
-    "end": 14793,
-    "category": "RECHECK",
-    "label": "Another check: let me check the sum of the digits, but th…"
-   },
-   {
-    "start": 14793,
-    "end": 14952,
-    "category": "CROSSCHECK",
-    "label": "Adding them up step by step, and getting the total of 371…"
-   },
-   {
-    "start": 14952,
-    "end": 15057,
-    "category": "RESULT",
-    "label": "Therefore, the exact product is 371,499,719,424,970. Fina…"
-   },
-   {
-    "start": 15057,
-    "end": 15380,
-    "category": "RESULT",
-    "label": "To compute the exact product of 80,379,530 and 4,621,821,…"
-   },
-   {
-    "start": 15380,
-    "end": 15870,
-    "category": "RESULT",
-    "label": "Now, we compute the product of 80,379,530 with each of th…"
-   },
-   {
-    "start": 15870,
-    "end": 16367,
-    "category": "RESULT",
-    "label": "Now, we sum all the computed values: 321,518,120,000,000…"
-   },
-   {
     "start": 1622,
     "end": 1826,
     "category": "PARTIAL_PRODUCT",
@@ -1836,6 +1692,48 @@ export const OPENER: readonly OpenerTrace[] = [
     "label": "Adding Term6: 1,607,590,600. So 371,498,111,754,000 + 1,6…"
    },
    {
+    "start": 6600,
+    "end": 6747,
+    "category": "STRATEGY",
+    "label": "So the total product is 371,499,719,424,970. But let me c…"
+   },
+   {
+    "start": 6747,
+    "end": 6869,
+    "category": "STRATEGY",
+    "label": "Alternatively, maybe I can use another approach. Let me t…"
+   },
+   {
+    "start": 6869,
+    "end": 7044,
+    "category": "TASK_SETUP",
+    "label": "Let me write the numbers: Multiplicand: 80,379,530 Multip…"
+   },
+   {
+    "start": 7044,
+    "end": 7236,
+    "category": "STRATEGY",
+    "label": "But multiplying these manually would be tedious, but perh…"
+   },
+   {
+    "start": 7236,
+    "end": 7457,
+    "category": "STRATEGY",
+    "label": "Alternatively, maybe I can check using another breakdown.…"
+   },
+   {
+    "start": 7457,
+    "end": 7631,
+    "category": "STRATEGY",
+    "label": "Alternatively, perhaps I can use the fact that 80,379,530…"
+   },
+   {
+    "start": 7631,
+    "end": 7778,
+    "category": "STRATEGY",
+    "label": "Alternatively, I can use the fact that 80,379,530 × 4,621…"
+   },
+   {
     "start": 7778,
     "end": 7983,
     "category": "STRATEGY",
@@ -1896,6 +1794,66 @@ export const OPENER: readonly OpenerTrace[] = [
     "label": "Now, adding them up in order: Start with the largest term…"
    },
    {
+    "start": 9956,
+    "end": 10121,
+    "category": "RECHECK",
+    "label": "So, same result as before. Therefore, this confirms that…"
+   },
+   {
+    "start": 10121,
+    "end": 10405,
+    "category": "STRATEGY",
+    "label": "Alternatively, I can use the fact that 80,379,530 × 4,621…"
+   },
+   {
+    "start": 10405,
+    "end": 10533,
+    "category": "STRATEGY",
+    "label": "Alternatively, maybe I can use the fact that 80,379,530 ×…"
+   },
+   {
+    "start": 10533,
+    "end": 10732,
+    "category": "STRATEGY",
+    "label": "First compute 80,379,530 × 4,600,000. Then compute 80,379…"
+   },
+   {
+    "start": 10732,
+    "end": 10934,
+    "category": "STRATEGY",
+    "label": "But maybe breaking it down: 4,600,000 = 4,000,000 + 600,0…"
+   },
+   {
+    "start": 10934,
+    "end": 11045,
+    "category": "STRATEGY",
+    "label": "Alternatively, maybe I can compute 80,379,530 × 21,821. B…"
+   },
+   {
+    "start": 11045,
+    "end": 11235,
+    "category": "STRATEGY",
+    "label": "Alternatively, perhaps I can use the value I already calc…"
+   },
+   {
+    "start": 11235,
+    "end": 11421,
+    "category": "STRATEGY",
+    "label": "Alternatively, I can use the fact that 80,379,530 × 4,621…"
+   },
+   {
+    "start": 11421,
+    "end": 11804,
+    "category": "CROSSCHECK",
+    "label": "Alternatively, maybe I can check the number of digits. Le…"
+   },
+   {
+    "start": 11804,
+    "end": 12071,
+    "category": "CROSSCHECK",
+    "label": "Another check: the first few digits. Let me see, 80 milli…"
+   },
+   {
     "start": 12071,
     "end": 12517,
     "category": "CROSSCHECK",
@@ -1918,6 +1876,48 @@ export const OPENER: readonly OpenerTrace[] = [
     "end": 13843,
     "category": "CROSSCHECK",
     "label": "But let me check again. The original numbers: 80,379,530…"
+   },
+   {
+    "start": 13843,
+    "end": 14235,
+    "category": "CROSSCHECK",
+    "label": "Another check: the number of digits. Let's see: The numbe…"
+   },
+   {
+    "start": 14235,
+    "end": 14793,
+    "category": "RECHECK",
+    "label": "Another check: let me check the sum of the digits, but th…"
+   },
+   {
+    "start": 14793,
+    "end": 14952,
+    "category": "CROSSCHECK",
+    "label": "Adding them up step by step, and getting the total of 371…"
+   },
+   {
+    "start": 14952,
+    "end": 15057,
+    "category": "RESULT",
+    "label": "Therefore, the exact product is 371,499,719,424,970. Fina…"
+   },
+   {
+    "start": 15057,
+    "end": 15380,
+    "category": "RESULT",
+    "label": "To compute the exact product of 80,379,530 and 4,621,821,…"
+   },
+   {
+    "start": 15380,
+    "end": 15870,
+    "category": "RESULT",
+    "label": "Now, we compute the product of 80,379,530 with each of th…"
+   },
+   {
+    "start": 15870,
+    "end": 16367,
+    "category": "RESULT",
+    "label": "Now, we sum all the computed values: 321,518,120,000,000…"
    }
   ]
  },
@@ -2659,6 +2659,42 @@ export const OPENER: readonly OpenerTrace[] = [
     "label": "So total is 48,000,000,000 + 2,809,963,256 = 50,809,963,2…"
    },
    {
+    "start": 9320,
+    "end": 9683,
+    "category": "RECHECK",
+    "label": "Wait, but that's 3,012,702,490,814 × 4. Wait, but that's…"
+   },
+   {
+    "start": 9683,
+    "end": 9822,
+    "category": "RECHECK",
+    "label": "So total is 2,800,000,000 + 9,963,256 = 2,809,963,256 So…"
+   },
+   {
+    "start": 9822,
+    "end": 9968,
+    "category": "RECHECK",
+    "label": "Therefore, total 3,012,702,490,814 × 4 = 12,000,000,000,0…"
+   },
+   {
+    "start": 9968,
+    "end": 10102,
+    "category": "RECHECK",
+    "label": "Wait, but that seems high. Let me check with another meth…"
+   },
+   {
+    "start": 10102,
+    "end": 10559,
+    "category": "RECHECK",
+    "label": "Multiply each digit: Starting from the right: 7 × 8 = 56…"
+   },
+   {
+    "start": 10559,
+    "end": 10663,
+    "category": "RECHECK",
+    "label": "So the result is 12,050,809,963,256. Yes, that matches. S…"
+   },
+   {
     "start": 10663,
     "end": 10779,
     "category": "ACCUMULATE",
@@ -3137,42 +3173,6 @@ export const OPENER: readonly OpenerTrace[] = [
     "end": 25063,
     "category": "ACCUMULATE",
     "label": "Let me add 42,177,834,871,396 to 31,633,376,153,547,000:…"
-   },
-   {
-    "start": 9320,
-    "end": 9683,
-    "category": "RECHECK",
-    "label": "Wait, but that's 3,012,702,490,814 × 4. Wait, but that's…"
-   },
-   {
-    "start": 9683,
-    "end": 9822,
-    "category": "RECHECK",
-    "label": "So total is 2,800,000,000 + 9,963,256 = 2,809,963,256 So…"
-   },
-   {
-    "start": 9822,
-    "end": 9968,
-    "category": "RECHECK",
-    "label": "Therefore, total 3,012,702,490,814 × 4 = 12,000,000,000,0…"
-   },
-   {
-    "start": 9968,
-    "end": 10102,
-    "category": "RECHECK",
-    "label": "Wait, but that seems high. Let me check with another meth…"
-   },
-   {
-    "start": 10102,
-    "end": 10559,
-    "category": "RECHECK",
-    "label": "Multiply each digit: Starting from the right: 7 × 8 = 56…"
-   },
-   {
-    "start": 10559,
-    "end": 10663,
-    "category": "RECHECK",
-    "label": "So the result is 12,050,809,963,256. Yes, that matches. S…"
    },
    {
     "start": 25063,

@@ -7,11 +7,24 @@
   import Prose from './lib/components/Prose.svelte';
   import Placeholder from './lib/components/Placeholder.svelte';
   import ThinkingMath from './lib/viz/opener/ThinkingMath.svelte';
+  import { OPENER } from './lib/data/opener';
   import FlamePanel from './lib/viz/flame/FlamePanel.svelte';
   import ThreeTraces from './lib/viz/flame/ThreeTraces.svelte';
   import SurfaceCanvas from './lib/viz/surface/SurfaceCanvas.svelte';
   import WinnerSurface from './lib/viz/surface/WinnerSurface.svelte';
   import { LAMBDA_TRACE } from './lib/data/lambda-trace';
+
+  // The opener's facts, computed. Written out as prose they read 152 for a
+  // while after the extractor gained subtraction and the real total became 160,
+  // because this file states them and the figure that owns them is elsewhere.
+  const claims = OPENER.reduce((n, t) => n + t.claims.length, 0);
+  const wrong = OPENER.flatMap((t) => t.claims).filter((c) => !c.ok);
+  const wrongOp = wrong[0]?.op === '+' ? 'an addition'
+    : wrong[0]?.op === '−' ? 'a subtraction' : 'a multiplication';
+  const mulsAllRight = OPENER.flatMap((t) => t.claims)
+    .filter((c) => c.op === '×').every((c) => c.ok);
+  const lost = OPENER.find((t) => t.claims.some((c) => !c.ok));
+  const digits = (d: string | undefined) => (d ?? '').length;
 </script>
 
 <Layout>
@@ -27,9 +40,11 @@
     <ThinkingMath />
     <Prose>
       <p>
-        Three runs, 160 arithmetic claims, and exactly one is false. It is an addition
-        &mdash; every multiplication in every run is correct. The run that got the
-        answer wrong could multiply seven-digit numbers all day and lost to a carry.
+        {OPENER.length} runs, {claims} arithmetic claims, and
+        {wrong.length === 1 ? 'exactly one is false' : `${wrong.length} are false`}. It is
+        {wrongOp}{mulsAllRight ? ' — every multiplication in every run is correct' : ''}.
+        The run that got the answer wrong could multiply
+        {digits(lost?.x)}-digit numbers all day and lost to a carry.
       </p>
       <p>
         Read the left pane alone and you cannot tell which run is which. All three are

@@ -179,9 +179,22 @@ def main():
         cl = claims(think)
         # Segment offsets are into the trace as segmented, which starts at the
         # same place this thinking does; leaves carry the boundaries.
-        segs = [{"start": r["start"], "end": r["start"] + r["width"],
-                 "category": r["category"], "label": r["label"]}
-                for r in tr["rows"] if not r.get("container")]
+        # SORTED BY START. The flame rows are ordered for flame rendering, which
+        # is not ascending by offset -- trace A jumps from 17,682 back to 952 at
+        # index 19. Anything that walks these in array order and stops at the
+        # first segment past a cursor renders a fifth of the trace, in the wrong
+        # order, and looks fine because the pane still fills.
+        segs = sorted(
+            ({"start": r["start"], "end": r["start"] + r["width"],
+              "category": r["category"], "label": r["label"]}
+             for r in tr["rows"] if not r.get("container")),
+            key=lambda s: s["start"])
+        # The segments must tile the thinking exactly, or the left pane is not
+        # showing what the model wrote. Checked here rather than trusted.
+        rebuilt = "".join(think[s["start"]:min(s["end"], len(think))] for s in segs)
+        if rebuilt != think:
+            sys.exit(f"{tr['key']}: segments do not tile the thinking "
+                     f"({len(rebuilt):,} chars rebuilt vs {len(think):,})")
         out.append({"key": tr["key"], "cell": tr["cell"], "x": tr["x"], "y": tr["y"],
                     "truth": tr["truth"], "answer": tr["answer"],
                     "outcome": tr["outcome"], "verdict": tr["verdict"],
