@@ -351,3 +351,24 @@ to 33 points, so none is evidence Phi leads a region.
 **Supersedes, in practice:** charts 11's six views. This one plot carries the
 comparison; the six did not. Kept because the case for running Phi is the 83
 individual problems in chart 11's alluvial, which a difference map cannot show.
+
+### 13. Qwen minus Phi, as relief
+
+[Open the chart](https://claude.ai/code/artifact/85224357-e7c9-481b-96b5-dc3805cdb223)
+
+`probe/render_diff_surface.py` &rarr; `derived/diff-surface.html`
+
+Chart 12's quantity as a signed 3D surface. Zero is a plane, not a floor: the
+sheet rises where Qwen leads, dips where Phi does, and the near quadrant lies
+flat on zero because both models tie on every problem there.
+
+**Says:** the same thing as chart 12, less well. **Prefer chart 12 for this
+quantity.** The difference is noise-dominated at n=3&ndash;12, and relief renders
+a one-problem fluctuation and a real effect as the same shape. The heatmap
+prints the number in the cell, so a reader can see `+33` sitting on three trials
+and discount it; a spike cannot be discounted. Kept because the flat tie-quadrant
+reads better in 3D than anywhere else, and because it is the honest record of a
+format that lost.
+
+**Scale:** height is the 92nd percentile of |difference|, not the maximum. One
++83 cell was setting the height of all 144.
