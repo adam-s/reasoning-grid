@@ -1,18 +1,28 @@
 #!/usr/bin/env python3
-"""The same difference as render_diff_heatmap.py, as a signed surface.
+"""Height is the better model; colour is which one it was.
 
     python probe/render_diff_surface.py -o derived/diff-surface.html
 
-Zero is a plane, not a floor. The surface rises above it where Qwen leads and
-dips below where Phi does, so the flat corner in the near quadrant is not an
-absence of data -- it is the two models tying on every problem there, lying
-exactly on the reference.
+Two variables, two channels, chosen to match how noisy each one is.
 
-Height is scaled on the 92nd percentile of |difference|, not the maximum. One
-+83 cell -- ten of twelve against two of twelve -- was setting the height of all
-144 and flattening everything else into the plane. Cells are drawn at reduced
-opacity in proportion to how few trials stand behind them, the same discount the
-heatmap uses: at n=3 one problem moves a cell 33 points.
+HEIGHT is max(Qwen, Phi) per cell -- the best either model manages. That falls
+off smoothly with problem size, so it makes a real surface: a plateau at the
+easy corner, a slope, a floor.
+
+COLOUR is Qwen minus Phi. That quantity is noise-dominated at n=3-12, where one
+problem moves a cell 8 to 33 points.
+
+An earlier version of this chart put the difference on the HEIGHT axis, and it
+was the wrong way round: relief cannot separate a one-problem fluctuation from
+an effect, because both are a spike, and a reader has no number to discount the
+way the heatmap's printed values let them. Putting the noisy variable on colour
+and the stable one on geometry means noise tints a shape that is real instead of
+inventing terrain.
+
+Colour saturates at the 92nd percentile of |difference|, not the maximum: one
++83 cell -- ten of twelve against two of twelve -- would otherwise set the scale
+for all 144. Cells are also drawn paler in proportion to how few trials stand
+behind them, the same discount the heatmap uses.
 """
 import argparse
 import collections
@@ -57,7 +67,7 @@ def collect(runs="runs"):
     return dict(g), only_b
 
 
-PAGE = """<title>carrychain &mdash; Qwen minus Phi, as relief</title>
+PAGE = """<title>carrychain &mdash; the better model, tinted by which one</title>
 <style>
 :root{ --paper:#fdfcf9; --panel:#f7f5f0; --line:#e3dfd6; --line-2:#cfc9bd; --ink:#1a1a1a;
   --dim:#5a5a5a; --faint:#a6a29a; --lead-a:#1f3a5f; --lead-b:#c9853a; }
@@ -94,24 +104,28 @@ canvas:active{cursor:grabbing}
 </style>
 <div class="wrap">
   <p class="eyebrow">carrychain &middot; __N__ problems &middot; both models, same questions</p>
-  <h1>Qwen minus Phi, as relief</h1>
-  <p class="lede">Zero is a plane, not a floor. The sheet rises where Qwen leads and dips
-  where Phi does. Drag to look along it.</p>
+  <h1>The better model, tinted by which one</h1>
+  <p class="lede">Height is whichever model did better on that cell &mdash; the best
+  either can manage. Colour is which one it was. Drag to look along the slope.</p>
   <div class="plot"><canvas id="c"></canvas><span class="hint">drag to rotate</span></div>
   <div class="key">
     <span><span class="sw" style="background:var(--lead-a)"></span>Qwen ahead</span>
+    <span><span class="sw" style="background:#a8a49a"></span>tied</span>
     <span><span class="sw" style="background:var(--lead-b)"></span>Phi ahead</span>
-    <span>&#183; flat = the two tied</span>
+    <span>&#183; height = the better of the two</span>
     <span>&#183; paler = fewer trials</span>
   </div>
-  <p class="note"><strong>The flat quadrant is the point.</strong> It is not missing data.
-  It is every cell where both models solved every problem, lying exactly on zero. The
-  relief only begins once problems are big enough for either model to fail.</p>
-  <p class="note">From there it is almost all upward: Qwen leads by <strong>__MEAN__
-  points</strong> on average and only <strong>__NEG__ of __CELLS__</strong> cells dip.
-  Every dip stands on 12 trials or fewer &mdash; at that size one problem is worth 8 to 33
-  points, so the dips are the surface's noise floor, not places Phi wins. Turn the view
-  until you are looking along the zero plane and they disappear into it.</p>
+  <p class="note"><strong>Two variables, split by how noisy each is.</strong> Height is
+  the better model, which falls off smoothly and makes a real surface. Colour is the
+  difference, which at 3 to 12 trials per cell is mostly noise &mdash; so it tints a shape
+  that is trustworthy instead of inventing one. An earlier version of this chart had it
+  the other way round and read as a mountain range of coin flips.</p>
+  <p class="note">The plateau is where both models solve everything, and it is grey
+  because that is a tie, not a lead. Colour appears at the same place the surface starts
+  to fall: the two only separate once problems are big enough for either to fail. Past
+  that it is almost all blue &mdash; Qwen ahead by <strong>__MEAN__ points</strong> on
+  average, with only <strong>__NEG__ of __CELLS__</strong> cells orange, every one of them
+  standing on 12 trials or fewer.</p>
 </div>
 <script>
 const D=__DATA__, DIM=D.dim, MX=__MX__;
@@ -125,12 +139,19 @@ function P(a,b,z,cx,cy,fit){
   const s=900/(900+d*26);
   return {sx:cx+x1*26*s*fit, sy:cy-vy*26*s*fit, d};
 }
-// Clamped to the scale. Past the 92nd percentile a cell flattens against the
-// cap rather than spiking out of frame -- the outlier is one problem's worth
-// of difference on twelve trials, and it should not own the vertical axis.
-const val=(a,b)=>{const g=D.g[a+'x'+b];
-  return g?Math.max(-1,Math.min(1,g[0]/MX)):null;};
+const val=(a,b)=>{const g=D.g[a+'x'+b]; return g?g[2]:null;};          // best model
+const dif=(a,b)=>{const g=D.g[a+'x'+b]; return g?g[0]:0;};             // Qwen - Phi
 const ev =(a,b)=>{const g=D.g[a+'x'+b]; return g?0.35+0.65*Math.min(1,g[1]/12):0;};
+// Diverging, saturating at the 92nd percentile. Neutral at a tie, so a cell
+// where the two models drew reads as uncommitted rather than as either colour.
+function tint(d,css){
+  const t=Math.max(-1,Math.min(1,d/MX));
+  const mid=[168,164,154];
+  const end=(t>=0?css('--lead-a'):css('--lead-b'));
+  const e=[1,3,5].map(i=>parseInt(end.slice(i,i+2),16));
+  const k=Math.abs(t);
+  return `rgb(${mid.map((v,i)=>Math.round(v+(e[i]-v)*k)).join(',')})`;
+}
 function draw(){
   const dpr=Math.min(devicePixelRatio||1,2);
   if(cv.width!==Math.round(W*dpr)){cv.width=Math.round(W*dpr);cv.height=Math.round(H*dpr);}
@@ -138,7 +159,7 @@ function draw(){
   let b0=1e9,b1=-1e9,c0=1e9,c1=-1e9;
   // Frame the range the data actually occupies. Reserving z=-1 when the deepest
   // dip is -0.4 spends a third of the canvas on empty space below the plane.
-  for(const a of[1,DIM])for(const b of[1,DIM])for(const z of[D.zlo,D.zhi]){
+  for(const a of[1,DIM])for(const b of[1,DIM])for(const z of[0,1]){
     const q=P(a,b,z,0,0,1);
     b0=Math.min(b0,q.sx);b1=Math.max(b1,q.sx);c0=Math.min(c0,q.sy);c1=Math.max(c1,q.sy);}
   const PAD=52, aw=Math.max(80,W-PAD*2), ah=Math.max(80,H-PAD*2);
@@ -162,12 +183,10 @@ function draw(){
     ctx.beginPath(); ctx.moveTo(p[0].sx,p[0].sy);
     for(let k=1;k<4;k++) ctx.lineTo(p[k].sx,p[k].sy);
     ctx.closePath();
-    const m=(z[0]+z[1]+z[2]+z[3])/4;
+    const d=(dif(A,B)+dif(A+1,B)+dif(A+1,B+1)+dif(A,B+1))/4;
     const e=(ev(A,B)+ev(A+1,B)+ev(A+1,B+1)+ev(A,B+1))/4;
-    ctx.fillStyle = m>=0 ? css('--lead-a') : css('--lead-b');
-    ctx.globalAlpha = Math.min(1, 0.10 + Math.abs(m)*1.9) * e;
-    ctx.fill();
-    ctx.globalAlpha=.5*e; ctx.strokeStyle=css('--paper'); ctx.lineWidth=.6; ctx.stroke();
+    ctx.fillStyle=tint(d,css); ctx.globalAlpha=0.45+0.55*e; ctx.fill();
+    ctx.globalAlpha=.45; ctx.strokeStyle=css('--paper'); ctx.lineWidth=.6; ctx.stroke();
     ctx.globalAlpha=1;
   }
   // axes, on the two edges nearest the camera
@@ -221,7 +240,8 @@ def main():
     args = ap.parse_args()
     g, only_b = collect(args.runs)
 
-    diff = {f"{a}x{b}": [round((q - p) / n, 4), n] for (a, b), (q, p, n) in g.items()}
+    diff = {f"{a}x{b}": [round((q - p) / n, 4), n, round(max(q, p) / n, 4)]
+            for (a, b), (q, p, n) in g.items()}
     # Scale on a robust quantile, not the max. One +83 cell -- ten of twelve
     # against two of twelve -- was setting the height of all 144, flattening
     # everything else into the plane.
@@ -231,9 +251,7 @@ def main():
     mean = sum(q - p for q, p, _ in g.values()) / N * 100
     neg = sum(1 for v in signed if v < 0)
 
-    zs = [max(-1.0, min(1.0, v / mx)) for v in signed]
-    payload = {"dim": max(max(c) for c in g), "g": diff,
-               "zlo": round(min(zs), 4), "zhi": round(max(zs), 4)}
+    payload = {"dim": max(max(c) for c in g), "g": diff}
     html = (PAGE.replace("__DATA__", json.dumps(payload, separators=(",", ":")))
                 .replace("__MX__", f"{mx:.4f}")
                 .replace("__N__", f"{N:,}").replace("__MEAN__", f"{mean:+.0f}")

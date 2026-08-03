@@ -352,23 +352,28 @@ to 33 points, so none is evidence Phi leads a region.
 comparison; the six did not. Kept because the case for running Phi is the 83
 individual problems in chart 11's alluvial, which a difference map cannot show.
 
-### 13. Qwen minus Phi, as relief
+### 13. The better model, tinted by which one
 
 [Open the chart](https://claude.ai/code/artifact/85224357-e7c9-481b-96b5-dc3805cdb223)
 
 `probe/render_diff_surface.py` &rarr; `derived/diff-surface.html`
 
-Chart 12's quantity as a signed 3D surface. Zero is a plane, not a floor: the
-sheet rises where Qwen leads, dips where Phi does, and the near quadrant lies
-flat on zero because both models tie on every problem there.
+Two variables split across two channels by how noisy each one is. **Height** is
+`max(Qwen, Phi)` &mdash; the best either model manages, which falls off smoothly
+and makes a real surface. **Colour** is `Qwen &minus; Phi`, diverging through a
+neutral grey at a tie.
 
-**Says:** the same thing as chart 12, less well. **Prefer chart 12 for this
-quantity.** The difference is noise-dominated at n=3&ndash;12, and relief renders
-a one-problem fluctuation and a real effect as the same shape. The heatmap
-prints the number in the cell, so a reader can see `+33` sitting on three trials
-and discount it; a spike cannot be discounted. Kept because the flat tie-quadrant
-reads better in 3D than anywhere else, and because it is the honest record of a
-format that lost.
+**Says:** the plateau is grey, because where both models solve everything a tie
+is not a lead. Colour appears at exactly the place the surface starts to fall
+&mdash; the two models only separate once problems are big enough for either to
+fail &mdash; and past that it is almost all blue.
 
-**Scale:** height is the 92nd percentile of |difference|, not the maximum. One
-+83 cell was setting the height of all 144.
+**The design point.** The first version put the difference on the height axis
+and read as a mountain range of coin flips: at 3&ndash;12 trials per cell, relief
+cannot separate a one-problem fluctuation from an effect, because both are a
+spike, and unlike chart 12 there is no printed number to discount. Putting the
+noisy variable on colour and the stable one on geometry means noise tints a
+shape that is trustworthy instead of inventing one.
+
+**Scale:** colour saturates at the 92nd percentile of |difference|. One +83 cell
+would otherwise set the scale for all 144.
