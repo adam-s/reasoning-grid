@@ -9,20 +9,25 @@ HEIGHT is max(Qwen, Phi) per cell -- the best either model manages. That falls
 off smoothly with problem size, so it makes a real surface: a plateau at the
 easy corner, a slope, a floor.
 
-COLOUR is Qwen minus Phi. That quantity is noise-dominated at n=3-12, where one
-problem moves a cell 8 to 33 points.
+On top of it sits a CAP wherever the union -- either model solving it -- rises
+above that. Union is never below the better single model, so on an even cell the
+cap lands exactly on the surface and disappears: a cell where the two models came
+out level is simply Qwen's colour with nothing on it. Where Phi solved problems
+Qwen missed, the cap lifts, and the gap is the coverage a second model buys.
 
-An earlier version of this chart put the difference on the HEIGHT axis, and it
-was the wrong way round: relief cannot separate a one-problem fluctuation from
-an effect, because both are a spike, and a reader has no number to discount the
-way the heatmap's printed values let them. Putting the noisy variable on colour
-and the stable one on geometry means noise tints a shape that is real instead of
-inventing terrain.
+This is the one quantity a difference map cannot show. Two models both scoring 6
+of 12 look identical whether they solved the same six problems or disjoint sixes,
+and only the second is worth paying for.
 
-Colour saturates at the 92nd percentile of |difference|, not the maximum: one
-+83 cell -- ten of twelve against two of twelve -- would otherwise set the scale
-for all 144. Cells are also drawn paler in proportion to how few trials stand
-behind them, the same discount the heatmap uses.
+Two earlier versions were wrong in instructive ways. The first put the difference
+on the height axis: relief cannot separate a one-problem fluctuation from an
+effect, because both are a spike, and unlike the heatmap there is no printed
+number to discount against. The second put the difference on colour, which was
+better but still answered "who is ahead" when the useful question is "what does
+the second one add".
+
+Cells are drawn paler in proportion to how few trials stand behind them, the same
+discount the heatmap uses: at n=3 one problem is a third of the cell.
 """
 import argparse
 import collections
@@ -55,7 +60,7 @@ def collect(runs="runs"):
             cell[u] = (j["a"], j["b"])
             by[u].setdefault((j.get("model") or "").split("/")[-1], []).append(
                 ans is not None and str(ans) == str(j["truth"]))
-    g = collections.defaultdict(lambda: [0, 0, 0])       # qwen, phi, n
+    g = collections.defaultdict(lambda: [0, 0, 0, 0])    # qwen, phi, n, only-Phi
     only_b = 0
     for u, d in by.items():
         if A not in d or B not in d:
@@ -63,11 +68,12 @@ def collect(runs="runs"):
         qa, pb = any(d[A]), any(d[B])
         c = g[cell[u]]
         c[0] += qa; c[1] += pb; c[2] += 1
+        c[3] += pb and not qa
         only_b += pb and not qa
     return dict(g), only_b
 
 
-PAGE = """<title>carrychain &mdash; the better model, tinted by which one</title>
+PAGE = """<title>carrychain &mdash; where the second model patches the first</title>
 <style>
 :root{ --paper:#fdfcf9; --panel:#f7f5f0; --line:#e3dfd6; --line-2:#cfc9bd; --ink:#1a1a1a;
   --dim:#5a5a5a; --faint:#a6a29a; --lead-a:#1f3a5f; --lead-b:#c9853a; }
@@ -104,31 +110,31 @@ canvas:active{cursor:grabbing}
 </style>
 <div class="wrap">
   <p class="eyebrow">carrychain &middot; __N__ problems &middot; both models, same questions</p>
-  <h1>The better model, tinted by which one</h1>
-  <p class="lede">Height is whichever model did better on that cell &mdash; the best
-  either can manage. Colour is which one it was. Drag to look along the slope.</p>
+  <h1>Where the second model patches the first</h1>
+  <p class="lede">The blue surface is the better single model. The orange caps are
+  problems Phi solved that Qwen missed &mdash; coverage you only get by running both.
+  Where the two are even there is no cap. Drag to look along the slope.</p>
   <div class="plot"><canvas id="c"></canvas><span class="hint">drag to rotate</span></div>
   <div class="key">
-    <span><span class="sw" style="background:var(--lead-a)"></span>Qwen ahead</span>
-    <span><span class="sw" style="background:#a8a49a"></span>tied</span>
-    <span><span class="sw" style="background:var(--lead-b)"></span>Phi ahead</span>
-    <span>&#183; height = the better of the two</span>
+    <span><span class="sw" style="background:var(--lead-a)"></span>the better single model</span>
+    <span><span class="sw" style="background:var(--lead-b)"></span>patched by Phi</span>
+    <span>&#183; stronger orange = more problems patched</span>
     <span>&#183; paler = fewer trials</span>
   </div>
-  <p class="note"><strong>Two variables, split by how noisy each is.</strong> Height is
-  the better model, which falls off smoothly and makes a real surface. Colour is the
-  difference, which at 3 to 12 trials per cell is mostly noise &mdash; so it tints a shape
-  that is trustworthy instead of inventing one. An earlier version of this chart had it
-  the other way round and read as a mountain range of coin flips.</p>
-  <p class="note">The plateau is where both models solve everything, and it is grey
-  because that is a tie, not a lead. Colour appears at the same place the surface starts
-  to fall: the two only separate once problems are big enough for either to fail. Past
-  that it is almost all blue &mdash; Qwen ahead by <strong>__MEAN__ points</strong> on
-  average, with only <strong>__NEG__ of __CELLS__</strong> cells orange, every one of them
-  standing on 12 trials or fewer.</p>
+  <p class="note"><strong>The caps are the whole argument for a second model.</strong>
+  A plateau with no cap is a cell where Qwen already solves everything &mdash; running
+  Phi there is money for nothing. A cap is coverage that exists only because both ran.
+  <strong>__NEG__ of __CELLS__</strong> cells carry one, and they are not spread evenly:
+  they cluster where the surface is falling, which is the only place a second model is
+  worth its cost.</p>
+  <p class="note">This is the one thing a difference map cannot show. Two models both
+  scoring 6 of 12 look identical whether they solved the same six problems or disjoint
+  sixes, and only the second case is worth paying for. Height here is the better single
+  model, so the cap is exactly what you gain by adding the other &mdash;
+  <strong>__OB__ problems</strong> in total.</p>
 </div>
 <script>
-const D=__DATA__, DIM=D.dim, MX=__MX__;
+const D=__DATA__, DIM=D.dim;
 const cv=document.getElementById('c'), ctx=cv.getContext('2d');
 let yaw=-0.62, pitch=0.42, W=0, H=0, drag=false, lx=0, ly=0;
 const css=k=>getComputedStyle(document.documentElement).getPropertyValue(k).trim();
@@ -139,19 +145,9 @@ function P(a,b,z,cx,cy,fit){
   const s=900/(900+d*26);
   return {sx:cx+x1*26*s*fit, sy:cy-vy*26*s*fit, d};
 }
-const val=(a,b)=>{const g=D.g[a+'x'+b]; return g?g[2]:null;};          // best model
-const dif=(a,b)=>{const g=D.g[a+'x'+b]; return g?g[0]:0;};             // Qwen - Phi
-const ev =(a,b)=>{const g=D.g[a+'x'+b]; return g?0.35+0.65*Math.min(1,g[1]/12):0;};
-// Diverging, saturating at the 92nd percentile. Neutral at a tie, so a cell
-// where the two models drew reads as uncommitted rather than as either colour.
-function tint(d,css){
-  const t=Math.max(-1,Math.min(1,d/MX));
-  const mid=[168,164,154];
-  const end=(t>=0?css('--lead-a'):css('--lead-b'));
-  const e=[1,3,5].map(i=>parseInt(end.slice(i,i+2),16));
-  const k=Math.abs(t);
-  return `rgb(${mid.map((v,i)=>Math.round(v+(e[i]-v)*k)).join(',')})`;
-}
+const val=(a,b)=>{const g=D.g[a+'x'+b]; return g?g[1]:null;};   // best single model
+const uni=(a,b)=>{const g=D.g[a+'x'+b]; return g?g[2]:null;};   // either model
+const ev =(a,b)=>{const g=D.g[a+'x'+b]; return g?0.35+0.65*Math.min(1,g[0]/12):0;};
 function draw(){
   const dpr=Math.min(devicePixelRatio||1,2);
   if(cv.width!==Math.round(W*dpr)){cv.width=Math.round(W*dpr);cv.height=Math.round(H*dpr);}
@@ -183,11 +179,35 @@ function draw(){
     ctx.beginPath(); ctx.moveTo(p[0].sx,p[0].sy);
     for(let k=1;k<4;k++) ctx.lineTo(p[k].sx,p[k].sy);
     ctx.closePath();
-    const d=(dif(A,B)+dif(A+1,B)+dif(A+1,B+1)+dif(A,B+1))/4;
     const e=(ev(A,B)+ev(A+1,B)+ev(A+1,B+1)+ev(A,B+1))/4;
-    ctx.fillStyle=tint(d,css); ctx.globalAlpha=0.45+0.55*e; ctx.fill();
+    ctx.fillStyle=css('--lead-a'); ctx.globalAlpha=0.45+0.55*e; ctx.fill();
     ctx.globalAlpha=.45; ctx.strokeStyle=css('--paper'); ctx.lineWidth=.6; ctx.stroke();
     ctx.globalAlpha=1;
+    // The patch. Union sits at or above the better single model everywhere, so
+    // where the two are level this cap lands exactly on the surface and is
+    // invisible -- an even cell stays Qwen's colour, with nothing on top. Where
+    // Phi solved problems Qwen missed, the cap lifts off and that gap IS the
+    // coverage a second model buys. Drawn after, because seen from above the
+    // higher sheet occludes the lower one.
+    const uz=[uni(A,B),uni(A+1,B),uni(A+1,B+1),uni(A,B+1)];
+    if(!uz.some(v=>v===null)){
+      const lift=uz.reduce((t,v,k)=>t+(v-z[k]),0)/4;
+      // Weight the cap by how far it actually lifts. A cell patched by one
+      // problem in twelve and a cell patched by four are both "orange" at a
+      // fixed alpha, which reads as a repaint of the region rather than as a
+      // quantity. Full strength at a third of the cell, which is the largest
+      // patch in the grid.
+      if(lift > 0.005){
+        const up=[Q(A,B,uz[0]),Q(A+1,B,uz[1]),Q(A+1,B+1,uz[2]),Q(A,B+1,uz[3])];
+        ctx.beginPath(); ctx.moveTo(up[0].sx,up[0].sy);
+        for(let k=1;k<4;k++) ctx.lineTo(up[k].sx,up[k].sy);
+        ctx.closePath();
+        ctx.fillStyle=css('--lead-b');
+        ctx.globalAlpha=e*(0.30+0.62*Math.min(1,lift/0.33)); ctx.fill();
+        ctx.globalAlpha=.45; ctx.strokeStyle=css('--paper'); ctx.lineWidth=.6; ctx.stroke();
+        ctx.globalAlpha=1;
+      }
+    }
   }
   // axes, on the two edges nearest the camera
   const cors=[[1,1],[DIM,1],[1,DIM],[DIM,DIM]];
@@ -240,27 +260,25 @@ def main():
     args = ap.parse_args()
     g, only_b = collect(args.runs)
 
-    diff = {f"{a}x{b}": [round((q - p) / n, 4), n, round(max(q, p) / n, 4)]
-            for (a, b), (q, p, n) in g.items()}
-    # Scale on a robust quantile, not the max. One +83 cell -- ten of twelve
-    # against two of twelve -- was setting the height of all 144, flattening
-    # everything else into the plane.
-    signed = [v[0] for v in diff.values()]
-    mx = sorted(abs(v) for v in signed)[int(len(signed) * 0.92)] or 1.0
+    # [ n, best single model, union ]. Union is capped at 1 because max+ob can
+    # top n by a rounding hair on a fully covered cell.
+    diff = {f"{a}x{b}": [n, round(max(q, p) / n, 4),
+                         round(min(1.0, (max(q, p) + ob) / n), 4)]
+            for (a, b), (q, p, n, ob) in g.items()}
     N = sum(c[2] for c in g.values())
-    mean = sum(q - p for q, p, _ in g.values()) / N * 100
-    neg = sum(1 for v in signed if v < 0)
+    mean = sum(q - p for q, p, n, _ in g.values()) / N * 100
+    neg = sum(1 for c in g.values() if c[3] > 0)        # cells carrying a cap
 
     payload = {"dim": max(max(c) for c in g), "g": diff}
     html = (PAGE.replace("__DATA__", json.dumps(payload, separators=(",", ":")))
-                .replace("__MX__", f"{mx:.4f}")
                 .replace("__N__", f"{N:,}").replace("__MEAN__", f"{mean:+.0f}")
-                .replace("__NEG__", str(neg)).replace("__CELLS__", str(len(g))))
+                .replace("__NEG__", str(neg)).replace("__CELLS__", str(len(g)))
+                .replace("__OB__", str(only_b)))
     os.makedirs(os.path.dirname(os.path.abspath(args.out)), exist_ok=True)
     open(args.out, "w").write(html)
     print(f"wrote {args.out}  ({os.path.getsize(args.out)/1024:.0f} KB)")
-    print(f"  {N} problems, {len(g)} cells, scale +-{mx*100:.0f} points, "
-          f"mean {mean:+.1f}, {neg} cells below zero")
+    print(f"  {N} problems, {len(g)} cells, mean lead {mean:+.1f} points, "
+          f"{neg} of {len(g)} cells carry a cap, {only_b} problems only Phi solved")
 
 
 if __name__ == "__main__":

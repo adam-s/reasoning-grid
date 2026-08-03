@@ -352,28 +352,33 @@ to 33 points, so none is evidence Phi leads a region.
 comparison; the six did not. Kept because the case for running Phi is the 83
 individual problems in chart 11's alluvial, which a difference map cannot show.
 
-### 13. The better model, tinted by which one
+### 13. Where the second model patches the first
 
 [Open the chart](https://claude.ai/code/artifact/85224357-e7c9-481b-96b5-dc3805cdb223)
 
 `probe/render_diff_surface.py` &rarr; `derived/diff-surface.html`
 
-Two variables split across two channels by how noisy each one is. **Height** is
-`max(Qwen, Phi)` &mdash; the best either model manages, which falls off smoothly
-and makes a real surface. **Colour** is `Qwen &minus; Phi`, diverging through a
-neutral grey at a tie.
+Two sheets. The lower one is `max(Qwen, Phi)` &mdash; the best either model
+manages alone. The upper one is the union: problems at least one of them got.
+Union never sits below the better single model, so on an even cell the cap lands
+exactly on the surface and vanishes, and the cell is simply Qwen's colour with
+nothing on it. Where Phi solved problems Qwen missed, the cap lifts, and the gap
+is the coverage a second model buys. Cap opacity tracks the size of the lift.
 
-**Says:** the plateau is grey, because where both models solve everything a tie
-is not a lead. Colour appears at exactly the place the surface starts to fall
-&mdash; the two models only separate once problems are big enough for either to
-fail &mdash; and past that it is almost all blue.
+**Says:** 53 of 144 cells carry a cap, totalling the 83 problems only Phi
+solved. They are not spread evenly &mdash; they cluster where the surface is
+falling, which is the only region where paying for a second model returns
+anything. The plateau is bare blue: Qwen already solves everything there.
 
-**The design point.** The first version put the difference on the height axis
-and read as a mountain range of coin flips: at 3&ndash;12 trials per cell, relief
-cannot separate a one-problem fluctuation from an effect, because both are a
-spike, and unlike chart 12 there is no printed number to discount. Putting the
-noisy variable on colour and the stable one on geometry means noise tints a
-shape that is trustworthy instead of inventing one.
+**The design point.** This is the quantity a difference map structurally cannot
+show. Two models both scoring 6 of 12 look identical whether they solved the
+same six problems or disjoint sixes, and only the second case is worth paying
+for &mdash; so chart 12 has to name the 83 in prose instead of drawing them.
 
-**Scale:** colour saturates at the 92nd percentile of |difference|. One +83 cell
-would otherwise set the scale for all 144.
+Two earlier versions of this chart were wrong in instructive ways. The first put
+the difference on the height axis and read as a mountain range of coin flips: at
+3&ndash;12 trials per cell, relief cannot separate a one-problem fluctuation from
+an effect, because both are a spike, and unlike chart 12 there is no printed
+number to discount against. The second moved the difference to colour, which was
+honest but answered "who is ahead" when the useful question is "what does the
+second one add".
