@@ -331,3 +331,23 @@ recovering some of a better one's failures, not two peers trading &mdash; the
 alluvial draws the 256 down-ribbon at the same weight as the 83 up-ribbon, and
 the paired terrain shows Qwen above Phi everywhere with no region where they
 swap.
+
+### 12. Qwen minus Phi — the difference, plainly
+
+[Open the chart](https://claude.ai/code/artifact/d3bd3516-e256-4aee-a603-1403946b5554)
+
+`probe/render_diff_heatmap.py` &rarr; `derived/diff-heatmap.html`
+
+One number per cell: percentage points Qwen leads Phi by. Blue Qwen, orange Phi,
+a dot for a tie. Cell opacity carries n, because n here is 3, 6 or 12 and a
+reader who only sees hue reads noise as terrain.
+
+**Says:** the bottom-left is entirely ties &mdash; both models solve everything
+until problems get big enough for either to fail. From there Qwen leads almost
+everywhere, **+16 points on average**, and only **9 of 144** cells are orange.
+Every orange cell sits on 12 trials or fewer, where one problem moves a cell 8
+to 33 points, so none is evidence Phi leads a region.
+
+**Supersedes, in practice:** charts 11's six views. This one plot carries the
+comparison; the six did not. Kept because the case for running Phi is the 83
+individual problems in chart 11's alluvial, which a difference map cannot show.
