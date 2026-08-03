@@ -88,6 +88,11 @@
      *  null keeps the panel static. */
     playhead?: number | null;
     dimAhead?: boolean;
+    /** Render the inspector panel under the chart. Off when the caller shows
+     *  the selected text somewhere better. */
+    showInspector?: boolean;
+    /** Fired on every block click, before the panel zooms. */
+    onSelect?: (index: number, row: FlameRow) => void;
   };
 
   let {
@@ -110,6 +115,8 @@
     onToggleCategory = undefined,
     playhead = null,
     dimAhead = false,
+    showInspector = true,
+    onSelect = undefined,
   }: Props = $props();
 
   const stepCount = $derived(trace.stepCount ?? trace.rows.length);
@@ -257,6 +264,11 @@
   });
 
   function handleClick(i: number, row: FlameRow): void {
+    // The caller hears about every click, including the one that clears a
+    // selection, and decides for itself whether to act. Zooming is a VIEW
+    // change and stays unconditional; anything the caller does with the click
+    // is its own business.
+    onSelect?.(i, row);
     if (selectedIndex === i) {
       selectedIndex = null;
       return;
@@ -476,7 +488,7 @@
   </div>
   {/if}
 
-  {#if selectedRow || showInspectorHint}
+  {#if showInspector && (selectedRow || showInspectorHint)}
   <div class="inspector" aria-live="polite">
     {#if selectedRow}
       {@const meta = metaFor(scheme, selectedRow.category)}

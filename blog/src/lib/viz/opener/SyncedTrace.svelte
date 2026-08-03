@@ -97,6 +97,62 @@
   const cursor = $derived(cursorAt(elapsed));
   const done = $derived(elapsed >= RUN_MS);
 
+  /**
+   * WHO OWNS THE CURSOR.
+   *
+   * Exactly one thing writes it at a time: the clock while running, the seek
+   * tween while seeking, the reader through the slider when idle. Two writers
+   * on one value is the bug that has already appeared twice here -- an effect
+   * that invalidated itself by reading what its own frame wrote, and a scroll
+   * pin that fought the reader it was meant to follow -- so the states are
+   * explicit rather than inferred from a pile of booleans.
+   *
+   * Zoom is deliberately outside all of this. It changes the VIEW, not the
+   * cursor, and nothing else reads it, so it can never race the clock and is
+   * available in every state.
+   */
+  let seeking = $state(false);
+  const idle = $derived(!playing && !seeking);
+
+  /** Time at which the cursor reaches a character offset: cursorAt inverted. */
+  function timeAt(offset: number): number {
+    const at = schedule;
+    let i = 0;
+    while (i < knots.length - 2 && knots[i + 1] <= offset) i++;
+    const span = knots[i + 1] - knots[i];
+    const frac = span > 0 ? Math.max(0, Math.min(1, (offset - knots[i]) / span)) : 0;
+    const u = 1 - Math.cbrt(1 - frac);          // undo the ease-out
+    return at[i] + u * (at[i + 1] - at[i]);
+  }
+
+  /**
+   * Move the cursor to a character offset, smoothly. Everything follows for
+   * free: the playhead, the text and the claims are all functions of `elapsed`,
+   * so there is nothing to keep in step by hand.
+   */
+  let seekRaf = 0;
+  function seekTo(offset: number) {
+    if (!idle) return;                          // the clock or another seek owns it
+    const to = timeAt(offset);
+    const from = elapsed;
+    if (Math.abs(to - from) < 8) return;
+    cancelAnimationFrame(seekRaf);
+    if (lessMotion()) {
+      elapsed = to;
+      return;
+    }
+    seeking = true;
+    const t0 = performance.now();
+    const step = (now: number) => {
+      const u = Math.min(1, (now - t0) / 620);
+      const e = u < 0.5 ? 4 * u ** 3 : 1 - (-2 * u + 2) ** 3 / 2;
+      elapsed = from + (to - from) * e;
+      if (u < 1) seekRaf = requestAnimationFrame(step);
+      else seeking = false;
+    };
+    seekRaf = requestAnimationFrame(step);
+  }
+
   // ---- the stream ---------------------------------------------------------
   const PALETTE: Record<string, { color: string }> = carryCategoryMeta;
   const PANEL = '#f7f5f0';
@@ -210,6 +266,8 @@
   const lessMotion = () =>
     window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   function reset(autoplay: boolean) {
+    cancelAnimationFrame(seekRaf);
+    seeking = false;
     if (lessMotion()) {
       elapsed = RUN_MS;
       playing = false;
@@ -223,6 +281,8 @@
       reset(true);
       return;
     }
+    cancelAnimationFrame(seekRaf);
+    seeking = false;
     playing = !playing;
   }
   const tabEls: Array<HTMLButtonElement | null> = $state([]);
@@ -260,7 +320,7 @@
   <!-- The shape of the whole run, with the playhead crossing it. Minimap,
        inspector and zoom hint are off: this panel is a timeline here, and the
        two panes below are the inspector. -->
-  <div class="flame">
+  <div class="flame" class:busy={!idle}>
     <!-- An empty header: the run is already named by the tabs above, and the
          panel's own badge-and-pills header would say it a second time. -->
     {#snippet header()}<span class="sr-only">{flame.verdict}</span>{/snippet}
@@ -270,6 +330,8 @@
       {header}
       playhead={cursor}
       dimAhead={true}
+      onSelect={(_i, row) => seekTo(row.start)}
+      showInspector={false}
       showMinimap={false}
       showInspectorHint={false}
       showZoomHint={false}
@@ -286,7 +348,7 @@
          character stream as it types would be unusable. -->
     <div
       class="pane stream" bind:this={streamEl} tabindex="0"
-      style:overflow-y={playing ? 'hidden' : 'auto'}
+      style:overflow-y={idle ? 'auto' : 'hidden'}
       role="region" aria-label="the model's thinking, as raw text">
       {#each shown as s (s.start)}<span
           class="seg" style:--c={s.colour} title={s.label}>{s.text}</span
@@ -296,7 +358,7 @@
     <!-- svelte-ignore a11y_no_noninteractive_tabindex -->
     <div
       class="pane math" bind:this={mathEl} tabindex="0"
-      style:overflow-y={playing ? 'hidden' : 'auto'}
+      style:overflow-y={idle ? 'auto' : 'hidden'}
       role="region" aria-label="the arithmetic it stated, checked as it is stated">
       {#each landed as c, i (c.at)}
         <div class="claim" class:bad={!c.ok}>
@@ -336,7 +398,8 @@
     </button>
     <input
       type="range" min="0" max={RUN_MS} step={RUN_MS / 200}
-      bind:value={elapsed} oninput={() => (playing = false)}
+      bind:value={elapsed}
+      oninput={() => { cancelAnimationFrame(seekRaf); seeking = false; playing = false; }}
       aria-label="position in the run"
       aria-valuetext="{Math.round((elapsed / RUN_MS) * 100)}% through,
         {landed.length} of {trace.claims.length} claims" />
@@ -371,6 +434,11 @@
 
   /* The panel is styled as a figure in its own right; here it is the top third
      of one, so its frame and padding are pulled back. */
+  /* A block is only a seek control when nothing else owns the cursor. Leaving
+     it looking clickable while the run is playing promises something the state
+     machine will refuse. Zooming still works -- that is a view change. */
+  .flame.busy :global(.flame-rect) { cursor: default; }
+
   .flame :global(.flame-panel) {
     padding: var(--space-sm) var(--space-md);
     gap: var(--space-sm);
