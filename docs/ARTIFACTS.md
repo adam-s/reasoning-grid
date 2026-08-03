@@ -308,3 +308,26 @@ artefact of allocation.
 **Flagged, not acted on:** on the reasoning-on surface a logistic fit gives
 deviance 1276 for `a+b` against 1373 for `a&times;b`. The project's difficulty
 parameter is `N = a&times;b`, and total digits fits better.
+
+### 11. Six views of one pair — Qwen against Phi
+
+[Open the chart](https://claude.ai/code/artifact/43039893-ea52-45a1-bf48-130a8a27e2ea)
+
+`probe/render_pair_six.py` &rarr; `derived/pair-six.html`
+
+The same paired comparison as chart 2, taken apart six ways: a 3D ridge of what
+the pair buys over the better single model, a width-weighted mosaic by chain
+length, an alluvial of all 1,062 problems, the two 50% contours with the wedge
+between them, both surfaces with their crossing, and eleven area-proportional
+2&times;2s.
+
+**Says:** the summary number hides a band. Running both buys **+15.7 points at
+chain length 8** and essentially nothing below 5 or above 10 &mdash; below, both
+models already solve everything; above, neither solves anything. Qwen 75.2%,
+Phi 58.9%, union 83.1%, 83 problems only Phi solved.
+
+**Kept honest:** Qwen wins at every chain length. This is a weaker second model
+recovering some of a better one's failures, not two peers trading &mdash; the
+alluvial draws the 256 down-ribbon at the same weight as the 83 up-ribbon, and
+the paired terrain shows Qwen above Phi everywhere with no region where they
+swap.
