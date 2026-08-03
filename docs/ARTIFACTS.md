@@ -450,3 +450,32 @@ whichever was run more. It moved Phi's cell count from 15 to 9 and the overall
 gap from 14.6 points to 16.3. Equal-weight-per-instance is the estimator:
 pooling raw generations instead moves 3 cells of 144 and neither overall rate by
 more than half a point.
+
+### 15. The better model at every size
+
+[Open the chart](https://claude.ai/code/artifact/86190dc3-e861-4ac7-b2db-b8c2d9264631)
+
+`probe/render_winner_surface.py` &rarr; `derived/winner-surface.html`
+
+The 3D companion to chart 14. **Height** is `max(Qwen, Phi)` as a probability
+&mdash; the best either model manages at that size. **Colour** is which model
+that was: blue where Qwen is level or higher, orange where Phi is higher.
+
+**Says:** the shape is the finding and the colour is nearly all one. Both models
+hold a plateau over the small sizes and fall off a cliff in the same place, so
+the surface would look much the same if either had drawn it alone. Qwen is level
+or higher in **129 of 144** cells, Phi higher in **15**, and those 15 are
+scattered rather than clustered &mdash; every one on 12 problems or fewer.
+
+**The design point: one tile per cell, not quads between cells.** Colour here is
+a category attached to a cell, and a quad interpolates between four of them, so
+there is no honest rule for colouring one. Painting a quad orange whenever any
+corner is orange turns 15 cells into **40 of 121 quads**; averaging the corners
+instead turns them into **7**. Neither is the answer. So each cell owns a tile
+spanning half a step in every direction, and the tile's corner heights are the
+mean of the cells meeting at that corner &mdash; adjacent tiles compute the same
+corner from the same neighbours, so the sheet stays continuous with no cracks,
+and exactly 15 tiles are orange. This is the general fix for the failure that
+sank chart 13's fourth version: a quantity attached to grid vertices must be
+drawn with vertex-owned tiles, never with the faces between them.
+
