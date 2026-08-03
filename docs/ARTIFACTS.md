@@ -422,8 +422,17 @@ corner is orange turns 15 cells into **40 of 121 quads**; averaging the corners
 instead turns them into **7**. Neither is the answer. So each cell owns a tile
 spanning half a step in every direction, and the tile's corner heights are the
 mean of the cells meeting at that corner &mdash; adjacent tiles compute the same
-corner from the same neighbours, so the sheet stays continuous with no cracks,
-and exactly 15 tiles are orange. This is the general fix for the failure that
+lattice point from the same neighbours, so the sheet stays continuous with no
+cracks, and exactly 15 tiles are orange.
+
+Each tile is **subdivided into four sub-quads meeting at the cell centre**, so a
+vertex lands on the measured value and the sheet interpolates through the data.
+Without it, averaging four cells at every vertex is a 2&times;2 box blur: it
+moved 13 of 144 cells by more than 10 points and 12&times;7 by 22, drawing 47%
+against a measured 25%. Chart 1's mesh never had this problem because its quad
+corners sit on the cells; a tile mesh only matches that if it subdivides. Only
+the tile rim is stroked &mdash; outlining the sub-quads would put a grid on the
+surface at twice the resolution of the data. This is the general fix for the failure that
 sank chart 13's fourth version: a quantity attached to grid vertices must be
 drawn with vertex-owned tiles, never with the faces between them.
 

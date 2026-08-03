@@ -12,9 +12,15 @@ here is categorical per cell, and quads interpolate: painting a quad orange
 whenever any of its four corners is orange turns 15 cells into 40 of 121 quads,
 and taking the mean of the corners instead turns them into 7. Neither is the
 answer. Each cell gets its own tile spanning [a-0.5,a+0.5] x [b-0.5,b+0.5], and
-the tile's corner heights are the mean of the cells meeting at that corner --
-so adjacent tiles share corner values exactly, the sheet stays continuous with
-no cracks, and exactly 15 tiles are orange.
+each tile is subdivided into four sub-quads meeting at the cell centre, so one
+vertex lands on the measured value and the sheet interpolates THROUGH the data
+rather than past it. Shared lattice points come out identical from either tile,
+so it stays continuous with no cracks, and exactly 15 tiles are orange.
+
+Averaging four cells for every vertex, cell centres included, is a 2x2 box blur:
+it moved 13 of 144 cells by more than 10 points and 12x7 by 22 -- drawn at 47%
+against a measured 25%. The blog's other surface has no such problem because its
+quad corners sit ON the cells; a tile mesh only matches that if it subdivides.
 
 Rates are P(correct), the mean over a cell's problems of that problem's success
 rate. Scoring by whether a model ever solved a problem is not a probability: it
@@ -191,14 +197,21 @@ const best=(a,b)=>{const g=at(a,b);
   return g?g[1]+(Math.max(g[1],g[2])-g[1])*MIX:null;};
 const win =(a,b)=>{const g=at(a,b); return g?(g[2]>g[1]?1:0):0;};
 const ev =(a,b)=>{const g=at(a,b); return g?0.55+0.45*Math.min(1,g[0]/12):0;};
-// A tile corner sits between cells, so its height is the mean of the cells that
-// meet there. Adjacent tiles compute the same corner from the same neighbours,
-// which is what keeps the sheet continuous instead of cracked.
-function corner(u,v){
+// Height anywhere on the half-step lattice, averaging only over the integer
+// neighbours the point actually lies between: at a cell centre that is the cell
+// itself EXACTLY, on an edge the two either side, at a corner the four meeting
+// there. Shared points come out identical from either tile, so no cracks.
+//
+// Averaging four cells for every point -- including cell centres -- is a 2x2 box
+// blur over the whole surface. It moved 13 of 144 cells by more than 10 points
+// and 12x7 by 22, drawn at 47% against a measured 25%. Subdividing each tile
+// into four sub-quads meeting at the cell centre puts a vertex back on the data,
+// so the sheet interpolates through every measured value.
+function lat(u,v){
+  const us=Number.isInteger(u)?[u]:[u-0.5,u+0.5];
+  const vs=Number.isInteger(v)?[v]:[v-0.5,v+0.5];
   let t=0,k=0;
-  for(const a of[u-0.5,u+0.5])for(const b of[v-0.5,v+0.5]){
-    const z=best(a,b); if(z!==null){t+=z;k++;}
-  }
+  for(const a of us)for(const b of vs){const z=best(a,b); if(z!==null){t+=z;k++;}}
   return k?t/k:null;
 }
 // The blog's surface ramp: pale at a low rate, deep at a high one, one hue,
@@ -259,15 +272,24 @@ function draw(){
   for(let a=1;a<=DIM;a++)for(let b=1;b<=DIM;b++)
     if(best(a,b)!==null) tiles.push({a,b,d:key(a,b)});
   tiles.sort((p,q)=>q.d-p.d);                      // far to near
+  const QUAD=[[-1,-1],[1,-1],[1,1],[-1,1]];
   for(const t of tiles){
     const a=t.a,b=t.b;
-    const cs=[[-0.5,-0.5],[0.5,-0.5],[0.5,0.5],[-0.5,0.5]]
-      .map(([u,v])=>Q(a+u,b+v,corner(a+u,b+v)));
-    ctx.beginPath(); ctx.moveTo(cs[0].sx,cs[0].sy);
-    for(let k=1;k<4;k++) ctx.lineTo(cs[k].sx,cs[k].sy);
-    ctx.closePath();
     ctx.fillStyle=tone(best(a,b),win(a,b),ev(a,b),win(a,b)?MIX:0);
-    ctx.fill();
+    for(const [su,sv] of QUAD){
+      const cs=[[0,0],[su*0.5,0],[su*0.5,sv*0.5],[0,sv*0.5]]
+        .map(([u,v])=>Q(a+u,b+v,lat(a+u,b+v)));
+      ctx.beginPath(); ctx.moveTo(cs[0].sx,cs[0].sy);
+      for(let k=1;k<4;k++) ctx.lineTo(cs[k].sx,cs[k].sy);
+      ctx.closePath(); ctx.fill();
+    }
+    // One outline per TILE. Stroking the sub-quads would draw a grid at twice
+    // the resolution of the data behind it.
+    const rim=[[-0.5,-0.5],[0.5,-0.5],[0.5,0.5],[-0.5,0.5]]
+      .map(([u,v])=>Q(a+u,b+v,lat(a+u,b+v)));
+    ctx.beginPath(); ctx.moveTo(rim[0].sx,rim[0].sy);
+    for(let k=1;k<4;k++) ctx.lineTo(rim[k].sx,rim[k].sy);
+    ctx.closePath();
     ctx.globalAlpha=.34; ctx.strokeStyle=css('--panel'); ctx.lineWidth=.7; ctx.stroke();
     ctx.globalAlpha=1;
   }

@@ -88,15 +88,26 @@
   }
 
   /**
-   * A tile corner sits BETWEEN cells, so its height is the mean of the cells
-   * meeting there. Adjacent tiles ask for the same corner and get the same
-   * answer, which is what keeps the sheet continuous instead of cracked.
+   * Height anywhere on the half-step lattice, averaging only over the integer
+   * neighbours a point actually lies between. At a cell centre that is the cell
+   * itself, EXACTLY; on an edge it is the two cells either side; at a corner the
+   * four meeting there. Adjacent tiles ask for the same shared point and get the
+   * same answer, so the sheet stays continuous.
+   *
+   * The first version averaged four cells for every point including cell
+   * centres, which is a 2x2 box blur over the whole surface. It moved 13 of 144
+   * cells by more than 10 points and 12x7 by 22 -- drawn at 47% against a
+   * measured 25%. SurfaceCanvas has no such problem because its quad corners sit
+   * ON the data; a tile mesh only matches that if the tile is subdivided so a
+   * vertex lands on the cell centre too.
    */
-  function cornerHeight(u: number, v: number): number | null {
+  function latticeHeight(u: number, v: number): number | null {
+    const us = Number.isInteger(u) ? [u] : [u - HALF, u + HALF];
+    const vs = Number.isInteger(v) ? [v] : [v - HALF, v + HALF];
     let sum = 0;
     let k = 0;
-    for (const a of [u - HALF, u + HALF]) {
-      for (const b of [v - HALF, v + HALF]) {
+    for (const a of us) {
+      for (const b of vs) {
         const z = heightAt(a, b);
         if (z !== null) {
           sum += z;
@@ -183,25 +194,51 @@
     }
     tiles.sort((p, q) => q.d - p.d); // farthest first
 
+    // Each tile is four sub-quads meeting at the cell centre, so one vertex of
+    // the mesh lands exactly on the measured value and the surface interpolates
+    // THROUGH the data rather than past it -- the same guarantee SurfaceCanvas
+    // gets for free by putting its quad corners on the cells. The tile keeps a
+    // single colour across all four, which is the whole reason for tiles.
+    const QUADRANTS = [
+      [-1, -1], [1, -1], [1, 1], [-1, 1],
+    ] as const;
     for (const tl of tiles) {
       const { a, b } = tl;
-      const pts = [
-        [-HALF, -HALF], [HALF, -HALF], [HALF, HALF], [-HALF, HALF],
-      ].map(([u, v]) => P(a + u, b + v, cornerHeight(a + u, b + v) ?? 0));
-      ctx.beginPath();
-      ctx.moveTo(pts[0].sx, pts[0].sy);
-      for (let k = 1; k < 4; k++) ctx.lineTo(pts[k].sx, pts[k].sy);
-      ctx.closePath();
       ctx.fillStyle = tone(
         heightAt(a, b) as number,
         phiWins(a, b),
         evidence(a, b),
         phiWins(a, b) ? mix : 0,
       );
-      ctx.fill();
-      ctx.globalAlpha = 0.4;
-      ctx.strokeStyle = '#f7f5f0';
-      ctx.lineWidth = 0.7;
+      for (const [su, sv] of QUADRANTS) {
+        const local: Array<[number, number]> = [
+          [0, 0],
+          [su * HALF, 0],
+          [su * HALF, sv * HALF],
+          [0, sv * HALF],
+        ];
+        const pts = local.map(([u, v]) =>
+          P(a + u, b + v, latticeHeight(a + u, b + v) ?? 0),
+        );
+        ctx.beginPath();
+        ctx.moveTo(pts[0].sx, pts[0].sy);
+        for (let k = 1; k < 4; k++) ctx.lineTo(pts[k].sx, pts[k].sy);
+        ctx.closePath();
+        ctx.fill();
+      }
+      // One outline per TILE, not per sub-quad: the sub-quads are a rendering
+      // detail and drawing their seams would put a grid on the surface at twice
+      // the resolution of the data behind it.
+      const rim = [
+        [-HALF, -HALF], [HALF, -HALF], [HALF, HALF], [-HALF, HALF],
+      ].map(([u, v]) => P(a + u, b + v, latticeHeight(a + u, b + v) ?? 0));
+      ctx.beginPath();
+      ctx.moveTo(rim[0].sx, rim[0].sy);
+      for (let k = 1; k < 4; k++) ctx.lineTo(rim[k].sx, rim[k].sy);
+      ctx.closePath();
+      ctx.globalAlpha = 0.45;
+      ctx.strokeStyle = '#ffffff';
+      ctx.lineWidth = 0.6;
       ctx.stroke();
       ctx.globalAlpha = 1;
     }
