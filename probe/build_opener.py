@@ -148,7 +148,10 @@ HEADER = '''/**
  * the stream reaches it.
  *
  * `segments` are the same boundaries and categories the flame figure uses, so
- * the stream can be tinted by what kind of move the model was making.
+ * the stream can be tinted by what kind of move the model was making. The three
+ * runs are the flame figure's three runs -- same instance_uid, same Qwen3-4B
+ * generation -- so the opener and section 05 are two readings of one set of
+ * traces, not two sets that happen to look alike.
  */
 export type Claim = {
   readonly at: number;
@@ -171,6 +174,10 @@ export type OpenerSegment = {
 
 export type OpenerTrace = {
   readonly key: string;
+  /** The same instance_uid the flame figure uses. These two figures show the
+   *  SAME three runs, and this is what makes that checkable from the data
+   *  rather than from someone remembering it. */
+  readonly uid: string;
   readonly cell: string;
   readonly x: string;
   readonly y: string;
@@ -220,7 +227,8 @@ def main():
         if rebuilt != think:
             sys.exit(f"{tr['key']}: segments do not tile the thinking "
                      f"({len(rebuilt):,} chars rebuilt vs {len(think):,})")
-        out.append({"key": tr["key"], "cell": tr["cell"], "x": tr["x"], "y": tr["y"],
+        out.append({"key": tr["key"], "uid": tr["uid"],
+                    "cell": tr["cell"], "x": tr["x"], "y": tr["y"],
                     "truth": tr["truth"], "answer": tr["answer"],
                     "outcome": tr["outcome"], "verdict": tr["verdict"],
                     "thinking": think, "claims": cl, "segments": segs})

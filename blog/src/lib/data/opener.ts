@@ -7,7 +7,10 @@
  * the stream reaches it.
  *
  * `segments` are the same boundaries and categories the flame figure uses, so
- * the stream can be tinted by what kind of move the model was making.
+ * the stream can be tinted by what kind of move the model was making. The three
+ * runs are the flame figure's three runs -- same instance_uid, same Qwen3-4B
+ * generation -- so the opener and section 05 are two readings of one set of
+ * traces, not two sets that happen to look alike.
  */
 export type Claim = {
   readonly at: number;
@@ -30,6 +33,10 @@ export type OpenerSegment = {
 
 export type OpenerTrace = {
   readonly key: string;
+  /** The same instance_uid the flame figure uses. These two figures show the
+   *  SAME three runs, and this is what makes that checkable from the data
+   *  rather than from someone remembering it. */
+  readonly uid: string;
   readonly cell: string;
   readonly x: string;
   readonly y: string;
@@ -45,6 +52,7 @@ export type OpenerTrace = {
 export const OPENER: readonly OpenerTrace[] = [
  {
   "key": "A",
+  "uid": "2a5d6f4d7556b739",
   "cell": "7x11",
   "x": "2053896",
   "y": "30957123778",
@@ -1164,6 +1172,7 @@ export const OPENER: readonly OpenerTrace[] = [
  },
  {
   "key": "B",
+  "uid": "40714cc609335d41",
   "cell": "8x7",
   "x": "80379530",
   "y": "4621821",
@@ -1943,6 +1952,7 @@ export const OPENER: readonly OpenerTrace[] = [
  },
  {
   "key": "C",
+  "uid": "e6da836f2af1b7fa",
   "cell": "5x13",
   "x": "21028",
   "y": "1506351245407",
