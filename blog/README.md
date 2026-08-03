@@ -94,10 +94,19 @@ Matches `~/Projects/clap/post` and `~/Projects/grpo/post`. Svelte 5 with runes
 Each is a working chart in `probe/`, published and validated. Order follows the
 argument, not the order they were built.
 
+An earlier version of this table promised the blind-spot slot would show Phi
+solving 104 problems Qwen missed, 34% of its failures, lifting coverage from 71%
+to 81%. Those numbers came from scoring a cell by whether a model *ever* solved
+each problem, which is not a probability -- it rises with the number of times you
+ask, and the two models were not asked equally often. On P(correct) the finding
+reverses: the two models fail in the same places, about a digit apart. The slot
+still exists and still carries the argument; the argument now has the other
+sign.
+
 | slot | ports from | what it settles |
 |---|---|---|
 | `SurfaceCanvas` **(built)** | `probe/build_surface.py` | x = digits of A, y = digits of B, z = P(correct), scrubbable over trial count and orbitable. Breaks at 8.56 digits; 100% → 3% |
-| `BlindSpots` | `render_blindspots.py` | **the core argument.** Qwen wins outright (McNemar 58) *and* Phi solves 104 problems it misses — 34% of its failures. Coverage 71% → 81% |
+| `WinnerSurface` **(built)** | `probe/build_winner.py` | **the core argument, and it came back negative.** Toggle Qwen alone against the better of the two: 15 tiles of 144 move. Fitted, Qwen is still right half the time at 9.24 digits square and Phi at 8.39 — the same curve shifted 0.8 digits, never crossing. 10 cells are further apart than sampling noise explains and **none** favour Phi |
 | `Convergence` | `render_convergence.py` | one cell's number as 17 trials; then eight cells as small multiples. No cell converges alone |
 | `EffortPrice` | `render_effort.py` | reasoning scales effort 7× with difficulty; without it the line is **flat**. Price per correct answer crosses over at ~30 operations |
 | `OrderNull` | `render_order.py` | A×B ≡ B×A (p=0.52), and the apparent effect died under a difficulty-matched control |

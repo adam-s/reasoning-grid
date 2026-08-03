@@ -393,6 +393,12 @@ between the two height fields rather than swapping them: switching two static
 pictures makes a reader hunt for what changed, and what changed is the whole
 point &mdash; 15 tiles rise a little and turn orange, and 129 do not move at all.
 
+**Ported into the blog** as `blog/src/lib/viz/surface/WinnerSurface.svelte`,
+fed by `probe/build_winner.py` &rarr; `blog/src/lib/data/winner.ts`. It fills
+section 02, whose question &mdash; do they fail in the same places &mdash; is the
+one this chart answers. The component reuses `project.ts` unchanged; only the
+tile-per-cell drawing and the toggle are new.
+
 **This chart stands alone.** Its notes now carry the three findings that were
 only in charts 16, 17 and 20: the fitted 50% boundaries (Qwen 9.2&times;9.2, Phi
 8.4&times;8.4, never crossing), the noise-floor test (10 of 144 cells outside,

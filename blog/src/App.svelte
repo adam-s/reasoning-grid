@@ -9,6 +9,7 @@
   import FlamePanel from './lib/viz/flame/FlamePanel.svelte';
   import ThreeTraces from './lib/viz/flame/ThreeTraces.svelte';
   import SurfaceCanvas from './lib/viz/surface/SurfaceCanvas.svelte';
+  import WinnerSurface from './lib/viz/surface/WinnerSurface.svelte';
   import { LAMBDA_TRACE } from './lib/data/lambda-trace';
 </script>
 
@@ -33,8 +34,39 @@
     <SurfaceCanvas />
   </Section>
 
-  <Section eyebrow="02 · blind spots" title="Do they fail in the same places?">
-    <Placeholder name="BlindSpots" ports="probe/render_blindspots.py" />
+  <Section eyebrow="02 · blind spots" title="Do they fail in the same places?" width="figure">
+    <Prose>
+      <p>
+        Two models from different companies, asked the same 1,062 problems. If they fail
+        on the same ones, a second model buys nothing and the only question is which is
+        better. If they fail on different ones, running both buys coverage no single
+        model reaches at any quality. That is a claim about how to build on these models,
+        and it is settled by data rather than argument.
+      </p>
+      <p>
+        Start with Qwen alone, then add Phi and watch what moves. Almost nothing does.
+        The two surfaces hold the same plateau and fall off the same cliff, about a
+        digit apart &mdash; the same curve shifted, never crossing.
+      </p>
+    </Prose>
+    <WinnerSurface />
+    <Prose>
+      <p>
+        The orange tiles are where Phi scored higher, and they are the reason to be
+        careful rather than a reason to run two models. Each cell holds 3, 6 or 12
+        problems, so two <em>identical</em> models would land some distance apart by luck
+        alone &mdash; furthest apart in the middle, where a coin flip has the most room.
+        Measured against that, <strong>10 of 144 cells</strong> are further apart than
+        chance explains, and <strong>none of them favour Phi</strong>. Every orange tile
+        on the surface is inside the range a coin would reach; ten of Qwen's leads are
+        not.
+      </p>
+      <p>
+        Phi's best cell looks convincing on its own &mdash; 100% against Qwen's 67%, a
+        clean sweep. It holds three problems. With three problems, two identical models
+        routinely land sixty points apart.
+      </p>
+    </Prose>
   </Section>
 
   <Section eyebrow="03 · precision" title="What one number is made of">
