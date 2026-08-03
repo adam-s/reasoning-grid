@@ -383,15 +383,34 @@ give this one its own palette made the pair read as two instruments disagreeing.
 The only differences are the grid, 12&times;12 rather than 14&times;14 because
 the paired sweep reaches only 12, and the toggle.
 
-**One hue, and a dot for the winner.** Height is the quantity and the ramp is
-keyed to it, so a second hue meaning *which model* competes with a ramp meaning
-*how often*. Colouring the surface by the winner cannot be honest anyway: the
-mesh is quads between cell centres, a quad has four cells at its corners, and
-painting it by any one of them turns 15 cells into 40 of 121. The 15 cells where
-Phi scored higher get a marker &mdash; rim in the panel colour, core in the ink,
-because the ramp spans pale to deep and a single-colour dot vanishes into one
-end of it. Markers ride the same back-to-front pass as the quads; drawn after,
-a marker on a far cell prints over terrain standing in front of it.
+**Bisecting the faces is what made the second colour honest.** The data lives on
+**vertices** &mdash; 144 cells, 144 points. The mesh is made of **faces**
+&mdash; 121 quads, each touching four vertices. &ldquo;Phi won here&rdquo; is a
+property of a point, and no rule hands a point-property to a face undistorted:
+
+| rule | faces | share of the sheet | |
+|---|---|---|---|
+| any corner is Phi's | 40 | 33.1% | inflates 3&times; |
+| majority of corners | 1 | 0.8% | collapses |
+| all four corners | 0 | 0.0% | erases |
+| **bisect at the midlines** | **12.25** | **10.1%** | matches 10.4% |
+
+Split a face at its midlines and each quarter lies wholly inside one cell's
+territory, because the nearest-vertex boundary *inside* a face **is** the
+midlines. One bisection is exact &mdash; there is no subdivision depth to tune
+&mdash; and no blending, so nothing goes muddy between navy and burnt orange.
+Geometry is untouched: the sub-quad corners come from the same bilinear
+interpolation the whole quads already traced.
+
+Seams are stroked per **face**, not per quarter; the quarters are how colour is
+resolved, not something the data has, and stroking them would put a wireframe on
+the surface at twice the grid's resolution. Each Phi cell's territory gets a thin
+outline so adjacent ones stay countable &mdash; the count is the finding.
+
+Colour rides the toggle. At *Qwen alone* the surface is entirely blue and orange
+arrives with Phi; painting it beforehand would say the opposite of what the
+toggle is for. Measured off the canvas: **0% orange with Phi off, 8.4% with it
+on.**
 
 Dark theme inverts the ramp direction: pale-to-deep on a dark panel puts the
 plateau, almost every cell, at its least visible. The theme is read from the

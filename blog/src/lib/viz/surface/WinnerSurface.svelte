@@ -54,6 +54,56 @@
     return !!c && c.phi > c.qwen;
   }
 
+  /**
+   * Height anywhere on the half-step lattice, averaging only over the integer
+   * neighbours the point lies between: at a cell centre the cell itself, on an
+   * edge the two either side, at a face centre the four meeting there.
+   *
+   * That is exactly what bilinear interpolation across the face already gives,
+   * so subdividing with this changes the GEOMETRY not at all — the sub-quads
+   * trace the same surface the whole quads did. Only the colour gets finer.
+   */
+  function lattice(u: number, v: number): number | null {
+    const us = Number.isInteger(u) ? [u] : [u - 0.5, u + 0.5];
+    const vs = Number.isInteger(v) ? [v] : [v - 0.5, v + 0.5];
+    let sum = 0;
+    let k = 0;
+    for (const a of us) {
+      for (const b of vs) {
+        const z = heightAt(a, b);
+        if (z !== null) { sum += z; k += 1; }
+      }
+    }
+    return k ? sum / k : null;
+  }
+
+  /**
+   * Blue is chart 1's `ramp`, imported rather than copied so the two can never
+   * drift. Orange is built to match its luminance at both ends, so neither hue
+   * reads as heavier than the other at the same rate.
+   */
+  const ORANGE = [
+    [247, 237, 224],
+    [138, 74, 18],
+  ] as const;
+  /**
+   * Blue at `mix` 0, that cell's orange at 1. The colour has to ride the toggle
+   * or the surface is already orange before Phi has been added, which says the
+   * opposite of what the toggle is for.
+   *
+   * The blue end is read back out of `ramp` rather than recomputed from the same
+   * constants, so a change to project.ts cannot leave the two hues on different
+   * scales without anyone noticing.
+   */
+  function shade(z: number, phi: boolean, k: number): string {
+    const base = ramp(z);
+    if (!phi || k <= 0) return base;
+    const cool = base.match(/\d+/g)!.map(Number);
+    const t = Math.max(0, Math.min(1, z));
+    const warm = ORANGE[0].map((v, i) => v + (ORANGE[1][i] - v) * t);
+    return `rgb(${cool.map((v, i) => Math.round(v + (warm[i] - v) * k)).join(',')})`;
+  }
+
   function draw() {
     const el = canvas;
     if (!el) return;
@@ -143,40 +193,78 @@
           heightAt(i, j + 1),
         ];
         if (zs.some((z) => z === null)) continue;
+
+        // A face spans four cells, and "Phi won here" belongs to ONE of them,
+        // so no single colour for the face can be right: painting it when any
+        // corner is Phi's covers 33% of the sheet to say 10%, and painting it
+        // only when most corners are collapses to nothing.
+        //
+        // Split the face at its midlines instead. The nearest-vertex boundary
+        // inside a face IS the midlines, so each quarter lies wholly in one
+        // cell's territory and takes that cell's colour with no blending —
+        // which also means no muddy midpoint between navy and burnt orange.
+        // One bisection is exact; there is no depth to tune.
+        const OWNERS: Array<[number, number]> = [
+          [i, j], [i + 1, j], [i + 1, j + 1], [i, j + 1],
+        ];
+        const mu = i + 0.5;
+        const mv = j + 0.5;
+        for (const [oa, ob] of OWNERS) {
+          const a0 = Math.min(oa, mu), a1 = Math.max(oa, mu);
+          const b0 = Math.min(ob, mv), b1 = Math.max(ob, mv);
+          const quad: Array<[number, number]> = [[a0, b0], [a1, b0], [a1, b1], [a0, b1]];
+          const zq = quad.map(([u, v]) => lattice(u, v));
+          if (zq.some((z) => z === null)) continue;
+          const pts = quad.map(([u, v], k) => P(u, v, zq[k]!));
+          ctx.beginPath();
+          ctx.moveTo(pts[0].sx, pts[0].sy);
+          for (let k = 1; k < 4; k++) ctx.lineTo(pts[k].sx, pts[k].sy);
+          ctx.closePath();
+          ctx.fillStyle = shade(
+            (zq[0]! + zq[1]! + zq[2]! + zq[3]!) / 4,
+            phiWins(oa, ob),
+            mix,
+          );
+          ctx.fill();
+        }
+
+        // Seams are stroked per FACE, not per quarter. The quarters are how the
+        // colour is resolved, not something the data has; drawing their edges
+        // would put a wireframe on the surface at twice the grid's resolution.
         const pts = [
           P(i, j, zs[0]!),
           P(i + 1, j, zs[1]!),
           P(i + 1, j + 1, zs[2]!),
           P(i, j + 1, zs[3]!),
         ];
-        const mean = (zs[0]! + zs[1]! + zs[2]! + zs[3]!) / 4;
-
         ctx.beginPath();
         ctx.moveTo(pts[0].sx, pts[0].sy);
         for (let p = 1; p < 4; p++) ctx.lineTo(pts[p].sx, pts[p].sy);
         ctx.closePath();
-        ctx.fillStyle = ramp(mean);
-        ctx.fill();
         ctx.strokeStyle = 'rgba(255,255,255,0.55)';
         ctx.lineWidth = 0.6;
         ctx.stroke();
         continue;
       }
-      // A marker: a cell Phi scored higher on. White rim so it reads against
-      // the deep end of the ramp, dark core so it reads against the pale end —
-      // the ramp spans both, and a single-colour dot vanishes into one of them.
-      const z = heightAt(it.i, it.j);
-      if (z === null) continue;
-      const p = P(it.i, it.j, z);
+      // The outline of one cell's territory: the square it owns, half a step in
+      // every direction, clipped to the grid. Adjacent Phi cells make one patch
+      // of colour, and without this you could not tell two from one -- the
+      // count is the finding, so it has to stay countable.
+      const { i: a, j: b } = it;
+      const a0 = Math.max(1, a - 0.5), a1 = Math.min(DIM, a + 0.5);
+      const b0 = Math.max(1, b - 0.5), b1 = Math.min(DIM, b + 0.5);
+      const ring: Array<[number, number]> = [[a0, b0], [a1, b0], [a1, b1], [a0, b1]];
+      const zr = ring.map(([u, v]) => lattice(u, v));
+      if (zr.some((z) => z === null)) continue;
+      const rp = ring.map(([u, v], k) => P(u, v, zr[k]!));
       ctx.globalAlpha = Math.min(1, mix);
       ctx.beginPath();
-      ctx.arc(p.sx, p.sy, 3.7, 0, Math.PI * 2);
-      ctx.fillStyle = 'rgba(255,255,255,0.94)';
-      ctx.fill();
-      ctx.beginPath();
-      ctx.arc(p.sx, p.sy, 2.1, 0, Math.PI * 2);
-      ctx.fillStyle = '#1f3a5f';
-      ctx.fill();
+      ctx.moveTo(rp[0].sx, rp[0].sy);
+      for (let k = 1; k < 4; k++) ctx.lineTo(rp[k].sx, rp[k].sy);
+      ctx.closePath();
+      ctx.strokeStyle = 'rgba(94,48,8,0.55)';
+      ctx.lineWidth = 1;
+      ctx.stroke();
       ctx.globalAlpha = 1;
     }
 

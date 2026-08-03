@@ -93,12 +93,14 @@ canvas:active{cursor:grabbing}
 .sw{display:inline-block;width:40px;height:11px;border-radius:2px;vertical-align:-1px;
   margin-right:7px}
 .ra{background:linear-gradient(90deg,rgb(232,236,243),rgb(27,42,94))}
+.rb{background:linear-gradient(90deg,rgb(247,237,224),rgb(138,74,18))}
 @media (prefers-color-scheme:dark){
-  .ra{background:linear-gradient(90deg,rgb(38,46,60),rgb(150,182,224))}}
+  .ra{background:linear-gradient(90deg,rgb(38,46,60),rgb(150,182,224))}
+  .rb{background:linear-gradient(90deg,rgb(56,45,32),rgb(232,170,86))}}
 :root[data-theme="dark"] .ra{background:linear-gradient(90deg,rgb(38,46,60),rgb(150,182,224))}
+:root[data-theme="dark"] .rb{background:linear-gradient(90deg,rgb(56,45,32),rgb(232,170,86))}
 :root[data-theme="light"] .ra{background:linear-gradient(90deg,rgb(232,236,243),rgb(27,42,94))}
-.dotk{display:inline-block;width:9px;height:9px;border-radius:50%;vertical-align:-1px;
-  margin-right:7px;background:var(--ink);box-shadow:0 0 0 2px var(--panel)}
+:root[data-theme="light"] .rb{background:linear-gradient(90deg,rgb(247,237,224),rgb(138,74,18))}
 .note{font-family:system-ui,-apple-system,sans-serif;font-size:13.5px;color:var(--faint);
   margin-top:22px;max-width:68ch;line-height:1.62}
 .note strong{color:var(--dim)}
@@ -123,7 +125,7 @@ canvas:active{cursor:grabbing}
   <div class="plot"><canvas id="c"></canvas><span class="hint">drag to rotate</span></div>
   <div class="key">
     <span><span class="sw ra"></span>0 to 100% correct</span>
-    <span><span class="dotk"></span>a cell where Phi scored higher</span>
+    <span><span class="sw rb"></span>a cell where Phi scored higher</span>
     <span>&#183; greyer = fewer problems behind it</span>
   </div>
   <p class="note"><strong>Almost nothing moves.</strong> Switching from Qwen alone to
@@ -157,12 +159,13 @@ canvas:active{cursor:grabbing}
   6&times;6 are nearly the same problem to these models, though long multiplication has
   to carry 2 partial products for one and 6 for the other. That is why this surface falls
   along its diagonals rather than along either axis.</p>
-  <p class="note"><strong>One hue, and a dot for the winner.</strong> Height is the
-  quantity and the ramp is keyed to it, so a second hue meaning <em>which model</em>
-  would be competing with a ramp meaning <em>how often</em>. Colouring the surface by
-  the winner cannot be honest anyway: the mesh is quads between cell centres, a quad has
-  four cells at its corners, and painting it by any one of them turns __NP__ cells into
-  40 of 121.</p>
+  <p class="note"><strong>Why the colour needed bisecting.</strong> A face spans four
+  cells and &ldquo;Phi won here&rdquo; belongs to one of them, so no single colour for a
+  face is right: painting it when <em>any</em> corner is Phi&rsquo;s covers 33% of the
+  sheet to say 10%, and painting it only when most corners are collapses to under 1%.
+  Splitting each face at its midlines fixes it exactly &mdash; the nearest-cell boundary
+  inside a face <em>is</em> the midlines, so each quarter belongs wholly to one cell.
+  One bisection, no blending, and __NP__ cells colour 10% of the sheet.</p>
   <p class="note"><strong>These are probabilities.</strong> A cell is the mean over its
   problems of how often each model got that problem right. Scoring by whether a model
   ever solved a problem is not a probability: it climbs with the number of times you
@@ -193,27 +196,46 @@ const best=(a,b)=>{const g=at(a,b);
   return g?g[1]+(Math.max(g[1],g[2])-g[1])*MIX:null;};
 const win =(a,b)=>{const g=at(a,b); return g?(g[2]>g[1]?1:0):0;};
 const ev =(a,b)=>{const g=at(a,b); return g?0.55+0.45*Math.min(1,g[0]/12):0;};
-// ONE HUE, pale at a low rate and deep at a high one, keyed to the height --
-// which IS the quantity. A second hue meaning "which model" competes with a ramp
-// meaning "how often", and the two-hue version read as two instruments
-// disagreeing rather than one measuring. The cells where Phi scored higher are
-// marked with a dot instead.
+// Two ramps, same shape: pale at a low rate, deep at a high one. Blue is the
+// rate; orange is the rate on a cell where Phi scored higher. They are built to
+// match each other's luminance at both ends so neither reads as heavier.
+//
+// Colour rides MIX, so at "Qwen alone" the surface is entirely blue and the
+// orange arrives with the toggle. Painting it before Phi is added says the
+// opposite of what the toggle is for.
 //
 // Dark theme inverts the direction. Pale-to-deep on a dark panel puts the
 // plateau -- almost every cell -- at its least visible, which is backwards.
-const RAMP={light:[[232,236,243],[27,42,94]], dark:[[38,46,60],[150,182,224]]};
-function tone(rate,e){
+const RAMP={
+  light:{a:[[232,236,243],[27,42,94]],  b:[[247,237,224],[138,74,18]]},
+  dark: {a:[[38,46,60],[150,182,224]],  b:[[56,45,32],[232,170,86]]},
+};
+function tone(rate,e,k){
   // Ask the ground how bright it is rather than matching a hex string, which
   // breaks the moment a token is retuned.
   const bg=css('--paper'), hx=[1,3,5].map(i=>parseInt(bg.slice(i,i+2),16));
-  const dark=0.2126*hx[0]+0.7152*hx[1]+0.0722*hx[2] < 128;
-  const [lo,hi]=RAMP[dark?'dark':'light'];
+  const R=RAMP[0.2126*hx[0]+0.7152*hx[1]+0.0722*hx[2] < 128 ? 'dark':'light'];
   const t=Math.max(0,Math.min(1,rate));
-  const c=lo.map((v,i)=>v+(hi[i]-v)*t);
+  const c=[0,1,2].map(i=>{
+    const A=R.a[0][i]+(R.a[1][i]-R.a[0][i])*t;
+    const B=R.b[0][i]+(R.b[1][i]-R.b[0][i])*t;
+    return A+(B-A)*k;
+  });
   // Evidence rides on SATURATION, not lightness, so it cannot be mistaken for
   // the rate: a cell on 3 problems is greyer than one on 12 at the same height.
   const l=0.2126*c[0]+0.7152*c[1]+0.0722*c[2];
   return `rgb(${c.map(v=>Math.round(v+(l-v)*(1-e))).join(',')})`;
+}
+// Height anywhere on the half-step lattice, averaging only over the integer
+// neighbours the point lies between. That is exactly what bilinear
+// interpolation across a face already gives, so subdividing with it leaves the
+// GEOMETRY untouched -- only the colour gets finer.
+function lat(u,v){
+  const us=Number.isInteger(u)?[u]:[u-0.5,u+0.5];
+  const vs=Number.isInteger(v)?[v]:[v-0.5,v+0.5];
+  let t=0,k=0;
+  for(const a of us)for(const b of vs){const z=best(a,b); if(z!==null){t+=z;k++;}}
+  return k?t/k:null;
 }
 function draw(){
   const dpr=Math.min(devicePixelRatio||1,2);
@@ -240,9 +262,13 @@ function draw(){
   for(let a=1;a<=DIM;a++)for(let b=1;b<=DIM;b++)
     if(best(a,b)!==null) tiles.push({a,b,d:key(a,b)});
   tiles.sort((p,q)=>q.d-p.d);                      // far to near
-  // Quads between cell centres, so the surface passes exactly through every
-  // measured value. Markers ride the same back-to-front pass -- drawn after,
-  // a marker on a far cell would print over terrain standing in front of it.
+  // A face spans four cells, and "Phi won here" belongs to ONE of them, so no
+  // single colour for the face is right: painting it when any corner is Phi's
+  // covers 33% of the sheet to say 10%, and painting it only when most corners
+  // are collapses to nothing. Split the face at its midlines instead -- the
+  // nearest-vertex boundary inside a face IS the midlines, so each quarter lies
+  // wholly in one cell's territory. One bisection is exact, with no depth to
+  // tune and no blending, so 15 cells colour 10% of the sheet.
   const items=[];
   for(let i=1;i<DIM;i++)for(let j=1;j<DIM;j++)
     items.push({k:0,i,j,d:key(i+0.5,j+0.5)});
@@ -255,25 +281,46 @@ function draw(){
       const i=it.i,j=it.j;
       const z=[best(i,j),best(i+1,j),best(i+1,j+1),best(i,j+1)];
       if(z.some(v=>v===null)) continue;
+      const e=(ev(i,j)+ev(i+1,j)+ev(i+1,j+1)+ev(i,j+1))/4;
+      const mu=i+0.5, mv=j+0.5;
+      for(const [oa,ob] of [[i,j],[i+1,j],[i+1,j+1],[i,j+1]]){
+        const a0=Math.min(oa,mu),a1=Math.max(oa,mu);
+        const b0=Math.min(ob,mv),b1=Math.max(ob,mv);
+        const qd=[[a0,b0],[a1,b0],[a1,b1],[a0,b1]];
+        const zq=qd.map(([u,v])=>lat(u,v));
+        if(zq.some(v=>v===null)) continue;
+        const pt=qd.map(([u,v],k)=>Q(u,v,zq[k]));
+        ctx.beginPath(); ctx.moveTo(pt[0].sx,pt[0].sy);
+        for(let k=1;k<4;k++) ctx.lineTo(pt[k].sx,pt[k].sy);
+        ctx.closePath();
+        ctx.fillStyle=tone((zq[0]+zq[1]+zq[2]+zq[3])/4,e,win(oa,ob)?MIX:0);
+        ctx.fill();
+      }
+      // Seams per FACE, not per quarter. The quarters are how colour is
+      // resolved, not something the data has; stroking them would put a
+      // wireframe on the surface at twice the grid's resolution.
       const pt=[Q(i,j,z[0]),Q(i+1,j,z[1]),Q(i+1,j+1,z[2]),Q(i,j+1,z[3])];
       ctx.beginPath(); ctx.moveTo(pt[0].sx,pt[0].sy);
       for(let k=1;k<4;k++) ctx.lineTo(pt[k].sx,pt[k].sy);
       ctx.closePath();
-      const e=(ev(i,j)+ev(i+1,j)+ev(i+1,j+1)+ev(i,j+1))/4;
-      ctx.fillStyle=tone((z[0]+z[1]+z[2]+z[3])/4,e); ctx.fill();
       ctx.strokeStyle=css('--panel'); ctx.globalAlpha=.55; ctx.lineWidth=.6;
       ctx.stroke(); ctx.globalAlpha=1;
       continue;
     }
-    const z=best(it.i,it.j); if(z===null) continue;
-    const p=Q(it.i,it.j,z);
-    // rim in the panel colour, core in the ink: the ramp spans pale to deep and
-    // a single-colour dot disappears into one end of it
+    // The outline of one cell's territory. Adjacent Phi cells make one patch of
+    // colour, and the count is the finding, so it has to stay countable.
+    const a=it.i,b=it.j;
+    const a0=Math.max(1,a-0.5),a1=Math.min(DIM,a+0.5);
+    const b0=Math.max(1,b-0.5),b1=Math.min(DIM,b+0.5);
+    const rg=[[a0,b0],[a1,b0],[a1,b1],[a0,b1]];
+    const zr=rg.map(([u,v])=>lat(u,v));
+    if(zr.some(v=>v===null)) continue;
+    const rp=rg.map(([u,v],k)=>Q(u,v,zr[k]));
     ctx.globalAlpha=Math.min(1,MIX);
-    ctx.beginPath(); ctx.arc(p.sx,p.sy,3.7,0,Math.PI*2);
-    ctx.fillStyle=css('--panel'); ctx.fill();
-    ctx.beginPath(); ctx.arc(p.sx,p.sy,2.1,0,Math.PI*2);
-    ctx.fillStyle=css('--ink'); ctx.fill();
+    ctx.beginPath(); ctx.moveTo(rp[0].sx,rp[0].sy);
+    for(let k=1;k<4;k++) ctx.lineTo(rp[k].sx,rp[k].sy);
+    ctx.closePath();
+    ctx.strokeStyle='rgba(160,92,26,0.75)'; ctx.lineWidth=1; ctx.stroke();
     ctx.globalAlpha=1;
   }
   // axes, on the two ground edges nearest the camera
