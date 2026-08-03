@@ -419,27 +419,6 @@
       {wrong.length} wrong
     </span>
   </div>
-
-  <figcaption>
-    Every closed arithmetic statement is checked against real arithmetic as it is
-    made. Across all three runs there are <strong>{TOTAL}</strong> of them and
-    <strong>{TOTAL_BAD === 1 ? 'exactly one' : TOTAL_BAD}</strong> false &mdash;
-    an addition. Every multiplication in every run is correct.
-    {#if firstBad}
-      This run states it at claim <strong>{firstBad.index}</strong>, then carries
-      the bad total forward for another <strong>{firstBad.after.toLocaleString()}</strong>
-      characters and reports it as the answer. Nothing in the prose marks the line:
-      it goes on to check its work, and the check agrees with the wrong number.
-    {:else if trace.answer === trace.truth}
-      This is the run that got it right, and its {trace.claims.length} claims are all
-      true &mdash; but read the left pane alone and it is not distinguishable from the
-      one that did not.
-    {:else}
-      This run makes no arithmetic error at all. It computes the right answer and
-      then never commits to it, re-deriving the same total until it runs out of
-      room. Failing is not the same as being wrong.
-    {/if}
-  </figcaption>
 </figure>
 
 <style>
@@ -571,15 +550,6 @@
     font-variant-numeric: tabular-nums; }
   .tally.bad { color: var(--pos); }
 
-  figcaption {
-    margin-top: 14px;
-    font-family: var(--font-sans);
-    font-size: 0.82rem;
-    line-height: 1.6;
-    color: var(--ink-faint);
-    max-width: 66ch;
-  }
-  figcaption strong { color: var(--ink-dim); font-weight: 600; }
 
   @media (prefers-reduced-motion: reduce) {
     .caret { animation: none; }

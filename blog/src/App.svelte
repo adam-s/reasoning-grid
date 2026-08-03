@@ -7,53 +7,17 @@
   import Prose from './lib/components/Prose.svelte';
   import Placeholder from './lib/components/Placeholder.svelte';
   import ThinkingMath from './lib/viz/opener/ThinkingMath.svelte';
-  import { OPENER } from './lib/data/opener';
   import FlamePanel from './lib/viz/flame/FlamePanel.svelte';
   import ThreeTraces from './lib/viz/flame/ThreeTraces.svelte';
   import SurfaceCanvas from './lib/viz/surface/SurfaceCanvas.svelte';
   import WinnerSurface from './lib/viz/surface/WinnerSurface.svelte';
   import { LAMBDA_TRACE } from './lib/data/lambda-trace';
 
-  // The opener's facts, computed. Written out as prose they read 152 for a
-  // while after the extractor gained subtraction and the real total became 160,
-  // because this file states them and the figure that owns them is elsewhere.
-  const claims = OPENER.reduce((n, t) => n + t.claims.length, 0);
-  const wrong = OPENER.flatMap((t) => t.claims).filter((c) => !c.ok);
-  const wrongOp = wrong[0]?.op === '+' ? 'an addition'
-    : wrong[0]?.op === '−' ? 'a subtraction' : 'a multiplication';
-  const mulsAllRight = OPENER.flatMap((t) => t.claims)
-    .filter((c) => c.op === '×').every((c) => c.ok);
-  const lost = OPENER.find((t) => t.claims.some((c) => !c.ok));
-  const digits = (d: string | undefined) => (d ?? '').length;
 </script>
 
 <Layout>
   <Section eyebrow="carrychain" title="Where two models stop being reliable" width="figure">
-    <Prose>
-      <p>
-        Watch a model multiply two numbers. On the left is what it is thinking; on the
-        right is every arithmetic claim it makes, checked against real arithmetic the
-        moment it is made. Long multiplication is the instrument here for one reason:
-        the right answer is free to compute, so nothing has to be judged.
-      </p>
-    </Prose>
     <ThinkingMath />
-    <Prose>
-      <p>
-        {OPENER.length} runs, {claims} arithmetic claims, and
-        {wrong.length === 1 ? 'exactly one is false' : `${wrong.length} are false`}. It is
-        {wrongOp}{mulsAllRight ? ' — every multiplication in every run is correct' : ''}.
-        The run that got the answer wrong could multiply
-        {digits(lost?.x)}-digit numbers all day and lost to a carry.
-      </p>
-      <p>
-        Read the left pane alone and you cannot tell which run is which. All three are
-        fluent, all three check their work, all three sound careful. That is the problem
-        this project is about: the prose does not mark the line where the arithmetic
-        broke, and the model does not notice either &mdash; it carries the bad total
-        forward to the end and states it as the answer.
-      </p>
-    </Prose>
   </Section>
 
   <Section eyebrow="01 · the surface" title="The grid" width="figure">
@@ -113,28 +77,6 @@
   </Section>
 
   <Section eyebrow="05 · the loop" title="Three ways to finish a hard multiplication" width="figure">
-    <Prose>
-      <p>
-        Same model, three problems of about the same size, three outcomes. Every bar is
-        one move in the model's thinking, coloured by what kind of move it was. The two
-        colours that matter are the checking ones: <strong>recheck</strong>, where the
-        model re-derives a value the same way it got it, and <strong>crosscheck</strong>,
-        where it uses a method that can fail differently &mdash; casting out nines, a
-        modulus, a magnitude bound.
-      </p>
-      <p>
-        A recheck cannot catch a mistake the first pass was capable of making, because
-        the faculty doing the checking is the one that slipped. That distinction is the
-        whole figure.
-      </p>
-      <p>
-        The run that got it wrong ran <strong>14 rechecks against 9 crosschecks</strong>.
-        The run that got it right ran that ratio the other way, and by a wider margin.
-        Both gave a similar share of the trace to checking &mdash; so the variable is not
-        how much a model checks. It is whether the check can fail differently from the
-        thing being checked.
-      </p>
-    </Prose>
     <ThreeTraces />
   </Section>
 

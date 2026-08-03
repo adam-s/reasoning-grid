@@ -82,18 +82,6 @@
     showEmpty={lens === 'ooda'}
   />
 
-  <p class="axis-note">
-    {#if lens === 'ooda'}
-      Same bars, four colours. The run that got it right and the run that got it wrong are
-      nearly the same picture here — the loop does not tell them apart. <strong>Decide never
-      appears at all</strong>: in 524 segments, not one changes a value the model had
-      already written. Switch back to <em>by move</em> to split Observe into the two kinds
-      of checking, which is where the difference actually is.
-    {:else}
-      Position is share of each trace, not time. Click any bar to read it.
-    {/if}
-  </p>
-
   {#each traces as trace (trace.key)}
     {#snippet head()}
       <header class="head">
@@ -149,12 +137,6 @@
   .lens button:hover { color: var(--ink); }
   .lens button.on { background: var(--ink); color: var(--bg); }
 
-  .axis-note {
-    margin: 2px 0 var(--space-md);
-    font-size: var(--text-xs);
-    line-height: 1.5;
-    color: var(--ink-faint);
-  }
 
   .head {
     display: flex;
