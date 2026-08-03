@@ -35,11 +35,17 @@ which rejects the model interrupting itself mid-number, as trace C does at
 
 ## Result
 
-  trace A, converged right   67 claims, 0 false
+  trace A, converged right   72 claims, 0 false
   trace B, converged wrong   36 claims, 1 false -- an ADDITION; every one of
                              its multiplications is correct
-  trace C, never answered    49 claims, 0 false -- it does not fail at
+  trace C, never answered    52 claims, 0 false -- it does not fail at
                              arithmetic, it fails to commit
+
+Subtraction was added after an adversarial pass asked what the extractor cannot
+see. It could only see x and +, so eleven subtraction claims went ungraded and
+"160 claims, 1 false" was really "160 multiplications and additions". All eleven
+turned out correct, so the headline did not move -- but it was not defensible
+until they were checked.
 
 Those counts are printed on every run. If they move, the extractor changed and
 the prose that quotes them needs re-checking.
@@ -54,7 +60,11 @@ import sys
 OUT = "blog/src/lib/data/opener.ts"
 MODEL = "Qwen3-4B"
 
-EQ = re.compile(r"([\d,]+)\s*(×|x|\*|\+)\s*([\d,]+)\s*=\s*([\d,]+)")
+# Subtraction is checked; DIVISION deliberately is not. A model casting out
+# nines writes "87 / 9 = 9", meaning nine remainder six, and grading that as
+# false would report a correct check as an error. Subtraction has no such
+# second reading.
+EQ = re.compile(r"([\d,]+)\s*(×|x|\*|\+|-|−)\s*([\d,]+)\s*=\s*([\d,]+)")
 
 
 def wellformed(s):
@@ -74,16 +84,18 @@ def claims(t):
             continue
         if re.search(r"[-+×x*/^]\s*$", t[max(0, m.start() - 2):m.start()]):
             continue                                   # third term of a longer sum
+        if op in "-−" and re.search(r"\d\s*$", t[max(0, m.start() - 2):m.start()]):
+            continue                                   # a minus sign inside a range
         if re.match(r"[.,]\d|\s*[-+×x*/^]", t[m.end():m.end() + 2]):
             continue                                   # a decimal, or a rewriting
         a, b, c = (int(v.replace(",", "")) for v in (x, y, z))
         if not a or not b:
             continue
-        mul = op != "+"
-        out.append({"at": m.start(), "end": m.end(), "op": "×" if mul else "+",
+        sym = {"+": "+", "-": "−", "−": "−"}.get(op, "×")
+        truth = a + b if sym == "+" else a - b if sym == "−" else a * b
+        out.append({"at": m.start(), "end": m.end(), "op": sym,
                     "a": str(a), "b": str(b), "said": str(c),
-                    "truth": str(a * b if mul else a + b),
-                    "ok": (a * b if mul else a + b) == c})
+                    "truth": str(truth), "ok": truth == c})
     return out
 
 
@@ -116,7 +128,7 @@ HEADER = '''/**
 export type Claim = {
   readonly at: number;
   readonly end: number;
-  readonly op: '×' | '+';
+  readonly op: '×' | '+' | '−';
   /** decimal strings: several exceed Number.MAX_SAFE_INTEGER */
   readonly a: string;
   readonly b: string;

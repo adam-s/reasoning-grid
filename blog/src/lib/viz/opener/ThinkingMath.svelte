@@ -69,12 +69,18 @@
       : { index: i + 1, after: trace.thinking.length - trace.claims[i].end };
   });
 
+  /** Totals over ALL runs, computed. A hardcoded 152 survived in the prose
+   *  after subtraction was added and the real total became 160. */
+  const TOTAL = OPENER.reduce((n, t) => n + t.claims.length, 0);
+  const TOTAL_BAD = OPENER.reduce(
+    (n, t) => n + t.claims.filter((x) => !x.ok).length, 0);
+
   const landed = $derived(trace.claims.filter((c) => c.end <= cursor));
   const wrong = $derived(landed.filter((c) => !c.ok));
 
   const group = (s: string) => s.replace(/\B(?=(\d{3})+(?!\d))/g, '{,}');
   function tex(c: Claim, side: 'said' | 'truth'): string {
-    const op = c.op === '×' ? '\\times' : '+';
+    const op = c.op === '×' ? '\\times' : c.op === '−' ? '-' : '+';
     const rhs = side === 'said' ? c.said : c.truth;
     return `${group(c.a)} ${op} ${group(c.b)} = ${group(rhs)}`;
   }
@@ -213,9 +219,9 @@
 
   <figcaption>
     Every closed arithmetic statement is checked against real arithmetic as it is
-    made. Across all three runs there are <strong>152</strong> of them and exactly
-    <strong>one</strong> is false &mdash; an addition. Every multiplication in
-    every run is correct.
+    made. Across all three runs there are <strong>{TOTAL}</strong> of them and
+    <strong>{TOTAL_BAD === 1 ? 'exactly one' : TOTAL_BAD}</strong> false &mdash;
+    an addition. Every multiplication in every run is correct.
     {#if firstBad}
       This run states it at claim <strong>{firstBad.index}</strong>, then carries
       the bad total forward for another <strong>{firstBad.after.toLocaleString()}</strong>

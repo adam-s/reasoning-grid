@@ -27,7 +27,7 @@
     <ThinkingMath />
     <Prose>
       <p>
-        Three runs, 152 arithmetic claims, and exactly one is false. It is an addition
+        Three runs, 160 arithmetic claims, and exactly one is false. It is an addition
         &mdash; every multiplication in every run is correct. The run that got the
         answer wrong could multiply seven-digit numbers all day and lost to a carry.
       </p>

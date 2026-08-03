@@ -105,7 +105,7 @@ sign.
 
 | slot | ports from | what it settles |
 |---|---|---|
-| `ThinkingMath` **(built)** | `probe/build_opener.py` | **the opener.** A run's thinking streams on the left; every closed arithmetic claim lands on the right, checked as it is made. 152 claims across three runs and exactly **one** is false -- an addition. Every multiplication in every run is correct, and the prose reads the same either way |
+| `ThinkingMath` **(built)** | `probe/build_opener.py` | **the opener.** A run's thinking streams on the left; every closed arithmetic claim lands on the right, checked as it is made. 160 claims across three runs and exactly **one** is false -- an addition. Every multiplication in every run is correct, and the prose reads the same either way |
 | `SurfaceCanvas` **(built)** | `probe/build_surface.py` | x = digits of A, y = digits of B, z = P(correct), scrubbable over trial count and orbitable. Breaks at 8.56 digits; 100% → 3% |
 | `WinnerSurface` **(built)** | `probe/build_winner.py` | **the core argument, and it came back negative.** Toggle Qwen alone against the better of the two: 15 tiles of 144 move. Fitted, Qwen is still right half the time at 9.24 digits square and Phi at 8.39 — the same curve shifted 0.8 digits, never crossing. 10 cells are further apart than sampling noise explains and **none** favour Phi |
 | `Convergence` | `render_convergence.py` | one cell's number as 17 trials; then eight cells as small multiples. No cell converges alone |

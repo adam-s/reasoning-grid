@@ -12,7 +12,7 @@
 export type Claim = {
   readonly at: number;
   readonly end: number;
-  readonly op: '×' | '+';
+  readonly op: '×' | '+' | '−';
   /** decimal strings: several exceed Number.MAX_SAFE_INTEGER */
   readonly a: string;
   readonly b: string;
@@ -655,6 +655,26 @@ export const OPENER: readonly OpenerTrace[] = [
     "ok": true
    },
    {
+    "at": 13855,
+    "end": 13862,
+    "op": "−",
+    "a": "33",
+    "b": "27",
+    "said": "6",
+    "truth": "6",
+    "ok": true
+   },
+   {
+    "at": 14048,
+    "end": 14055,
+    "op": "−",
+    "a": "52",
+    "b": "45",
+    "said": "7",
+    "truth": "7",
+    "ok": true
+   },
+   {
     "at": 14102,
     "end": 14112,
     "op": "×",
@@ -665,6 +685,16 @@ export const OPENER: readonly OpenerTrace[] = [
     "ok": true
    },
    {
+    "at": 14149,
+    "end": 14156,
+    "op": "−",
+    "a": "42",
+    "b": "36",
+    "said": "6",
+    "truth": "6",
+    "ok": true
+   },
+   {
     "at": 14332,
     "end": 14341,
     "op": "+",
@@ -672,6 +702,16 @@ export const OPENER: readonly OpenerTrace[] = [
     "b": "3",
     "said": "9",
     "truth": "9",
+    "ok": true
+   },
+   {
+    "at": 14474,
+    "end": 14481,
+    "op": "−",
+    "a": "87",
+    "b": "81",
+    "said": "6",
+    "truth": "6",
     "ok": true
    },
    {
@@ -692,6 +732,16 @@ export const OPENER: readonly OpenerTrace[] = [
     "b": "78",
     "said": "312",
     "truth": "312",
+    "ok": true
+   },
+   {
+    "at": 15243,
+    "end": 15260,
+    "op": "−",
+    "a": "7800",
+    "b": "312",
+    "said": "7488",
+    "truth": "7488",
     "ok": true
    },
    {
@@ -2060,6 +2110,36 @@ export const OPENER: readonly OpenerTrace[] = [
     "b": "2",
     "said": "3012702490814",
     "truth": "3012702490814",
+    "ok": true
+   },
+   {
+    "at": 5240,
+    "end": 5299,
+    "op": "−",
+    "a": "15063512454070",
+    "b": "3000000000000",
+    "said": "12063512454070",
+    "truth": "12063512454070",
+    "ok": true
+   },
+   {
+    "at": 5442,
+    "end": 5498,
+    "op": "−",
+    "a": "12063512454070",
+    "b": "12000000000000",
+    "said": "63512454070",
+    "truth": "63512454070",
+    "ok": true
+   },
+   {
+    "at": 6082,
+    "end": 6127,
+    "op": "−",
+    "a": "63512454070",
+    "b": "700000000",
+    "said": "62812454070",
+    "truth": "62812454070",
     "ok": true
    },
    {
