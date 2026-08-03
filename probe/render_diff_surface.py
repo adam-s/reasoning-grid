@@ -113,35 +113,42 @@ canvas:active{cursor:grabbing}
 <div class="wrap">
   <p class="eyebrow">carrychain &middot; __N__ problems &middot; both models, same questions</p>
   <h1>Qwen&rsquo;s blind spots, and what Phi covers</h1>
-  <p class="lede">The blue surface is Qwen, the stronger model. The orange caps are
-  Qwen&rsquo;s blind spots that Phi covered &mdash; problems Qwen missed and Phi got.
-  Where Phi adds nothing there is no cap. Drag to look along the slope.</p>
+  <p class="lede">The blue surface is Qwen, the stronger model. Each orange column is
+  one of Qwen&rsquo;s blind spots that Phi covered, and its height is how many problems
+  in that cell Qwen missed and Phi got. Drag to look along the slope.</p>
   <div class="plot"><canvas id="c"></canvas><span class="hint">drag to rotate</span></div>
   <div class="key">
     <span><span class="sw" style="background:var(--lead-a)"></span>Qwen alone</span>
     <span><span class="sw" style="background:var(--lead-b)"></span>blind spots Phi covered</span>
-    <span>&#183; cap height = how many problems</span>
+    <span>&#183; column height = how many problems</span>
     <span>&#183; paler = fewer trials</span>
   </div>
-  <p class="note"><strong>The caps are the whole argument for a second model.</strong>
-  A plateau with no cap is a cell where Qwen already solves everything &mdash; paying
-  for Phi there buys nothing. A cap is coverage that exists only because both ran.
+  <p class="note"><strong>The columns are the whole argument for a second model.</strong>
+  Bare surface is a cell where Qwen already solves everything &mdash; paying for Phi
+  there buys nothing. A column is coverage that exists only because both ran.
   <strong>__NEG__ of __CELLS__</strong> cells carry one, and they cluster where the
   surface is falling, which is the only region where a second model returns anything.
   Qwen alone gets <strong>75.2%</strong>; Qwen with Phi behind it gets
   <strong>83.1%</strong>.</p>
-  <p class="note"><strong>Caps get denser toward the back, and that is not Phi getting
-  better.</strong> A cap can only exist where Qwen failed, and Qwen only fails on big
-  problems &mdash; so cap density is forced upward by size no matter how
+  <p class="note"><strong>Columns get denser toward the back, and that is not Phi
+  getting better.</strong> A column can only exist where Qwen failed, and Qwen only
+  fails on big problems &mdash; so their density is forced upward by size no matter how
   the two models compare. Qwen is ahead in every band, and the gap widens with size
   rather than closing: <strong>96.9% to 91.1%</strong> at chain length 1&ndash;3, and
   <strong>18.5% to 6.5%</strong> at 10&ndash;12. Qwen solved <strong>256</strong>
   problems Phi missed against Phi's <strong>83</strong> the other way.</p>
-  <p class="note">The caps are the one thing a difference map cannot show. Two models
-  both scoring 6 of 12 look identical whether they solved the same six problems or
-  disjoint sixes, and only the second case is worth paying for. Height is Qwen alone, so
-  a cap is exactly what Phi adds on top of it &mdash; <strong>__OB__ problems</strong>
-  across the grid.</p>
+  <p class="note">The columns are the one thing a difference map cannot show. Two
+  models both scoring 6 of 12 look identical whether they solved the same six problems
+  or disjoint sixes, and only the second case is worth paying for. The surface is Qwen
+  alone, so the columns are exactly what Phi adds on top of it &mdash;
+  <strong>__OB__ problems</strong> across the grid, or 7.8% of the set.</p>
+  <p class="note"><strong>Why columns and not a second surface.</strong> An earlier
+  version drew the patch as a sheet lying over the first. A sheet&rsquo;s area is set by
+  the grid and the camera, not by the data: one patched corner paints all four cells
+  touching it, and where the surface is steep those cells turn toward the viewer and
+  fill the screen. It put orange over 60% of the sheet to represent 7.8% of the
+  problems, and at some angles read as Phi winning the entire large-number region.
+  A column cannot overstate itself &mdash; its height is the lift and nothing else.</p>
 </div>
 <script>
 const D=__DATA__, DIM=D.dim;
@@ -183,50 +190,71 @@ function draw(){
   const fit=Math.min(aw/(b1-b0), ah/(c1-c0));
   const cx=PAD+aw/2-((b0+b1)/2)*fit, cy=PAD+ah/2-((c0+c1)/2)*fit;
   const Q=(a,b,z)=>P(a,b,z,cx,cy,fit);
-  const n=DIM-1, ord=[];
+  // One draw list for both kinds of thing, ordered together by ground-plane
+  // depth. Quads key off their centre, columns off their vertex, so the two
+  // interleave correctly instead of one whole layer being painted over the
+  // other.
+  const mid=(DIM+1)/2;
+  const key=(a,b)=>(a-mid)*Math.sin(yaw)+(b-mid)*Math.cos(yaw);
+  const n=DIM-1, items=[];
   for(let i=0;i<n;i++)for(let j=0;j<n;j++)
-    ord.push([i,j,(i+1-(DIM+1)/2)*Math.sin(yaw)+(j+1-(DIM+1)/2)*Math.cos(yaw)]);
-  ord.sort((p,q)=>q[2]-p[2]);
+    items.push({t:0,A:i+1,B:j+1,d:key(i+1.5,j+1.5)});
+  for(let a=1;a<=DIM;a++)for(let b=1;b<=DIM;b++){
+    const q=val(a,b), u=uni(a,b);
+    if(q===null||u===null||u-q<=0.005) continue;
+    items.push({t:1,A:a,B:b,d:key(a,b)});
+  }
+  items.sort((p,q)=>q.d-p.d);
   // the zero PLANE, drawn first so the sheet reads as relief against it
   ctx.strokeStyle=css('--line-2'); ctx.globalAlpha=.85; ctx.lineWidth=1; ctx.beginPath();
   for(let g=1;g<=DIM;g++){const a0=Q(g,1,0),a1=Q(g,DIM,0),d0=Q(1,g,0),d1=Q(DIM,g,0);
     ctx.moveTo(a0.sx,a0.sy);ctx.lineTo(a1.sx,a1.sy);
     ctx.moveTo(d0.sx,d0.sy);ctx.lineTo(d1.sx,d1.sy);}
   ctx.stroke(); ctx.globalAlpha=1;
-  for(const [i,j] of ord){
-    const A=i+1,B=j+1, z=[val(A,B),val(A+1,B),val(A+1,B+1),val(A,B+1)];
-    if(z.some(v=>v===null)) continue;
-    const p=[Q(A,B,z[0]),Q(A+1,B,z[1]),Q(A+1,B+1,z[2]),Q(A,B+1,z[3])];
-    ctx.beginPath(); ctx.moveTo(p[0].sx,p[0].sy);
-    for(let k=1;k<4;k++) ctx.lineTo(p[k].sx,p[k].sy);
-    ctx.closePath();
-    const e=(ev(A,B)+ev(A+1,B)+ev(A+1,B+1)+ev(A,B+1))/4;
-    ctx.fillStyle=shade('--lead-a',0.45+0.55*e); ctx.fill();
-    ctx.globalAlpha=.45; ctx.strokeStyle=css('--paper'); ctx.lineWidth=.6; ctx.stroke();
-    ctx.globalAlpha=1;
-    // The patch. Union sits at or above the better single model everywhere, so
-    // where the two are level this cap lands exactly on the surface and is
-    // invisible -- an even cell stays Qwen's colour, with nothing on top. Where
-    // Phi solved problems Qwen missed, the cap lifts off and that gap IS the
-    // coverage a second model buys. Drawn after, because seen from above the
-    // higher sheet occludes the lower one.
-    const uz=[uni(A,B),uni(A+1,B),uni(A+1,B+1),uni(A,B+1)];
-    if(!uz.some(v=>v===null)){
-      const lift=uz.reduce((t,v,k)=>t+(v-z[k]),0)/4;
-      // How much Phi added is already in the geometry -- the cap sits exactly
-      // that far above the blue -- so it does not also need to be in the ink.
-      // Orange means one thing only: Phi solved something here that Qwen did
-      // not. Everywhere else the cap is skipped and the cell stays pure blue.
-      if(lift > 0.005){
-        const up=[Q(A,B,uz[0]),Q(A+1,B,uz[1]),Q(A+1,B+1,uz[2]),Q(A,B+1,uz[3])];
-        ctx.beginPath(); ctx.moveTo(up[0].sx,up[0].sy);
-        for(let k=1;k<4;k++) ctx.lineTo(up[k].sx,up[k].sy);
-        ctx.closePath();
-        ctx.fillStyle=shade('--lead-b',0.45+0.55*e); ctx.fill();
-        ctx.globalAlpha=.45; ctx.strokeStyle=css('--paper'); ctx.lineWidth=.6; ctx.stroke();
-        ctx.globalAlpha=1;
-      }
+  const HW=0.34;                       // column footprint, in grid cells
+  for(const it of items){
+    const A=it.A, B=it.B;
+    if(it.t===0){
+      const z=[val(A,B),val(A+1,B),val(A+1,B+1),val(A,B+1)];
+      if(z.some(v=>v===null)) continue;
+      const p=[Q(A,B,z[0]),Q(A+1,B,z[1]),Q(A+1,B+1,z[2]),Q(A,B+1,z[3])];
+      ctx.beginPath(); ctx.moveTo(p[0].sx,p[0].sy);
+      for(let k=1;k<4;k++) ctx.lineTo(p[k].sx,p[k].sy);
+      ctx.closePath();
+      const e=(ev(A,B)+ev(A+1,B)+ev(A+1,B+1)+ev(A,B+1))/4;
+      ctx.fillStyle=shade('--lead-a',0.45+0.55*e); ctx.fill();
+      ctx.globalAlpha=.45; ctx.strokeStyle=css('--paper'); ctx.lineWidth=.6; ctx.stroke();
+      ctx.globalAlpha=1;
+      continue;
     }
+    // A COLUMN, not a second sheet. The patch used to be drawn as a surface
+    // lying over the first, and a surface's area is set by the grid and the
+    // camera rather than by the data: one lifted vertex paints all four quads
+    // touching it, and on a steep slope those quads turn toward the viewer and
+    // fill the screen. That put orange over 60% of the sheet to represent 7.8%
+    // of the problems, and read as "Phi wins the whole region". A column cannot
+    // do that. Its height is the lift and nothing else.
+    const z0=val(A,B), z1=uni(A,B), e=ev(A,B);
+    const gp=[[-HW,-HW],[HW,-HW],[HW,HW],[-HW,HW]].map(([u,v])=>[A+u,B+v]);
+    const lo=gp.map(([u,v])=>Q(u,v,z0)), hi=gp.map(([u,v])=>Q(u,v,z1));
+    const side=[0,1,2,3].map(k=>({k,d:key((gp[k][0]+gp[(k+1)%4][0])/2,
+                                          (gp[k][1]+gp[(k+1)%4][1])/2)}))
+                        .sort((p,q)=>q.d-p.d);
+    ctx.strokeStyle=css('--paper'); ctx.lineWidth=.6;
+    for(const sd of side){
+      const k=sd.k, m=(k+1)%4;
+      ctx.beginPath();
+      ctx.moveTo(lo[k].sx,lo[k].sy); ctx.lineTo(lo[m].sx,lo[m].sy);
+      ctx.lineTo(hi[m].sx,hi[m].sy); ctx.lineTo(hi[k].sx,hi[k].sy);
+      ctx.closePath();
+      ctx.fillStyle=shade('--lead-b',(0.45+0.55*e)*0.78);   // sides read as shadow
+      ctx.fill(); ctx.globalAlpha=.35; ctx.stroke(); ctx.globalAlpha=1;
+    }
+    ctx.beginPath(); ctx.moveTo(hi[0].sx,hi[0].sy);
+    for(let k=1;k<4;k++) ctx.lineTo(hi[k].sx,hi[k].sy);
+    ctx.closePath();
+    ctx.fillStyle=shade('--lead-b',0.45+0.55*e); ctx.fill();
+    ctx.globalAlpha=.45; ctx.stroke(); ctx.globalAlpha=1;
   }
   // axes, on the two edges nearest the camera
   const cors=[[1,1],[DIM,1],[1,DIM],[DIM,DIM]];
@@ -261,7 +289,7 @@ ro.observe(cv.parentElement);
 cv.addEventListener('pointerdown',e=>{drag=true;lx=e.clientX;ly=e.clientY;
   cv.setPointerCapture(e.pointerId);});
 cv.addEventListener('pointermove',e=>{if(!drag)return;
-  yaw+=(e.clientX-lx)*.008;pitch=Math.max(.05,Math.min(1.3,pitch+(e.clientY-ly)*.005));
+  yaw+=(e.clientX-lx)*.008;pitch=Math.max(.16,Math.min(1.3,pitch+(e.clientY-ly)*.005));  // .05 flattened the floor to a line
   lx=e.clientX;ly=e.clientY;draw();});
 const up=()=>{drag=false;};
 cv.addEventListener('pointerup',up);cv.addEventListener('pointercancel',up);

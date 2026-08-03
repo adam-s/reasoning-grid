@@ -358,29 +358,25 @@ individual problems in chart 11's alluvial, which a difference map cannot show.
 
 `probe/render_diff_surface.py` &rarr; `derived/diff-surface.html`
 
-Two sheets. The lower one is **Qwen alone** &mdash; the model you would actually
-deploy. The upper one is the union: problems either model got. Where Phi adds
-nothing the cap lands flat on the surface and vanishes; where Phi solved
-something Qwen missed, the cap lifts, and that gap is the coverage a second
-model buys.
+A blue surface with orange columns standing on it. The surface is **Qwen
+alone** &mdash; the model you would actually deploy. Each column marks a cell
+where Phi solved problems Qwen missed, and its height is exactly how many. Bare
+surface means Phi adds nothing there.
 
-Both sheets are drawn **opaque**, with the low-evidence fade baked into the
-colour (a lerp toward the panel) rather than into alpha. A translucent cap
-composites orange over blue and turns every patched cell into a muddy tan that
-reads as a third category; here a cell is one colour or the other, and the two
-run on exactly the same scale. How much Phi added is carried by the geometry
-&mdash; the cap sits precisely that far above the blue &mdash; so it does not
-also need to be in the ink. Orange means one thing: Phi solved something here
-that Qwen did not.
+Both are drawn **opaque**, with the low-evidence fade baked into the colour (a
+lerp toward the panel) rather than into alpha, so orange never composites over
+blue into a muddy tan that reads as a third category. Quads and columns go into
+one draw list ordered together by ground-plane depth, so they interleave
+correctly instead of one layer being painted wholesale over the other.
 
-**Says:** 53 of 144 cells carry a cap, summing to exactly the 83 problems only
-Phi solved. Qwen alone reaches 75.2%; Qwen with Phi behind it reaches 83.1%. The
+**Says:** 53 of 144 cells carry a column, summing to exactly the 83 problems
+only Phi solved. Qwen alone reaches 75.2%; Qwen with Phi behind it reaches 83.1%. The
 caps cluster where the surface is falling, because that is the only region where
 a second model returns anything &mdash; on the plateau Qwen already solves
 everything.
 
-**Says also:** the caps get denser toward the back, and that is *not* Phi
-performing better on large numbers. A cap can only exist where Qwen failed, and
+**Says also:** the columns get denser toward the back, and that is *not* Phi
+performing better on large numbers. A column can only exist where Qwen failed, and
 Qwen only fails on big problems, so cap density is forced upward by size no
 matter how the two models compare. Qwen leads in every band and the gap widens
 with size rather than closing: 96.9% to 91.1% at chain length 1&ndash;3, 18.5%
@@ -388,7 +384,7 @@ to 6.5% at 10&ndash;12. Qwen solved 256 problems Phi missed against Phi's 83 the
 other way. The chart carries a note saying so, because the shape invites the
 opposite reading.
 
-**The design point.** The caps are the quantity a difference map structurally
+**The design point.** The columns are the quantity a difference map structurally
 cannot show. Two models both scoring 6 of 12 look identical whether they solved
 the same six problems or disjoint sixes, and only the second case is worth
 paying for &mdash; so chart 12 has to name the 83 in prose instead of drawing
@@ -405,3 +401,14 @@ an oracle nobody can run &mdash; picking the better model per cell needs the
 answer key &mdash; and it also broke the arithmetic: reconstructing the union as
 `max + only-Phi` double-counted in the nine cells where Phi leads, inflating
 three of them. The union is now counted per problem, never rebuilt from rates.
+
+The fourth drew the patch as a **second surface** lying over the first, and that
+is the one worth remembering. A surface's area is set by the grid and the
+camera, not by the data. One patched corner paints all four quads touching it,
+so 53 patched cells painted **72 of 121 quads &mdash; 60% of the sheet &mdash;
+to represent 7.8% of the problems**; and where the surface is steep those quads
+turn toward the viewer and fill the screen, so at low camera angles it read as
+Phi winning the entire large-number region. Columns cannot overstate themselves:
+height is the lift and nothing else. The general rule is that a quantity
+attached to grid *vertices* must not be drawn with grid *faces*, because faces
+interpolate and area is not the thing being measured.
