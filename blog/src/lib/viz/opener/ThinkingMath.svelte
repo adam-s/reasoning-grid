@@ -50,16 +50,44 @@
   let elapsed = $state(0);
   let playing = $state(false);
 
-  /** Offsets the cursor must pass through: 0, each claim's last character, the end. */
-  const knots = $derived([0, ...trace.claims.map((c) => c.end), trace.thinking.length]);
-  const beat = $derived(RUN_MS / Math.max(1, knots.length - 1));
+  /**
+   * When each offset is due.
+   *
+   * Claims are evenly spaced -- that is the cadence the figure runs on -- but
+   * the stretch AFTER the last claim is not a claim interval and must not be
+   * squeezed into one beat. In the run that got it wrong that stretch is 30% of
+   * the text, and a single beat pushed it to 6,200 characters a second against
+   * 411 in the body: a blur over the passage where the model checks its work,
+   * finds the check agrees, and says so. That passage is the point of the run.
+   *
+   * So the tail takes its share of the text. That makes its reading rate equal
+   * the body's by construction, while claims stay evenly spaced within the
+   * body. Clamped, so a run that ends on its last claim still gets a beat to
+   * land and one that trails off cannot eat the whole clock.
+   */
+  const schedule = $derived.by(() => {
+    const ends = trace.claims.map((c) => c.end);
+    const total = trace.thinking.length;
+    const knots = [0, ...ends, total];
+    const tailChars = total - (ends.length ? ends[ends.length - 1] : 0);
+    const share = Math.max(0.03, Math.min(0.35, tailChars / Math.max(1, total)));
+    const tailMs = RUN_MS * share;
+    const beat = (RUN_MS - tailMs) / Math.max(1, knots.length - 2);
+    const at = [0];
+    for (let i = 1; i < knots.length; i++) {
+      at.push(at[i - 1] + (i === knots.length - 1 ? tailMs : beat));
+    }
+    return { knots, at };
+  });
 
   function cursorAt(ms: number): number {
-    const k = knots;
-    const i = Math.min(Math.floor(ms / beat), k.length - 2);
-    const u = Math.max(0, Math.min(1, (ms - i * beat) / beat));
+    const { knots, at } = schedule;
+    let i = 0;
+    while (i < at.length - 2 && ms >= at[i + 1]) i++;
+    const span = at[i + 1] - at[i] || 1;
+    const u = Math.max(0, Math.min(1, (ms - at[i]) / span));
     const e = 1 - Math.pow(1 - u, 3);   // decelerate into each landing
-    return Math.floor(k[i] + (k[i + 1] - k[i]) * e);
+    return Math.floor(knots[i] + (knots[i + 1] - knots[i]) * e);
   }
 
   const cursor = $derived(cursorAt(elapsed));
