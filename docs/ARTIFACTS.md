@@ -459,7 +459,22 @@ more than half a point.
 
 The 3D companion to chart 14. **Height** is `max(Qwen, Phi)` as a probability
 &mdash; the best either model manages at that size. **Colour** is which model
-that was: blue where Qwen is level or higher, orange where Phi is higher.
+that was, and how well: the blog surface's pale-to-deep ramp
+(`blog/src/lib/viz/surface/project.ts`) runs *inside* each family, blue where
+Qwen is level or higher and orange where Phi is higher. Lightness carries how
+well, hue carries which. The blue endpoints are the blog's exactly; the orange
+is built to match their luminance so neither family reads as heavier at the same
+rate.
+
+Dark theme inverts the ramp direction. Pale-to-deep on a dark panel puts the
+plateau &mdash; almost every cell &mdash; at its least visible, which is
+backwards; there a high rate is the bright end. The theme is read from the
+luminance of `--paper` rather than by matching a hex string, so retuning a token
+does not silently break it.
+
+Evidence rides on **saturation**, not lightness, so it cannot be confused with
+the rate: a cell standing on 3 problems is visibly greyer than one standing on
+12 at the same height.
 
 **Says:** the shape is the finding and the colour is nearly all one. Both models
 hold a plateau over the small sizes and fall off a cliff in the same place, so

@@ -102,8 +102,17 @@ canvas:active{cursor:grabbing}
   font-size:9px;letter-spacing:.08em;color:var(--faint);pointer-events:none}
 .key{display:flex;gap:22px;align-items:center;flex-wrap:wrap;margin:16px 0 0;
   font-family:system-ui,-apple-system,sans-serif;font-size:12.5px;color:var(--dim)}
-.sw{display:inline-block;width:17px;height:11px;border-radius:2px;vertical-align:-1px;
+.sw{display:inline-block;width:40px;height:11px;border-radius:2px;vertical-align:-1px;
   margin-right:7px}
+.ra{background:linear-gradient(90deg,rgb(232,236,243),rgb(27,42,94))}
+.rb{background:linear-gradient(90deg,rgb(247,237,224),rgb(138,74,18))}
+@media (prefers-color-scheme:dark){
+  .ra{background:linear-gradient(90deg,rgb(38,46,60),rgb(150,182,224))}
+  .rb{background:linear-gradient(90deg,rgb(56,45,32),rgb(232,170,86))}}
+:root[data-theme="dark"] .ra{background:linear-gradient(90deg,rgb(38,46,60),rgb(150,182,224))}
+:root[data-theme="dark"] .rb{background:linear-gradient(90deg,rgb(56,45,32),rgb(232,170,86))}
+:root[data-theme="light"] .ra{background:linear-gradient(90deg,rgb(232,236,243),rgb(27,42,94))}
+:root[data-theme="light"] .rb{background:linear-gradient(90deg,rgb(247,237,224),rgb(138,74,18))}
 .note{font-family:system-ui,-apple-system,sans-serif;font-size:13.5px;color:var(--faint);
   margin-top:22px;max-width:68ch;line-height:1.62}
 .note strong{color:var(--dim)}
@@ -123,10 +132,10 @@ canvas:active{cursor:grabbing}
   </div>
   <div class="plot"><canvas id="c"></canvas><span class="hint">drag to rotate</span></div>
   <div class="key">
-    <span><span class="sw" style="background:var(--lead-a)"></span>Qwen level or higher</span>
-    <span><span class="sw" style="background:var(--lead-b)"></span>Phi higher</span>
-    <span>&#183; height = the better model&rsquo;s success rate</span>
-    <span>&#183; paler = fewer problems behind it</span>
+    <span><span class="sw ra"></span>Qwen level or higher</span>
+    <span><span class="sw rb"></span>Phi higher</span>
+    <span>&#183; pale to deep = 0 to 100% correct</span>
+    <span>&#183; greyer = fewer problems behind it</span>
   </div>
   <p class="note"><strong>The shape is the finding; the colour is nearly all one.</strong>
   Both models hold a plateau over the small sizes and then fall off a cliff in the same
@@ -168,7 +177,7 @@ function P(a,b,z,cx,cy,fit){
 const at =(a,b)=>D.g[a+'x'+b]||null;            // [n, qwen, phi]
 const best=(a,b)=>{const g=at(a,b); return g?Math.max(g[1],g[2]):null;};
 const win=(a,b)=>{const g=at(a,b); return g?(g[2]>g[1]?1:0):0;};
-const ev =(a,b)=>{const g=at(a,b); return g?0.50+0.50*Math.min(1,g[0]/12):0;};
+const ev =(a,b)=>{const g=at(a,b); return g?0.55+0.45*Math.min(1,g[0]/12):0;};
 // A tile corner sits between cells, so its height is the mean of the cells that
 // meet there. Adjacent tiles compute the same corner from the same neighbours,
 // which is what keeps the sheet continuous instead of cracked.
@@ -179,13 +188,33 @@ function corner(u,v){
   }
   return k?t/k:null;
 }
-// Fade toward the panel colour, never with alpha: two opaque tiles never blend
-// into a third colour that means nothing.
-function shade(v,e){
-  const c=css(v), bg=css('--panel');
-  const h=x=>[1,3,5].map(i=>parseInt(x.slice(i,i+2),16));
-  const p=h(bg), q=h(c);
-  return `rgb(${p.map((n,i)=>Math.round(n+(q[i]-n)*e)).join(',')})`;
+// The blog's surface ramp: pale at a low rate, deep at a high one, one hue,
+// because the rate is ordered rather than categorical. Here there are two hues
+// -- the ramp runs inside whichever model won the cell -- so lightness carries
+// how well and hue carries which. The blue endpoints are the blog's exactly;
+// the orange is built to match their luminance so neither family reads as
+// heavier than the other at the same rate.
+//
+// Dark theme inverts the direction. A pale-to-deep ramp on a dark panel puts
+// the plateau -- almost every cell -- at its least visible, which is backwards:
+// there, a high rate is the bright end.
+const RAMP={
+  light:{a:[[232,236,243],[27,42,94]],   b:[[247,237,224],[138,74,18]]},
+  dark: {a:[[38,46,60],  [150,182,224]], b:[[56,45,32],  [232,170,86]]},
+};
+function tone(rate,phi,e){
+  // Ask the ground how bright it is rather than matching a hex string, which
+  // breaks the moment a token is retuned.
+  const bg=css('--paper'), h=[1,3,5].map(i=>parseInt(bg.slice(i,i+2),16));
+  const dark=0.2126*h[0]+0.7152*h[1]+0.0722*h[2] < 128;
+  const [lo,hi]=RAMP[dark?'dark':'light'][phi?'b':'a'];
+  const t=Math.max(0,Math.min(1,rate));
+  const c=lo.map((v,i)=>v+(hi[i]-v)*t);
+  // Evidence rides on SATURATION, not lightness, so it cannot be mistaken for
+  // the rate. A cell standing on 3 problems is visibly greyer than one standing
+  // on 12 at the same height.
+  const l=0.2126*c[0]+0.7152*c[1]+0.0722*c[2];
+  return `rgb(${c.map(v=>Math.round(v+(l-v)*(1-e))).join(',')})`;
 }
 function draw(){
   const dpr=Math.min(devicePixelRatio||1,2);
@@ -219,9 +248,9 @@ function draw(){
     ctx.beginPath(); ctx.moveTo(cs[0].sx,cs[0].sy);
     for(let k=1;k<4;k++) ctx.lineTo(cs[k].sx,cs[k].sy);
     ctx.closePath();
-    ctx.fillStyle=shade(win(a,b)?'--lead-b':'--lead-a',0.42+0.58*ev(a,b));
+    ctx.fillStyle=tone(best(a,b),win(a,b),ev(a,b));
     ctx.fill();
-    ctx.globalAlpha=.4; ctx.strokeStyle=css('--panel'); ctx.lineWidth=.7; ctx.stroke();
+    ctx.globalAlpha=.34; ctx.strokeStyle=css('--panel'); ctx.lineWidth=.7; ctx.stroke();
     ctx.globalAlpha=1;
   }
   // axes, on the two ground edges nearest the camera
