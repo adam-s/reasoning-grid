@@ -22,46 +22,18 @@ climbs with the number of times you ask, and the two models were not asked the
 same number of times.
 """
 import argparse
-import collections
-import glob
+import math
 import json
 import os
 import sys
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from reduce_grid import _parser  # noqa: E402
-
-A, B = "Qwen3-4B", "Phi-4-reasoning"
+import paired            # noqa: E402
 
 
-def collect(runs="runs"):
-    pa = _parser()
-    by, cell = collections.defaultdict(dict), {}
-    for f in sorted(glob.glob(os.path.join(runs, "*.jsonl"))):
-        for line in open(f):
-            if not line.strip():
-                continue
-            j = json.loads(line)
-            if (j.get("temperature") != 0.7 or j.get("top_p") != 1.0
-                    or j.get("thinking_observed") is not True):
-                continue
-            u = j.get("instance_uid")
-            if not u:
-                continue
-            ans, _ = pa(j.get("raw_text") or "")
-            cell[u] = (j["a"], j["b"])
-            by[u].setdefault((j.get("model") or "").split("/")[-1], []).append(
-                ans is not None and str(ans) == str(j["truth"]))
-    g, gen = collections.defaultdict(list), [0, 0, 0, 0]
-    for u, d in by.items():
-        if A not in d or B not in d:
-            continue
-        g[cell[u]].append((sum(d[A]) / len(d[A]), sum(d[B]) / len(d[B])))
-        gen[0] += sum(d[A]); gen[1] += len(d[A])
-        gen[2] += sum(d[B]); gen[3] += len(d[B])
-    out = {c: (sum(x[0] for x in v) / len(v), sum(x[1] for x in v) / len(v), len(v))
-           for c, v in g.items()}
-    return out, gen
+def diag(beta):
+    """The square problem size where a fit crosses 50%: solve B0+2dB1+dB2 = 0."""
+    return -beta[0] / (2 * beta[1] + beta[2])
 
 
 PAGE = """<title>carrychain &mdash; the better model at every size</title>
@@ -163,8 +135,25 @@ canvas:active{cursor:grabbing}
   at 100%, where there is nothing left to win.</p>
   <p class="note"><strong>The __NP__ orange tiles are not a region Phi owns.</strong>
   They are scattered rather than clustered, and every one rests on 12 problems or fewer,
-  where a single problem moves a cell 8 to 33 points. They mark where to look, not what
-  to conclude.</p>
+  where a single problem moves a cell 8 to 33 points. Comparing each cell against the
+  spread that binomial sampling alone would produce &mdash; widest in the middle, pinched
+  to nothing at both ends &mdash; <strong>__OUT__ of __CELLS__</strong> cells land outside
+  their own noise floor, and <strong>__OUTP__ of them favour Phi</strong>. Every orange
+  tile on this surface is inside the range a coin would reach. __OUT__ of Qwen&rsquo;s leads are not.</p>
+  <p class="note"><strong>The two models fail at different distances, not in different
+  places.</strong> Fitting where each one&rsquo;s success falls through a half puts Qwen
+  at <strong>__DQ__&times;__DQ__</strong> digits and Phi at <strong>__DP__&times;__DP__</strong> —
+  the same curve, shifted by <strong>__DGAP__ digits</strong>, never crossing. That is the
+  question this project exists to ask. If the curves had crossed, running two models from
+  different vendors would buy coverage no single model could reach at any quality. They
+  do not cross, so here the honest answer is one model, and the only question is which.</p>
+  <p class="note"><strong>What makes a problem hard is the total number of digits, not
+  the number of steps.</strong> Holding <code>a+b</code> fixed and changing the
+  problem&rsquo;s shape moves the success rate about __WITHIN__ points; moving between totals
+  moves it __BETWEEN__, roughly <strong>__RATIO__&times;</strong> as much. A 2&times;10 and a
+  6&times;6 are nearly the same problem to these models, though long multiplication has
+  to carry 2 partial products for one and 6 for the other. That is why this surface falls
+  along its diagonals rather than along either axis.</p>
   <p class="note"><strong>One tile per cell, not quads between cells.</strong> Colour
   here is a category attached to a cell, and quads interpolate between four of them.
   Painting a quad orange whenever any corner is orange would turn 15 cells into 40 of
@@ -355,7 +344,43 @@ def main():
     ap.add_argument("--runs", default="runs")
     ap.add_argument("-o", "--out", default="derived/winner-surface.html")
     args = ap.parse_args()
-    g, gen = collect(args.runs)
+    inst_rows, gen = paired.load(args.runs)
+    g = paired.cells(inst_rows)
+
+    # Everything the prose asserts is derived here. These claims were measured
+    # by three other charts, and copying their numbers across as literals is how
+    # a page keeps quoting a figure the data stopped supporting.
+    fits = [paired.logistic_fit([(c[0], c[1], v[i] * v[2], v[2])
+                                 for c, v in g.items()]) for i in (0, 1)]
+    dq, dp = diag(fits[0]), diag(fits[1])
+
+    # a cell is outside its noise floor if the two rates differ by more than
+    # 1.96 SD of two INDEPENDENT binomial draws -- wider than the paired truth,
+    # so the count is conservative
+    out = [(c, p - q) for c, (q, p, n) in g.items()
+           if abs(p - q) > 1.96 * math.sqrt(max(2 * ((q + p) / 2)
+                                                * (1 - (q + p) / 2) / n, 1e-9))]
+    outp = sum(1 for _, d in out if d > 0)
+
+    # how far the rate moves when the SHAPE changes at a fixed total, against
+    # how far it moves when the total changes
+    tot = {}
+    for (a_, b_), (q, p, n) in g.items():
+        tot.setdefault(a_ + b_, {}).setdefault(min(a_, b_), []).append((q, n))
+    swings, means = [], {}
+    for t, d in tot.items():
+        # Both numbers must come from the same totals. A total with only one
+        # chain length has no within-swing to contribute, and letting it into
+        # the between-swing anyway compares a range over one set of totals to a
+        # range over a wider one -- worth 1.2 points here, and wrong for free.
+        if len(d) < 2:
+            continue
+        rs = [sum(x[0] * x[1] for x in v) / sum(x[1] for x in v) for v in d.values()]
+        swings.append(max(rs) - min(rs))
+        w = [x for v in d.values() for x in v]
+        means[t] = sum(x[0] * x[1] for x in w) / sum(x[1] for x in w)
+    within = sum(swings) / len(swings)
+    between = max(means.values()) - min(means.values())
 
     payload = {"dim": max(max(c) for c in g),
                "g": {f"{a}x{b}": [n, round(q, 4), round(p, 4)]
@@ -363,7 +388,7 @@ def main():
     np_ = sum(1 for q, p, n in g.values() if p > q)
     nlev = sum(1 for q, p, n in g.values() if q == p)
     nsat = sum(1 for q, p, n in g.values() if q == p == 1.0)
-    inst = sum(n for _, _, n in g.values())
+    inst = len(inst_rows)
     pq, pp = gen[0] / gen[1] * 100, gen[2] / gen[3] * 100
 
     html = (PAGE.replace("__DATA__", json.dumps(payload, separators=(",", ":")))
@@ -371,13 +396,24 @@ def main():
                 .replace("__NP__", str(np_)).replace("__NQO__", str(len(g) - np_))
                 .replace("__NLEVEL__", str(nlev)).replace("__NSAT__", str(nsat))
                 .replace("__PQ__", f"{pq:.0f}").replace("__PP__", f"{pp:.0f}")
-                .replace("__GA__", f"{gen[1]:,}").replace("__GB__", f"{gen[3]:,}"))
+                .replace("__GA__", f"{gen[1]:,}").replace("__GB__", f"{gen[3]:,}")
+                .replace("__DQ__", f"{dq:.1f}").replace("__DP__", f"{dp:.1f}")
+                .replace("__DGAP__", f"{dq-dp:.1f}")
+                .replace("__OUT__", str(len(out)))
+                .replace("__OUTP__", "none" if not outp else str(outp))
+                .replace("__WITHIN__", f"{within*100:.0f}")
+                .replace("__BETWEEN__", f"{between*100:.0f}")
+                .replace("__RATIO__", f"{between/within:.1f}"))
     os.makedirs(os.path.dirname(os.path.abspath(args.out)), exist_ok=True)
     open(args.out, "w").write(html)
     print(f"wrote {args.out}  ({os.path.getsize(args.out)/1024:.0f} KB)")
     print(f"  {inst} problems, {len(g)} cells, Qwen {pq:.1f}% Phi {pp:.1f}%")
     print(f"  Qwen level or higher {len(g)-np_}, Phi higher {np_}  "
           f"({len(g)-np_}+{np_} = {len(g)})")
+    print(f"  50% boundary: Qwen {dq:.2f}^2, Phi {dp:.2f}^2, gap {dq-dp:.2f} digits")
+    print(f"  outside the noise floor: {len(out)} cells, {outp} favouring Phi")
+    print(f"  swing within a total {within*100:.1f} pts, between {between*100:.1f} pts "
+          f"({between/within:.1f}x)")
 
 
 if __name__ == "__main__":

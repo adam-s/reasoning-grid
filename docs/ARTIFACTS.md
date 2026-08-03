@@ -332,94 +332,6 @@ alluvial draws the 256 down-ribbon at the same weight as the 83 up-ribbon, and
 the paired terrain shows Qwen above Phi everywhere with no region where they
 swap.
 
-**Superseded &mdash; wrong basis.** Charts 12 and 13 score a cell by whether a
-model *ever* solved each problem, collapsing repeat runs with `any()`. That is
-not a probability: it rises with the number of times you ask, and the two models
-were not asked equally often (1,579 Qwen generations against 1,206 Phi), so it
-flatters Qwen. Their shape holds but their numbers do not. Chart 14 is the same
-comparison on P(correct).
-
-### 12. Qwen minus Phi — the difference, plainly
-
-[Open the chart](https://claude.ai/code/artifact/d3bd3516-e256-4aee-a603-1403946b5554)
-
-`probe/render_diff_heatmap.py` &rarr; `derived/diff-heatmap.html`
-
-One number per cell: percentage points Qwen leads Phi by. Blue Qwen, orange Phi,
-a dot for a tie. Cell opacity carries n, because n here is 3, 6 or 12 and a
-reader who only sees hue reads noise as terrain.
-
-**Says:** the bottom-left is entirely ties &mdash; both models solve everything
-until problems get big enough for either to fail. From there Qwen leads almost
-everywhere, **+16 points on average**, and only **9 of 144** cells are orange.
-Every orange cell sits on 12 trials or fewer, where one problem moves a cell 8
-to 33 points, so none is evidence Phi leads a region.
-
-**Supersedes, in practice:** charts 11's six views. This one plot carries the
-comparison; the six did not. Kept because the case for running Phi is the 83
-individual problems in chart 11's alluvial, which a difference map cannot show.
-
-### 13. Qwen's blind spots, and what Phi covers
-
-[Open the chart](https://claude.ai/code/artifact/85224357-e7c9-481b-96b5-dc3805cdb223)
-
-`probe/render_diff_surface.py` &rarr; `derived/diff-surface.html`
-
-A blue surface with orange columns standing on it. The surface is **Qwen
-alone** &mdash; the model you would actually deploy. Each column marks a cell
-where Phi solved problems Qwen missed, and its height is exactly how many. Bare
-surface means Phi adds nothing there.
-
-Both are drawn **opaque**, with the low-evidence fade baked into the colour (a
-lerp toward the panel) rather than into alpha, so orange never composites over
-blue into a muddy tan that reads as a third category. Quads and columns go into
-one draw list ordered together by ground-plane depth, so they interleave
-correctly instead of one layer being painted wholesale over the other.
-
-**Says:** 53 of 144 cells carry a column, summing to exactly the 83 problems
-only Phi solved. Qwen alone reaches 75.2%; Qwen with Phi behind it reaches 83.1%. The
-caps cluster where the surface is falling, because that is the only region where
-a second model returns anything &mdash; on the plateau Qwen already solves
-everything.
-
-**Says also:** the columns get denser toward the back, and that is *not* Phi
-performing better on large numbers. A column can only exist where Qwen failed, and
-Qwen only fails on big problems, so cap density is forced upward by size no
-matter how the two models compare. Qwen leads in every band and the gap widens
-with size rather than closing: 96.9% to 91.1% at chain length 1&ndash;3, 18.5%
-to 6.5% at 10&ndash;12. Qwen solved 256 problems Phi missed against Phi's 83 the
-other way. The chart carries a note saying so, because the shape invites the
-opposite reading.
-
-**The design point.** The columns are the quantity a difference map structurally
-cannot show. Two models both scoring 6 of 12 look identical whether they solved
-the same six problems or disjoint sixes, and only the second case is worth
-paying for &mdash; so chart 12 has to name the 83 in prose instead of drawing
-them.
-
-Three earlier versions were wrong in instructive ways. The first put the
-difference on the height axis and read as a mountain range of coin flips: at
-3&ndash;12 trials per cell, relief cannot separate a one-problem fluctuation
-from an effect, because both are a spike, and unlike chart 12 there is no
-printed number to discount against. The second moved the difference to colour,
-which was honest but answered "who is ahead" when the useful question is "what
-does the second one add". The third made the height `max(Qwen, Phi)`, which is
-an oracle nobody can run &mdash; picking the better model per cell needs the
-answer key &mdash; and it also broke the arithmetic: reconstructing the union as
-`max + only-Phi` double-counted in the nine cells where Phi leads, inflating
-three of them. The union is now counted per problem, never rebuilt from rates.
-
-The fourth drew the patch as a **second surface** lying over the first, and that
-is the one worth remembering. A surface's area is set by the grid and the
-camera, not by the data. One patched corner paints all four quads touching it,
-so 53 patched cells painted **72 of 121 quads &mdash; 60% of the sheet &mdash;
-to represent 7.8% of the problems**; and where the surface is steep those quads
-turn toward the viewer and fill the screen, so at low camera angles it read as
-Phi winning the entire large-number region. Columns cannot overstate themselves:
-height is the lift and nothing else. The general rule is that a quantity
-attached to grid *vertices* must not be drawn with grid *faces*, because faces
-interpolate and area is not the thing being measured.
-
 ### 14. Where each model stops being reliable
 
 [Open the chart](https://claude.ai/code/artifact/97f2efdc-d363-4f61-a4f6-c9632d7bba1f)
@@ -481,6 +393,16 @@ between the two height fields rather than swapping them: switching two static
 pictures makes a reader hunt for what changed, and what changed is the whole
 point &mdash; 15 tiles rise a little and turn orange, and 129 do not move at all.
 
+**This chart stands alone.** Its notes now carry the three findings that were
+only in charts 16, 17 and 20: the fitted 50% boundaries (Qwen 9.2&times;9.2, Phi
+8.4&times;8.4, never crossing), the noise-floor test (10 of 144 cells outside,
+none favouring Phi), and the difficulty axis (total digits beats problem shape
+9.5&times;). Every one of those numbers is computed in
+`render_winner_surface.py` from the same loader the other charts use, never
+copied across as a literal &mdash; copying is how a page keeps quoting a figure
+its data stopped supporting. The other three scripts stay as the working that
+backs them.
+
 **Says:** the shape is the finding and the colour is nearly all one. Both models
 hold a plateau over the small sizes and fall off a cliff in the same place, so
 the surface would look much the same if either had drawn it alone. Qwen is level
@@ -501,11 +423,17 @@ drawn with vertex-owned tiles, never with the faces between them.
 
 ---
 
-Charts 16&ndash;20 are five different readings of the same paired data, built to
-answer one question five ways. They share `probe/paired.py` (the loader and the
-P(correct) estimator) and `probe/chartpage.py` (the page shell), because four
-render scripts had already grown four copies of the loader and the estimator had
-changed under them once.
+**Numbers here are stable; gaps mean a chart was withdrawn.** 12 and 13 scored a
+cell by whether a model *ever* solved each problem, which is not a probability
+&mdash; it rises with the number of times you ask, and the two models were not
+asked equally often. Their scripts were deleted rather than left to regenerate a
+wrong number under a familiar name. 18 and 19 were presentational variants of 14
+and were dropped once 15 carried their numbers in prose.
+
+Charts 16, 17 and 20 stay because chart 15 asserts things they measure. They
+share `probe/paired.py` (the loader and the P(correct) estimator) and
+`probe/chartpage.py` (the page shell), because four render scripts had already
+grown four copies of the loader and the estimator had changed under them once.
 
 ### 16. Where each model stops being right half the time
 
@@ -555,47 +483,6 @@ right direction to be wrong in: a point outside it is outside under an
 assumption that was already helping it. The y-scale is taken from the data
 after a fixed &plusmn;55 clipped 4&times;10 &mdash; a 92-point gap, the largest
 thing on the chart &mdash; off the bottom of the frame.
-
-### 18. How wide the uncertain band is
-
-[Open the chart](https://claude.ai/code/artifact/bfffeaa2-0abf-43f7-86d2-87427a4c3e6e)
-
-`probe/render_spread.py` &rarr; `derived/spread.html`
-
-Beeswarm: one dot per cell, grouped by chain length, both models side by side.
-Every other chart here reports a middle; this one reports the spread.
-
-**Says:** cells cluster at the top for short chains, spread through the middle,
-re-cluster at the bottom. Widest at chain length **7**, at 19 points of SD
-against 8 at chain length 3. Wherever Qwen's dots spread, Phi's spread with
-them &mdash; two models with genuinely different blind spots would disagree
-about which sizes are the uncertain ones.
-
-**The design point.** Dots, not a density: a chain length holds between 23 cells
-and 1, and a KDE over three points draws a confident shape that says nothing.
-The swarm's spacing is solved from the widest stack so it can never leave its
-column &mdash; the first version spread at a fixed dot-width and the 23 cells at
-100% grew a row five columns wide, reading as data in chain lengths it had
-nothing to do with.
-
-### 19. Every cell, both models, sorted
-
-[Open the chart](https://claude.ai/code/artifact/19870dac-0aa1-4f66-a6f0-95f06e16630b)
-
-`probe/render_dumbbell.py` &rarr; `derived/dumbbell.html`
-
-144 rows, each a Qwen dot and a Phi dot joined by a bar, ordered by Qwen.
-
-**Says:** mean gap **+10.6 points per cell** (lower than the 14.6 over all
-generations, because every cell counts once here regardless of size). Only **15
-of 144** rows point the other way, they are marked and named, and the biggest is
-**33 points** against Qwen leads reaching **92**. If Phi owned a region its wins
-would be as large as its losses somewhere; they are not, anywhere.
-
-**The design point.** Sorting by Qwen makes the blue trace monotone *by
-construction*, so blue's smoothness carries no information &mdash; the chart
-says so rather than letting it read as a finding. Trades the grid's spatial
-structure for exactness: 144 rows countable rather than an area inferred.
 
 ### 20. Which axis is difficulty?
 
