@@ -95,7 +95,49 @@
    *  than throwing. A missing one is a data bug in build_flame.py, not
    *  something this component should crash on. */
   const PALETTE: Record<string, { color: string }> = carryCategoryMeta;
-  const colourFor = (c: string) => PALETTE[c]?.color ?? 'var(--ink-dim)';
+
+  /**
+   * Darken a category colour only as far as legibility needs, then stop.
+   *
+   * A flat mix toward the ink crushes every hue into the same near-black: at
+   * 34% the error red #d4503c came out #592c26, a brown, and all nine
+   * categories landed between 6:1 and 13:1 against the panel — uniformly darker
+   * than they need to be and no longer told apart. Blending until the contrast
+   * ratio first clears 4.5:1 keeps the already-dark ones exactly as designed
+   * and only pulls down the pale ones, so red still reads as red.
+   */
+  const PANEL = '#f7f5f0';
+  const INK = '#1a1a1a';
+  const chan = (h: string) => [1, 3, 5].map((i) => parseInt(h.slice(i, i + 2), 16));
+  function luminance(hex: string) {
+    return chan(hex)
+      .map((v) => v / 255)
+      .map((v) => (v <= 0.03928 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4))
+      .reduce((a, v, i) => a + v * [0.2126, 0.7152, 0.0722][i], 0);
+  }
+  const contrast = (a: string, b: string) => {
+    const [x, y] = [luminance(a), luminance(b)].sort((m, n) => n - m);
+    return (x + 0.05) / (y + 0.05);
+  };
+  function blend(a: string, b: string, t: number) {
+    const [A, B] = [chan(a), chan(b)];
+    return '#' + A.map((v, i) => Math.round(v + (B[i] - v) * t)
+      .toString(16).padStart(2, '0')).join('');
+  }
+  const readable = new Map<string, string>();
+  function colourFor(c: string): string {
+    const raw = PALETTE[c]?.color;
+    if (!raw) return 'var(--ink-dim)';
+    let out = readable.get(raw);
+    if (out === undefined) {
+      out = raw;
+      for (let t = 0; t <= 1.0001 && contrast(out, PANEL) < 4.5; t += 0.05) {
+        out = blend(raw, INK, t);
+      }
+      readable.set(raw, out);
+    }
+    return out;
+  }
 
   /** The first false claim in THIS run, if it has one. Trace A has none, and a
    *  caption that talks about carrying a bad total forward would be describing
@@ -148,34 +190,24 @@
   let streamEl: HTMLDivElement | null = $state(null);
   let mathEl: HTMLDivElement | null = $state(null);
   /**
-   * Follow the cursor until the reader takes over.
+   * While it is running the pane is being driven, so it does not scroll: the
+   * reader cannot fight it, and following can be unconditional.
    *
-   * Inferring that from distance-to-bottom does not work: one slow frame — and
-   * rendering a burst of equations is exactly that — lets the pane grow past
-   * any threshold in a single step, and auto-follow latches off for the rest of
-   * the run with no way back. That is what made the left pane stop scrolling.
-   *
-   * So intent is read from the events only a person produces. Setting
-   * `scrollTop` fires `scroll` but never `wheel` or `touchmove`, so following
-   * cannot unpin itself.
+   * The version before this tried to detect the reader taking over and hand
+   * control back. It could not be made to work — the pane is growing under them
+   * the whole time, so "scrolled back to the bottom" is a target that keeps
+   * moving, and once following stopped it never resumed. Pause, and it scrolls
+   * normally; the cursor is not moving then either, so nothing fights.
    */
-  let pinStream = $state(true);
-  let pinMath = $state(true);
-  const atBottom = (el: HTMLElement) =>
-    el.scrollHeight - el.scrollTop - el.clientHeight < 4;
-
-  function follow(el: HTMLElement | null, pinned: boolean) {
-    if (el && pinned) el.scrollTop = el.scrollHeight;
-  }
   $effect(() => {
     cursor;
-    follow(streamEl, pinStream);
-    follow(mathEl, pinMath);
+    if (streamEl) streamEl.scrollTop = streamEl.scrollHeight;
+    if (mathEl) mathEl.scrollTop = mathEl.scrollHeight;
   });
 
   $effect(() => {
     if (!playing) return;
-    // `elapsed` is read untracked: reading it normally would make this effect
+    // `elapsed` is read UNTRACKED. Read normally it would make this effect
     // depend on the value its own frame writes, so every frame would cancel and
     // restart the run with the clock reset, and it would crawl.
     const from = untrack(() => elapsed);
@@ -206,8 +238,6 @@
    * nothing to say the way to fill it was to drag a slider.
    */
   function reset(autoplay: boolean) {
-    pinStream = true;
-    pinMath = true;
     if (lessMotion()) {
       elapsed = RUN_MS;
       playing = false;
@@ -235,7 +265,9 @@
 
   function pick(i: number) {
     which = i;
-    reset(false);
+    // Autoplay. Landing on a paused, empty figure after choosing a run reads as
+    // the figure being broken, not as an invitation to press play.
+    reset(true);
   }
 
   onMount(() => reset(true));
@@ -271,17 +303,9 @@
          tabindex="0" on the region is how that is done. Deliberately no
          aria-live -- announcing a 36,000-character stream as it types would be
          unusable. -->
-    <!-- svelte-ignore a11y_no_noninteractive_element_interactions -->
-    <!-- The listeners are not making this interactive; they are detecting that
-         the reader took over the scroll, so following can stop. The element is
-         already focusable and already a region. -->
     <div
       class="pane stream" bind:this={streamEl} tabindex="0"
-      onwheel={() => (pinStream = false)}
-      ontouchmove={() => (pinStream = false)}
-      onkeydown={(e) => ['ArrowUp','ArrowDown','PageUp','PageDown','Home','End']
-        .includes(e.key) && (pinStream = false)}
-      onscroll={(e) => atBottom(e.currentTarget) && (pinStream = true)}
+      style:overflow-y={playing ? 'hidden' : 'auto'}
       role="region" aria-label="the model's thinking, as raw text">
       {#each shown as s (s.start)}<span
           class="seg" style:--c={s.colour}
@@ -289,17 +313,9 @@
     </div>
 
     <!-- svelte-ignore a11y_no_noninteractive_tabindex -->
-    <!-- svelte-ignore a11y_no_noninteractive_element_interactions -->
-    <!-- The listeners are not making this interactive; they are detecting that
-         the reader took over the scroll, so following can stop. The element is
-         already focusable and already a region. -->
     <div
       class="pane math" bind:this={mathEl} tabindex="0"
-      onwheel={() => (pinMath = false)}
-      ontouchmove={() => (pinMath = false)}
-      onkeydown={(e) => ['ArrowUp','ArrowDown','PageUp','PageDown','Home','End']
-        .includes(e.key) && (pinMath = false)}
-      onscroll={(e) => atBottom(e.currentTarget) && (pinMath = true)}
+      style:overflow-y={playing ? 'hidden' : 'auto'}
       role="region" aria-label="the arithmetic it stated, checked as it is stated">
       {#if landed.length === 0}
         <p class="wait">waiting for the first claim&hellip;</p>
@@ -396,7 +412,6 @@
 
   .pane {
     height: 340px;
-    overflow-y: auto;
     border: 1px solid var(--line);
     border-radius: 5px;
     background: var(--panel);
@@ -419,7 +434,9 @@
      palette is built for filled flame bars on a light ground, so three of the
      nine are pale enough to vanish as text. Legibility wins; the category is a
      hint here and the flame figure is where it is the point. */
-  .seg { color: color-mix(in srgb, var(--c) 34%, var(--ink)); }
+  /* Already darkened to a readability floor in colourFor(); mixing again here
+     would undo the point of doing it per category. */
+  .seg { color: var(--c); }
   .caret {
     display: inline-block; width: 0.5em; height: 1em; vertical-align: -0.15em;
     background: var(--accent); animation: blink 1s steps(2, start) infinite;
