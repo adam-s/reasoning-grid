@@ -6,6 +6,7 @@
   import Section from './lib/components/Section.svelte';
   import Prose from './lib/components/Prose.svelte';
   import Placeholder from './lib/components/Placeholder.svelte';
+  import ThinkingMath from './lib/viz/opener/ThinkingMath.svelte';
   import FlamePanel from './lib/viz/flame/FlamePanel.svelte';
   import ThreeTraces from './lib/viz/flame/ThreeTraces.svelte';
   import SurfaceCanvas from './lib/viz/surface/SurfaceCanvas.svelte';
@@ -14,9 +15,29 @@
 </script>
 
 <Layout>
-  <Section eyebrow="carrychain" title="Where two models stop being reliable">
+  <Section eyebrow="carrychain" title="Where two models stop being reliable" width="figure">
     <Prose>
-      <p>Lede goes here. See <code>blog/README.md</code> for the argument order.</p>
+      <p>
+        Watch a model multiply two numbers. On the left is what it is thinking; on the
+        right is every arithmetic claim it makes, checked against real arithmetic the
+        moment it is made. Long multiplication is the instrument here for one reason:
+        the right answer is free to compute, so nothing has to be judged.
+      </p>
+    </Prose>
+    <ThinkingMath />
+    <Prose>
+      <p>
+        Three runs, 152 arithmetic claims, and exactly one is false. It is an addition
+        &mdash; every multiplication in every run is correct. The run that got the
+        answer wrong could multiply seven-digit numbers all day and lost to a carry.
+      </p>
+      <p>
+        Read the left pane alone and you cannot tell which run is which. All three are
+        fluent, all three check their work, all three sound careful. That is the problem
+        this project is about: the prose does not mark the line where the arithmetic
+        broke, and the model does not notice either &mdash; it carries the bad total
+        forward to the end and states it as the answer.
+      </p>
     </Prose>
   </Section>
 
