@@ -163,7 +163,7 @@
     // marker on a far cell would print over terrain standing in front of it.
     const n = DIM - 1;
     const sy = Math.sin(yaw), cyw = Math.cos(yaw);
-    type Item = { kind: 0 | 1; i: number; j: number; d: number };
+    type Item = { kind: 0 | 1; i: number; j: number; d: number; dir?: 0 | 1 };
     const items: Item[] = [];
     for (let k = 0; k < order.length; k++) {
       const q = order[k];
@@ -174,8 +174,14 @@
     if (mix > 0.01) {
       for (let a = 1; a <= DIM; a++) {
         for (let b = 1; b <= DIM; b++) {
-          if (phiWins(a, b)) {
-            items.push({ kind: 1, i: a, j: b, d: (a - mid) * sy + (b - mid) * cyw });
+          if (!phiWins(a, b)) continue;
+          if (phiWins(a + 1, b)) {
+            items.push({ kind: 1, i: a, j: b, dir: 0,
+              d: (a + 0.5 - mid) * sy + (b - mid) * cyw });
+          }
+          if (phiWins(a, b + 1)) {
+            items.push({ kind: 1, i: a, j: b, dir: 1,
+              d: (a - mid) * sy + (b + 0.5 - mid) * cyw });
           }
         }
       }
@@ -246,24 +252,30 @@
         ctx.stroke();
         continue;
       }
-      // The outline of one cell's territory: the square it owns, half a step in
-      // every direction, clipped to the grid. Adjacent Phi cells make one patch
-      // of colour, and without this you could not tell two from one -- the
-      // count is the finding, so it has to stay countable.
+      // Where two Phi cells are neighbours their territories touch and read as
+      // one patch, so the shared edge gets a line -- the count is the finding.
+      // Only that edge. Ringing every patch drew a brown border round all of
+      // them, which reads as an artifact rather than a boundary, and doubled up
+      // wherever it crossed a face seam.
+      //
+      // In the seam's own white, because this IS a mesh line: it separates two
+      // cells exactly as the face seams separate faces, and a second colour for
+      // it would be a third thing to explain.
       const { i: a, j: b } = it;
-      const a0 = Math.max(1, a - 0.5), a1 = Math.min(DIM, a + 0.5);
-      const b0 = Math.max(1, b - 0.5), b1 = Math.min(DIM, b + 0.5);
-      const ring: Array<[number, number]> = [[a0, b0], [a1, b0], [a1, b1], [a0, b1]];
-      const zr = ring.map(([u, v]) => lattice(u, v));
-      if (zr.some((z) => z === null)) continue;
-      const rp = ring.map(([u, v], k) => P(u, v, zr[k]!));
+      const [u0, v0, u1, v1] = it.dir === 0
+        ? [a + 0.5, b - 0.5, a + 0.5, b + 0.5]
+        : [a - 0.5, b + 0.5, a + 0.5, b + 0.5];
+      const cu0 = Math.max(1, Math.min(DIM, u0)), cv0 = Math.max(1, Math.min(DIM, v0));
+      const cu1 = Math.max(1, Math.min(DIM, u1)), cv1 = Math.max(1, Math.min(DIM, v1));
+      const za = lattice(cu0, cv0), zb = lattice(cu1, cv1);
+      if (za === null || zb === null) continue;
+      const pa = P(cu0, cv0, za), pb = P(cu1, cv1, zb);
       ctx.globalAlpha = Math.min(1, mix);
       ctx.beginPath();
-      ctx.moveTo(rp[0].sx, rp[0].sy);
-      for (let k = 1; k < 4; k++) ctx.lineTo(rp[k].sx, rp[k].sy);
-      ctx.closePath();
-      ctx.strokeStyle = 'rgba(94,48,8,0.55)';
-      ctx.lineWidth = 1;
+      ctx.moveTo(pa.sx, pa.sy);
+      ctx.lineTo(pb.sx, pb.sy);
+      ctx.strokeStyle = 'rgba(255,255,255,0.55)';
+      ctx.lineWidth = 0.6;
       ctx.stroke();
       ctx.globalAlpha = 1;
     }

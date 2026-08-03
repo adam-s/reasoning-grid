@@ -272,8 +272,11 @@ function draw(){
   const items=[];
   for(let i=1;i<DIM;i++)for(let j=1;j<DIM;j++)
     items.push({k:0,i,j,d:key(i+0.5,j+0.5)});
-  if(MIX>0.01) for(let a=1;a<=DIM;a++)for(let b=1;b<=DIM;b++)
-    if(win(a,b)) items.push({k:1,i:a,j:b,d:key(a,b)});
+  if(MIX>0.01) for(let a=1;a<=DIM;a++)for(let b=1;b<=DIM;b++){
+    if(!win(a,b)) continue;
+    if(win(a+1,b)) items.push({k:1,i:a,j:b,dir:0,d:key(a+0.5,b)});
+    if(win(a,b+1)) items.push({k:1,i:a,j:b,dir:1,d:key(a,b+0.5)});
+  }
   items.sort((p,q)=>q.d-p.d);
   ctx.lineJoin='round';
   for(const it of items){
@@ -307,20 +310,23 @@ function draw(){
       ctx.stroke(); ctx.globalAlpha=1;
       continue;
     }
-    // The outline of one cell's territory. Adjacent Phi cells make one patch of
-    // colour, and the count is the finding, so it has to stay countable.
+    // Where two Phi cells are neighbours their territories touch and read as one
+    // patch, so the shared edge gets a line -- the count is the finding. Only
+    // that edge: ringing every patch drew a brown border round all of them,
+    // which reads as an artifact rather than a boundary and doubled up wherever
+    // it crossed a face seam. In the seam's own colour, because this IS a mesh
+    // line -- it separates two cells exactly as the seams separate faces.
     const a=it.i,b=it.j;
-    const a0=Math.max(1,a-0.5),a1=Math.min(DIM,a+0.5);
-    const b0=Math.max(1,b-0.5),b1=Math.min(DIM,b+0.5);
-    const rg=[[a0,b0],[a1,b0],[a1,b1],[a0,b1]];
-    const zr=rg.map(([u,v])=>lat(u,v));
-    if(zr.some(v=>v===null)) continue;
-    const rp=rg.map(([u,v],k)=>Q(u,v,zr[k]));
-    ctx.globalAlpha=Math.min(1,MIX);
-    ctx.beginPath(); ctx.moveTo(rp[0].sx,rp[0].sy);
-    for(let k=1;k<4;k++) ctx.lineTo(rp[k].sx,rp[k].sy);
-    ctx.closePath();
-    ctx.strokeStyle='rgba(160,92,26,0.75)'; ctx.lineWidth=1; ctx.stroke();
+    const [u0,v0,u1,v1] = it.dir===0
+      ? [a+0.5,b-0.5,a+0.5,b+0.5]
+      : [a-0.5,b+0.5,a+0.5,b+0.5];
+    const cl=x=>Math.max(1,Math.min(DIM,x));
+    const za=lat(cl(u0),cl(v0)), zb=lat(cl(u1),cl(v1));
+    if(za===null||zb===null) continue;
+    const pa=Q(cl(u0),cl(v0),za), pb=Q(cl(u1),cl(v1),zb);
+    ctx.globalAlpha=Math.min(1,MIX)*0.55;
+    ctx.beginPath(); ctx.moveTo(pa.sx,pa.sy); ctx.lineTo(pb.sx,pb.sy);
+    ctx.strokeStyle=css('--panel'); ctx.lineWidth=.6; ctx.stroke();
     ctx.globalAlpha=1;
   }
   // axes, on the two ground edges nearest the camera

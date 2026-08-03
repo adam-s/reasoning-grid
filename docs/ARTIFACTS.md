@@ -404,8 +404,12 @@ interpolation the whole quads already traced.
 
 Seams are stroked per **face**, not per quarter; the quarters are how colour is
 resolved, not something the data has, and stroking them would put a wireframe on
-the surface at twice the grid's resolution. Each Phi cell's territory gets a thin
-outline so adjacent ones stay countable &mdash; the count is the finding.
+the surface at twice the grid's resolution. Where two Phi cells are neighbours
+their territories touch and read as one patch, so the shared edge &mdash; and
+only that edge &mdash; gets a line, in the seam's own colour, because it is a
+mesh line separating two cells exactly as a seam separates two faces. Ringing
+every patch instead drew a brown border round all fifteen, which read as an
+artifact rather than a boundary and doubled up wherever it crossed a seam.
 
 Colour rides the toggle. At *Qwen alone* the surface is entirely blue and orange
 arrives with Phi; painting it beforehand would say the opposite of what the
