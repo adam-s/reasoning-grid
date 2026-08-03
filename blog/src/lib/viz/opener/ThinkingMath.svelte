@@ -122,25 +122,37 @@
     return () => cancelAnimationFrame(raf);
   });
 
+  const lessMotion = () =>
+    window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  /**
+   * Reset for a run. A reader who has asked for less motion gets the finished
+   * state rather than a blank pane they have to work out how to fill -- and
+   * gets it on EVERY run, not just the first. Handling that only in onMount
+   * left them staring at an empty figure the moment they changed tab, with
+   * nothing to say the way to fill it was to drag a slider.
+   */
+  function reset(autoplay: boolean) {
+    if (lessMotion()) {
+      cursor = OPENER[which].thinking.length;
+      playing = false;
+      return;
+    }
+    cursor = 0;
+    playing = autoplay;
+  }
+
   function toggle() {
     if (!playing && done) cursor = 0;
     playing = !playing;
   }
+
   function pick(i: number) {
     which = i;
-    cursor = 0;
-    playing = false;
+    reset(false);
   }
 
-  onMount(() => {
-    // A reader who has asked for less motion gets the finished state, not a
-    // blank pane they have to work out how to fill.
-    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
-      cursor = trace.thinking.length;
-    } else {
-      playing = true;
-    }
-  });
+  onMount(() => reset(true));
 </script>
 
 <figure class="opener">
