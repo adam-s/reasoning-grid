@@ -36,26 +36,29 @@ which rejects the model interrupting itself mid-number, as trace C does at
 ## Result
 
   trace A, converged right   72 claims, 0 false
-  trace B, converged wrong   36 claims, 1 false -- an ADDITION; every one of
-                             its multiplications is correct
-  trace C, never answered    52 claims, 0 false -- it does not fail at
-                             arithmetic, it fails to commit
+  trace B, converged wrong   47 claims, 4 false -- all four the SAME addition,
+                             restated on each checking pass; every one of its
+                             multiplications and subtractions is correct
+  trace C, never answered    88 claims, 0 false -- it does not fail at
+                             arithmetic, it fails to commit, and it ran out of
+                             context mid-thought at temperature 0
 
-Decimals are read too, because the approximation check a model runs at the end
-of a trace is done in them -- "0.4 x 4.62 = 1.848", "369.6 + 1.848 = 371.448".
-Skipping those left the maths pane silent through the last 30% of the wrong run,
-which is exactly where the model checks its answer, finds the check agrees, and
-carries on. Arithmetic is done with Decimal: binary floating point grades some of
-those wrong for being 1e-16 out.
+207 claims in all, 4 false. Those counts are printed on every run. If they move,
+the extractor or the selection changed and the prose that quotes them needs
+re-checking -- they moved once already, when the loader started pinning the
+generation and stopped reading a different sample of two of the three problems.
 
-Subtraction was added after an adversarial pass asked what the extractor cannot
-see. It could only see x and +, so eleven subtraction claims went ungraded and
-"160 claims, 1 false" was really "160 multiplications and additions". All eleven
-turned out correct, so the headline did not move -- but it was not defensible
-until they were checked.
+Decimals are read, because the approximation check a model runs at the end of a
+trace is done in them -- "0.4 x 4.62 = 1.848". Skipping those left the maths pane
+silent through the last third of one run, which is exactly where the model checks
+its answer, finds the check agrees, and carries on. Arithmetic uses Decimal:
+binary floating point grades some of those wrong for being 1e-16 out.
 
-Those counts are printed on every run. If they move, the extractor changed and
-the prose that quotes them needs re-checking.
+Subtraction is read after an adversarial pass asked what the extractor cannot
+see. It could only see x and +, so subtraction claims went ungraded and the
+headline was really "multiplications and additions". All of them are correct, so
+the headline did not move -- but it was not defensible until they were checked.
+
 """
 import argparse
 import glob

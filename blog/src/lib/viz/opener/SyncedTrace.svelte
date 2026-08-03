@@ -59,13 +59,25 @@
   );
 
   /**
-   * The flame's own span, which is NOT the length of the thinking. Some rows
-   * end past the last character -- 179 of trace C's do -- so dividing ticks by
-   * the text length labelled the axis 0% to 141%.
+   * The flame graph and the stream measure the same string, so its span and the
+   * text length are the same number. Asserted rather than assumed: an earlier
+   * version divided the axis by the text length while the graph spanned a
+   * different generation, and the axis read 0% to 141%. Deriving the axis from
+   * the graph's own span would have hidden that -- the ticks would have read
+   * 0-100% while the playhead quietly stopped short -- so the two are compared
+   * and a mismatch is loud.
    */
   const flameSpan = $derived(
     flame.rows.reduce((m, r) => Math.max(m, r.start + r.width), 0) || 1,
   );
+  $effect(() => {
+    if (flameSpan !== trace.text.length) {
+      console.error(
+        `[SyncedTrace] ${trace.key}: flame spans ${flameSpan} but the text is ` +
+        `${trace.text.length}. The two figures are not showing the same string.`,
+      );
+    }
+  });
 
   const RUN_MS = 20_000;
   let elapsed = $state(0);
@@ -135,7 +147,10 @@
     if (!idle) return;                          // the clock or another seek owns it
     const to = timeAt(offset);
     const from = elapsed;
-    if (Math.abs(to - from) < 8) return;
+    // The dead zone is in CHARACTERS. Expressed in milliseconds it scaled with
+    // the local sweep rate -- 8ms is 291 characters inside the long tail of the
+    // run that never answered, so a click near the cursor there did nothing.
+    if (Math.abs(cursorAt(to) - cursorAt(from)) < 2) return;
     cancelAnimationFrame(seekRaf);
     if (lessMotion()) {
       elapsed = to;
@@ -342,6 +357,12 @@
   </div>
 
   <div class="panes">
+    <!-- Labelled, because the left pane shows the response VERBATIM and its
+         final section is the model's markdown answer. Rendering that would
+         change the character count every flame bar indexes, so it stays raw and
+         the label says so rather than leaving it looking broken. -->
+    <p class="pane-label" id="lab-stream">what it emitted, verbatim</p>
+    <p class="pane-label" id="lab-math">the arithmetic in it, checked</p>
     <!-- svelte-ignore a11y_no_noninteractive_tabindex -->
     <!-- A scrolling region has to be keyboard reachable (WCAG 2.1.1); the lint
          rule disagrees and WCAG wins. No aria-live: announcing a 36,000
@@ -349,7 +370,7 @@
     <div
       class="pane stream" bind:this={streamEl} tabindex="0"
       style:overflow-y={idle ? 'auto' : 'hidden'}
-      role="region" aria-label="the model's thinking, as raw text">
+      role="region" aria-labelledby="lab-stream">
       {#each shown as s (s.start)}<span
           class="seg" style:--c={s.colour} title={s.label}>{s.text}</span
         >{/each}{#if !done}<span class="caret"></span>{/if}
@@ -359,7 +380,7 @@
     <div
       class="pane math" bind:this={mathEl} tabindex="0"
       style:overflow-y={idle ? 'auto' : 'hidden'}
-      role="region" aria-label="the arithmetic it stated, checked as it is stated">
+      role="region" aria-labelledby="lab-math">
       {#each landed as c, i (c.at)}
         <div class="claim" class:bad={!c.ok}>
           <span class="ix mono">{i + 1}</span>
@@ -448,8 +469,15 @@
     clip: rect(0 0 0 0); white-space: nowrap;
   }
 
-  .panes { display: grid; grid-template-columns: 1.15fr 1fr; gap: 10px; margin-top: 10px; }
+  .panes {
+    display: grid; grid-template-columns: 1.15fr 1fr;
+    grid-template-rows: auto 1fr; gap: 4px 10px; margin-top: 10px;
+  }
   @media (max-width: 720px) { .panes { grid-template-columns: 1fr; } }
+  .pane-label {
+    margin: 0; font-family: var(--font-sans); font-size: 0.66rem;
+    letter-spacing: 0.05em; text-transform: uppercase; color: var(--ink-faint);
+  }
 
   .pane {
     height: 290px; border: 1px solid var(--line); border-radius: 5px;
