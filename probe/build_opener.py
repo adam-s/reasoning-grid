@@ -199,6 +199,12 @@ def main():
                     "truth": tr["truth"], "answer": tr["answer"],
                     "outcome": tr["outcome"], "verdict": tr["verdict"],
                     "thinking": think, "claims": cl, "segments": segs})
+        # The figure numbers claims by their position in this list, in both
+        # panes. That only lines up if `end` ascends, since one pane shows a
+        # prefix of the other -- so it is checked rather than assumed.
+        if any(cl[i]["end"] > cl[i + 1]["end"] for i in range(len(cl) - 1)):
+            sys.exit(f"{tr['key']}: claim ends are not ascending; the two panes "
+                     f"would number the same claim differently")
         bad = [c for c in cl if not c["ok"]]
         print(f"  trace {tr['key']} {tr['cell']:>5}  {tr['outcome']:16s} "
               f"{len(think):6,} chars  {len(cl):3d} claims, {len(bad)} false")
