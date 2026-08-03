@@ -45,62 +45,19 @@
    *  of the trace, in the wrong order, and the pane still looks full. */
   const ordered = $derived([...trace.segments].sort((a, b) => a.start - b.start));
 
-  /**
-   * The stream cut at every boundary that matters: segment edges, so a piece
-   * has one category, and claim edges, so a piece is wholly inside or outside
-   * a stated equation. Claims straddle segment boundaries seven times in the
-   * wrong run and nine in the one that never answers, so cutting on only one
-   * of the two would mis-colour or mis-mark those.
-   *
-   * Built once per trace, not per frame.
-   */
-  type Piece = {
-    start: number; end: number; colour: string; label: string;
-    /** index into trace.claims, or -1 */
-    claim: number;
-    /** this piece finishes the claim, so it carries the marker */
-    marks: boolean;
-  };
-  const pieces = $derived.by(() => {
-    const cuts = new Set<number>([0, trace.thinking.length]);
-    for (const s of ordered) { cuts.add(s.start); cuts.add(Math.min(s.end, trace.thinking.length)); }
-    for (const c of trace.claims) { cuts.add(c.at); cuts.add(c.end); }
-    const edges = [...cuts].sort((a, b) => a - b);
-    const out: Piece[] = [];
-    let si = 0, ci = 0;
-    for (let k = 0; k < edges.length - 1; k++) {
-      const a = edges[k], b = edges[k + 1];
-      while (si < ordered.length - 1 && ordered[si].end <= a) si++;
-      while (ci < trace.claims.length && trace.claims[ci].end <= a) ci++;
-      const c = trace.claims[ci];
-      const inClaim = c && c.at <= a && b <= c.end;
+  const shown = $derived.by(() => {
+    const out: Array<{ start: number; text: string; colour: string; label: string }> = [];
+    for (const s of ordered) {
+      if (s.start >= cursor) break;
       out.push({
-        start: a, end: b,
-        colour: colourFor(ordered[si].category),
-        label: ordered[si].label,
-        claim: inClaim ? ci : -1,
-        marks: !!inClaim && b === c.end,
+        start: s.start,
+        text: trace.thinking.slice(s.start, Math.min(s.end, cursor)),
+        colour: colourFor(s.category),
+        label: s.label,
       });
     }
     return out;
   });
-
-  const shown = $derived.by(() => {
-    const out: Array<Piece & { text: string }> = [];
-    for (const p of pieces) {
-      if (p.start >= cursor) break;
-      out.push({ ...p, text: trace.thinking.slice(p.start, Math.min(p.end, cursor)) });
-    }
-    return out;
-  });
-
-  /** The claim the reader is pointing at, in either pane. */
-  let hot = $state(-1);
-  function jump(i: number) {
-    hot = i;
-    streamEl?.querySelector<HTMLElement>(`[data-claim="${i}"]`)
-      ?.scrollIntoView({ block: 'center', behavior: 'smooth' });
-  }
 
   /** The scheme is keyed by the nine category literals; segments arrive as
    *  plain strings, so a category the scheme does not define falls back rather
@@ -275,14 +232,8 @@
       class="pane stream" bind:this={streamEl} tabindex="0"
       role="region" aria-label="the model's thinking, as raw text">
       {#each shown as s (s.start)}<span
-          class="seg" class:cited={s.claim >= 0} class:lit={s.claim >= 0 && s.claim === hot}
-          data-claim={s.claim >= 0 ? s.claim : undefined}
-          style:--c={s.colour} title={s.label}
-          onmouseenter={() => s.claim >= 0 && (hot = s.claim)}
-          onmouseleave={() => (hot = -1)}
-          role="presentation">{s.text}</span>{#if s.marks}<sup
-          class="mark-ref" class:lit={s.claim === hot}
-          >{s.claim + 1}</sup>{/if}{/each}{#if !done}<span class="caret"></span>{/if}
+          class="seg" style:--c={s.colour}
+          title={s.label}>{s.text}</span>{/each}{#if !done}<span class="caret"></span>{/if}
     </div>
 
     <!-- svelte-ignore a11y_no_noninteractive_tabindex -->
@@ -293,13 +244,7 @@
         <p class="wait">waiting for the first claim&hellip;</p>
       {/if}
       {#each landed as c, i (c.at)}
-        <div
-          class="claim" class:bad={!c.ok} class:lit={i === hot}
-          onmouseenter={() => (hot = i)} onmouseleave={() => (hot = -1)}
-          onclick={() => jump(i)}
-          onkeydown={(e) => (e.key === 'Enter' || e.key === ' ') && (e.preventDefault(), jump(i))}
-          tabindex="0" role="button"
-          aria-label="claim {i + 1}; show where it was stated">
+        <div class="claim" class:bad={!c.ok}>
           <span class="ix mono">{i + 1}</span>
           <span class="eq">{@html render(tex(c, 'said'))}</span>
           <span class="mark">{c.ok ? '✓' : '✗'}</span>
@@ -332,9 +277,7 @@
   </div>
 
   <figcaption>
-    Each stated equation is underlined where it is said and numbered to match the
-    other pane; hover either side to light both, or click a row to jump to the
-    line that made it. Every claim is checked against real arithmetic as it is
+    Every closed arithmetic statement is checked against real arithmetic as it is
     made. Across all three runs there are <strong>{TOTAL}</strong> of them and
     <strong>{TOTAL_BAD === 1 ? 'exactly one' : TOTAL_BAD}</strong> false &mdash;
     an addition. Every multiplication in every run is correct.
@@ -414,25 +357,6 @@
      nine are pale enough to vanish as text. Legibility wins; the category is a
      hint here and the flame figure is where it is the point. */
   .seg { color: color-mix(in srgb, var(--c) 34%, var(--ink)); }
-  /* A stated equation is underlined where it is said, and carries the number it
-     has in the other pane. The marker is the whole point of the figure: it is
-     what turns two panes running side by side into one thing being read. */
-  .cited {
-    text-decoration: underline;
-    text-decoration-color: color-mix(in srgb, var(--accent) 45%, transparent);
-    text-underline-offset: 3px;
-  }
-  .seg.lit, .claim.lit { background: color-mix(in srgb, var(--accent) 13%, transparent); }
-  .mark-ref {
-    font-family: var(--font-sans);
-    font-size: 0.58em;
-    font-weight: 600;
-    color: var(--accent);
-    padding: 0 0.15em;
-    vertical-align: super;
-    line-height: 0;
-  }
-  .mark-ref.lit { background: color-mix(in srgb, var(--accent) 22%, transparent); border-radius: 2px; }
   .caret {
     display: inline-block; width: 0.5em; height: 1em; vertical-align: -0.15em;
     background: var(--accent); animation: blink 1s steps(2, start) infinite;
@@ -442,7 +366,6 @@
   .math { display: flex; flex-direction: column; gap: 7px; }
   .wait { color: var(--ink-faint); font-family: var(--font-sans); font-size: 0.78rem; margin: 0; }
   .claim {
-    cursor: pointer;
     display: grid;
     grid-template-columns: 1.6rem 1fr auto;
     align-items: baseline;
@@ -453,7 +376,6 @@
   .claim .ix { color: var(--ink-faint); font-size: 0.62rem; text-align: right; }
   .claim .eq { font-size: 0.82rem; overflow-x: auto; }
   .claim .mark { font-size: 0.72rem; color: var(--ink-faint); }
-  .claim:focus-visible { outline: 2px solid var(--accent); outline-offset: -1px; }
   .claim.bad { background: color-mix(in srgb, var(--pos) 12%, transparent);
     outline: 1px solid color-mix(in srgb, var(--pos) 40%, transparent); }
   .claim.bad .mark { color: var(--pos); font-weight: 600; }
