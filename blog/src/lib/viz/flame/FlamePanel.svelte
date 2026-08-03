@@ -91,6 +91,8 @@
     showInspector?: boolean;
     /** Fired on every block click, before the panel zooms. */
     onSelect?: (index: number, row: FlameRow) => void;
+    /** Highlighted in the legend: the category at the playhead. */
+    activeCategory?: string | null;
   };
 
   let {
@@ -111,6 +113,7 @@
     showZoomHint = true,
     playhead = null,
     dimAhead = false,
+    activeCategory = null,
     showInspector = true,
     onSelect = undefined,
   }: Props = $props();
@@ -351,7 +354,7 @@
   {/if}
 
   {#if showLegend}
-    <CategoryLegend rows={trace.rows} {scheme} />
+    <CategoryLegend rows={trace.rows} {scheme} active={activeCategory} />
   {/if}
 
 

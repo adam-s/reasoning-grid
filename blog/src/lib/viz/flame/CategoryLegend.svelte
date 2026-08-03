@@ -23,12 +23,19 @@
 
   type Props = {
     rows?: readonly AnyFlameRow[];
+    /** The category happening right now, if the caller is playing a trace
+     *  back. Everything else dims, so the key doubles as a readout of what
+     *  the run is doing at the playhead. null leaves every entry at full
+     *  strength, which is what a static figure wants. */
+    active?: string | null;
     scheme?: CategoryScheme;
     /** List every category in the scheme, not only the ones this trace used. */
     showEmpty?: boolean;
   };
 
-  let { rows = [], scheme = LAMBDA_SCHEME, showEmpty = false }: Props = $props();
+  let {
+    rows = [], scheme = LAMBDA_SCHEME, showEmpty = false, active = null,
+  }: Props = $props();
 
   /**
    * Leaves only. Container rows span their children and carry the dominant
@@ -54,7 +61,7 @@
 <ul class="legend" style:--cols={Math.ceil(present.length / 2)}>
   {#each present as cat (cat)}
     {@const meta = metaFor(scheme, cat)}
-    <li class="item">
+    <li class="item" class:on={active === cat} class:off={active !== null && active !== cat}>
       <span class="rule" style:background={meta.color} aria-hidden="true"></span>
       <span class="label">{meta.label}</span>
     </li>
@@ -87,6 +94,22 @@
   }
   .label {
     white-space: nowrap;
+  }
+
+  /* Driven by the playhead, not by a pointer: the entry for the step under the
+     cursor stays at full strength and the rest step back. Dimming the others
+     rather than brightening one keeps the swatches' colours true -- a
+     saturated swatch would no longer be the colour it is labelling. */
+  .item { transition: opacity 160ms ease; }
+  /* 0.45, not lower. This is still a key: a reader who glances at it to find
+     out what a colour means has to be able to read every entry, not only the
+     one the playhead happens to be in. */
+  .item.off { opacity: 0.45; }
+  .item.on .label { font-weight: 650; }
+  .item.on .rule { box-shadow: 0 0 0 2px color-mix(in srgb, currentColor 12%, transparent); }
+
+  @media (prefers-reduced-motion: reduce) {
+    .item { transition: none; }
   }
 
   @media (max-width: 640px) {

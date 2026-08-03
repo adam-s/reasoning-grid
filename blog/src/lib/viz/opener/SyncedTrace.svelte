@@ -221,6 +221,26 @@
   const ordered = $derived([...trace.segments].sort((a, b) => a.start - b.start));
 
   /**
+   * The step the playhead is inside, by binary search rather than a scan --
+   * this runs on every frame, over up to 396 segments.
+   *
+   * The segments tile the response with no gap, so the last one starting at or
+   * before the cursor is the one containing it. `cursor` is clamped one short
+   * of the end: at the very last character there is no "current" step, and the
+   * legend should not flash its final category as the run stops.
+   */
+  const activeCategory = $derived.by(() => {
+    const pos = Math.min(cursor, trace.text.length - 1);
+    if (pos < 0 || !ordered.length) return null;
+    let lo = 0, hi = ordered.length - 1, best = 0;
+    while (lo <= hi) {
+      const mid = (lo + hi) >> 1;
+      if (ordered[mid].start <= pos) { best = mid; lo = mid + 1; } else hi = mid - 1;
+    }
+    return ordered[best].category;
+  });
+
+  /**
    * The stream is the response VERBATIM. Not rendered, not cleaned, not one
    * character different.
    *
@@ -394,6 +414,7 @@
       scheme={CARRY_SCHEME}
       {header}
       playhead={cursor}
+      {activeCategory}
       dimAhead={true}
       onSelect={(_i, row) => seekTo(row.start)}
       showInspector={false}
