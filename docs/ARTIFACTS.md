@@ -332,6 +332,13 @@ alluvial draws the 256 down-ribbon at the same weight as the 83 up-ribbon, and
 the paired terrain shows Qwen above Phi everywhere with no region where they
 swap.
 
+**Superseded &mdash; wrong basis.** Charts 12 and 13 score a cell by whether a
+model *ever* solved each problem, collapsing repeat runs with `any()`. That is
+not a probability: it rises with the number of times you ask, and the two models
+were not asked equally often (1,579 Qwen generations against 1,206 Phi), so it
+flatters Qwen. Their shape holds but their numbers do not. Chart 14 is the same
+comparison on P(correct).
+
 ### 12. Qwen minus Phi — the difference, plainly
 
 [Open the chart](https://claude.ai/code/artifact/d3bd3516-e256-4aee-a603-1403946b5554)
@@ -412,3 +419,34 @@ Phi winning the entire large-number region. Columns cannot overstate themselves:
 height is the lift and nothing else. The general rule is that a quantity
 attached to grid *vertices* must not be drawn with grid *faces*, because faces
 interpolate and area is not the thing being measured.
+
+### 14. Where each model stops being reliable
+
+[Open the chart](https://claude.ai/code/artifact/97f2efdc-d363-4f61-a4f6-c9632d7bba1f)
+
+`probe/render_prob_grid.py` &rarr; `derived/prob-grid.html`
+
+The 12&times;12 grid, one cell per problem size, each cell holding two bars: the
+probability each model returns the exactly correct product. Blue Qwen, orange
+Phi. Cells where Phi is higher are tinted. Hovering gives both rates with Wilson
+intervals.
+
+**Says:** Qwen **74.4%**, Phi **59.8%**. Qwen is the taller bar in **74** cells,
+Phi in **15**, and the two are level in **55** &mdash; of which 51 are both
+models at 100%. Qwen is level or higher in **129 of 144**. The reliable region
+has a hard edge rather than a slope, and both models fall off in the same place.
+
+**The design point.** Bars rather than colour, because the question is which of
+two numbers is larger and length answers that directly &mdash; comparing two
+hues means holding a scale in your head. Bars also make a 12-way small multiple
+legible at 74px a cell, which a paired heatmap is not.
+
+**The measurement point, which is why this chart exists.** A cell is the mean
+over its problems of how often each model got that problem right. The tempting
+alternative &mdash; did the model ever get it &mdash; is not a probability at
+all. It climbs with the number of times you ask, and repeat runs here were
+allocated unevenly across the two models, so scoring that way silently favours
+whichever was run more. It moved Phi's cell count from 15 to 9 and the overall
+gap from 14.6 points to 16.3. Equal-weight-per-instance is the estimator:
+pooling raw generations instead moves 3 cells of 144 and neither overall rate by
+more than half a point.
