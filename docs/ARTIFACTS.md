@@ -476,6 +476,11 @@ Evidence rides on **saturation**, not lightness, so it cannot be confused with
 the rate: a cell standing on 3 problems is visibly greyer than one standing on
 12 at the same height.
 
+A **toggle** switches between Qwen alone and the better of the two, interpolating
+between the two height fields rather than swapping them: switching two static
+pictures makes a reader hunt for what changed, and what changed is the whole
+point &mdash; 15 tiles rise a little and turn orange, and 129 do not move at all.
+
 **Says:** the shape is the finding and the colour is nearly all one. Both models
 hold a plateau over the small sizes and fall off a cliff in the same place, so
 the surface would look much the same if either had drawn it alone. Qwen is level
@@ -493,4 +498,127 @@ corner from the same neighbours, so the sheet stays continuous with no cracks,
 and exactly 15 tiles are orange. This is the general fix for the failure that
 sank chart 13's fourth version: a quantity attached to grid vertices must be
 drawn with vertex-owned tiles, never with the faces between them.
+
+---
+
+Charts 16&ndash;20 are five different readings of the same paired data, built to
+answer one question five ways. They share `probe/paired.py` (the loader and the
+P(correct) estimator) and `probe/chartpage.py` (the page shell), because four
+render scripts had already grown four copies of the loader and the estimator had
+changed under them once.
+
+### 16. Where each model stops being right half the time
+
+[Open the chart](https://claude.ai/code/artifact/f4728ade-4412-4abc-8da7-61d0d1fb5739)
+
+`probe/render_boundary.py` &rarr; `derived/boundary.html`
+
+144 cells collapsed to two curves: the 50% reliability boundary for each model,
+from a logistic fit in `a+b` and `min(a,b)`, with the 10% and 90% contours
+dashed and the measured cells drawn underneath as dots.
+
+**Says:** Qwen holds half its problems out to **9.2&times;9.2** digits and Phi to
+**8.4&times;8.4** &mdash; *0.8 digits apart, and the curves never cross*. Same
+shape, no kink one has and the other lacks. **This is the chart the essay
+needs.** The repo exists to ask whether two models from different companies stop
+being reliable in the same places or different ones, and that is a question
+about two curves. These two do not cross, so on long multiplication the honest
+recommendation is one model and the only question is which.
+
+**The design point.** The contour is fitted, not traced. Marching squares over
+the raw grid gives a staircase of islands at 3&ndash;12 problems a cell and a
+reader takes the staircase for structure. Identifiability is checked before the
+fit rather than assumed &mdash; 6&times;6 and 11&times;1 share a total of 12
+with chain lengths 6 and 1 &mdash; and the script exits rather than fit a design
+that cannot separate its terms.
+
+### 17. Is the disagreement bigger than the noise?
+
+[Open the chart](https://claude.ai/code/artifact/3af4a74c-d710-4773-90da-6cb29b1f34be)
+
+`probe/render_agreement.py` &rarr; `derived/agreement.html`
+
+Bland&ndash;Altman: each cell is a point at (mean of the two rates, Phi minus
+Qwen), against the envelope that binomial sampling alone would produce &mdash;
+&plusmn;1.96&nbsp;&times;&nbsp;sqrt(2m(1&minus;m)/n), one curve per n.
+
+**Says:** **10 of 144** cells fall outside their own sampling envelope, and
+**none of them favour Phi**. Not one of the 15 cells where Phi came out higher
+survives its sampling floor, while ten of Qwen's do. The mean difference,
+**&minus;10.6 points**, is the reproducible part; the per-cell wins are not.
+This is the chart that settles what every grid chart in this repo keeps
+inviting a reader to over-read.
+
+**The design point.** The envelope is computed for *independent* samples even
+though the design is paired, which makes it wider than the truth. That is the
+right direction to be wrong in: a point outside it is outside under an
+assumption that was already helping it. The y-scale is taken from the data
+after a fixed &plusmn;55 clipped 4&times;10 &mdash; a 92-point gap, the largest
+thing on the chart &mdash; off the bottom of the frame.
+
+### 18. How wide the uncertain band is
+
+[Open the chart](https://claude.ai/code/artifact/bfffeaa2-0abf-43f7-86d2-87427a4c3e6e)
+
+`probe/render_spread.py` &rarr; `derived/spread.html`
+
+Beeswarm: one dot per cell, grouped by chain length, both models side by side.
+Every other chart here reports a middle; this one reports the spread.
+
+**Says:** cells cluster at the top for short chains, spread through the middle,
+re-cluster at the bottom. Widest at chain length **7**, at 19 points of SD
+against 8 at chain length 3. Wherever Qwen's dots spread, Phi's spread with
+them &mdash; two models with genuinely different blind spots would disagree
+about which sizes are the uncertain ones.
+
+**The design point.** Dots, not a density: a chain length holds between 23 cells
+and 1, and a KDE over three points draws a confident shape that says nothing.
+The swarm's spacing is solved from the widest stack so it can never leave its
+column &mdash; the first version spread at a fixed dot-width and the 23 cells at
+100% grew a row five columns wide, reading as data in chain lengths it had
+nothing to do with.
+
+### 19. Every cell, both models, sorted
+
+[Open the chart](https://claude.ai/code/artifact/19870dac-0aa1-4f66-a6f0-95f06e16630b)
+
+`probe/render_dumbbell.py` &rarr; `derived/dumbbell.html`
+
+144 rows, each a Qwen dot and a Phi dot joined by a bar, ordered by Qwen.
+
+**Says:** mean gap **+10.6 points per cell** (lower than the 14.6 over all
+generations, because every cell counts once here regardless of size). Only **15
+of 144** rows point the other way, they are marked and named, and the biggest is
+**33 points** against Qwen leads reaching **92**. If Phi owned a region its wins
+would be as large as its losses somewhere; they are not, anywhere.
+
+**The design point.** Sorting by Qwen makes the blue trace monotone *by
+construction*, so blue's smoothness carries no information &mdash; the chart
+says so rather than letting it read as a finding. Trades the grid's spatial
+structure for exactness: 144 rows countable rather than an area inferred.
+
+### 20. Which axis is difficulty?
+
+[Open the chart](https://claude.ai/code/artifact/1ed92c12-baf8-4fc3-a00a-57215886ca5b)
+
+`probe/render_diagonals.py` &rarr; `derived/diagonals.html`
+
+One small panel per value of `a+b`. Inside a panel the total is fixed and the
+horizontal axis is chain length, so what varies is the problem's *shape*.
+
+**Says:** the panels are close to flat. Holding `a+b` fixed and changing the
+shape moves the rate **9 points**; moving between totals moves it **88** &mdash;
+**9.5&times;** as much. A 2&times;10 and a 6&times;6 are nearly the same problem
+to these models, though one needs 2 partial products and the other 6. That is
+not the obvious answer: chain length is the count of partial products long
+multiplication actually has to carry, and it is not what these models track.
+What tracks is total digits, which is closer to how much must be held at once
+than to how many steps there are.
+
+**The design point.** The repo already prefers `a+b` on deviance, which is a
+number you either accept or do not. This is the same claim laid out so it can be
+argued with: if the panels sloped, the deviance comparison would be wrong and
+you could see it without refitting anything. The two traces are dodged apart by
+1.1px so an exact tie still shows both &mdash; without it, the five small-total
+panels where both models sit at 100% read as "Phi only".
 

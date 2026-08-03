@@ -87,6 +87,16 @@ h1{font-size:clamp(27px,4.2vw,38px);line-height:1.12;margin:0 0 14px;letter-spac
 .lede{font-size:19.5px;color:var(--dim);margin:0 0 28px;max-width:60ch}
 p{margin:0 0 15px;max-width:64ch}
 strong{font-weight:650}
+.ctl{display:inline-flex;gap:0;margin:0 0 12px;border:1px solid var(--line);
+  border-radius:5px;overflow:hidden;background:var(--panel)}
+.ctl button{appearance:none;border:0;background:none;cursor:pointer;color:var(--dim);
+  font-family:system-ui,-apple-system,sans-serif;font-size:12.5px;letter-spacing:.01em;
+  padding:7px 15px;transition:background .15s,color .15s}
+.ctl button+button{border-left:1px solid var(--line)}
+.ctl button:hover{color:var(--ink)}
+.ctl button.on{background:var(--lead-a);color:var(--paper)}
+.ctl button:focus-visible{outline:2px solid var(--lead-b);outline-offset:-2px}
+@media (prefers-reduced-motion:reduce){.ctl button{transition:none}}
 .score{display:flex;gap:34px;flex-wrap:wrap;margin:0 0 24px;
   font-family:system-ui,-apple-system,sans-serif}
 .score div{display:flex;flex-direction:column;gap:1px}
@@ -121,14 +131,18 @@ canvas:active{cursor:grabbing}
   <p class="eyebrow">carrychain &middot; __INST__ problems &middot; both models, same
   questions</p>
   <h1>The better model at every size</h1>
-  <p class="lede">Height is the best either model manages &mdash; the chance of an
-  exactly correct product. Colour is which model that was. Drag to look along the
-  slope.</p>
+  <p class="lede">Start with Qwen alone, then add Phi and watch what moves. Height is
+  the chance of an exactly correct product; orange marks the cells where adding Phi
+  changed the answer. Drag to look along the slope.</p>
   <div class="score">
     <div class="qc"><b>__NQO__</b><span>CELLS QWEN IS LEVEL OR HIGHER</span></div>
     <div class="pc"><b>__NP__</b><span>CELLS PHI IS HIGHER</span></div>
     <div><b>__PQ__%</b><span>QWEN OVERALL</span></div>
     <div><b>__PP__%</b><span>PHI OVERALL</span></div>
+  </div>
+  <div class="ctl" role="group" aria-label="which models to include">
+    <button id="t0" class="on" aria-pressed="true">Qwen alone</button>
+    <button id="t1" aria-pressed="false">Better of the two</button>
   </div>
   <div class="plot"><canvas id="c"></canvas><span class="hint">drag to rotate</span></div>
   <div class="key">
@@ -137,6 +151,10 @@ canvas:active{cursor:grabbing}
     <span>&#183; pale to deep = 0 to 100% correct</span>
     <span>&#183; greyer = fewer problems behind it</span>
   </div>
+  <p class="note"><strong>Almost nothing moves.</strong> Switching from Qwen alone to
+  the better of the two lifts <strong>__NP__ tiles of __CELLS__</strong> and leaves the
+  rest exactly where they were. That is the comparison the toggle exists to make: a
+  second model from a different vendor barely changes the surface.</p>
   <p class="note"><strong>The shape is the finding; the colour is nearly all one.</strong>
   Both models hold a plateau over the small sizes and then fall off a cliff in the same
   place, so the surface would look much the same if either model had drawn it alone.
@@ -175,8 +193,14 @@ function P(a,b,z,cx,cy,fit){
   return {sx:cx+x1*26*s*fit, sy:cy-vy*26*s*fit, d};
 }
 const at =(a,b)=>D.g[a+'x'+b]||null;            // [n, qwen, phi]
-const best=(a,b)=>{const g=at(a,b); return g?Math.max(g[1],g[2]):null;};
-const win=(a,b)=>{const g=at(a,b); return g?(g[2]>g[1]?1:0):0;};
+// MIX is 0 for Qwen alone and 1 for the better of the two. Between them the
+// surface is interpolated rather than swapped: switching two static pictures
+// makes a reader hunt for what changed, and what changed is the entire point --
+// 15 tiles rise a little and turn orange, and 129 do not move at all.
+let MIX=0, anim=null;
+const best=(a,b)=>{const g=at(a,b);
+  return g?g[1]+(Math.max(g[1],g[2])-g[1])*MIX:null;};
+const win =(a,b)=>{const g=at(a,b); return g?(g[2]>g[1]?1:0):0;};
 const ev =(a,b)=>{const g=at(a,b); return g?0.55+0.45*Math.min(1,g[0]/12):0;};
 // A tile corner sits between cells, so its height is the mean of the cells that
 // meet there. Adjacent tiles compute the same corner from the same neighbours,
@@ -202,14 +226,19 @@ const RAMP={
   light:{a:[[232,236,243],[27,42,94]],   b:[[247,237,224],[138,74,18]]},
   dark: {a:[[38,46,60],  [150,182,224]], b:[[56,45,32],  [232,170,86]]},
 };
-function tone(rate,phi,e){
+function tone(rate,phi,e,blend){
   // Ask the ground how bright it is rather than matching a hex string, which
   // breaks the moment a token is retuned.
   const bg=css('--paper'), h=[1,3,5].map(i=>parseInt(bg.slice(i,i+2),16));
   const dark=0.2126*h[0]+0.7152*h[1]+0.0722*h[2] < 128;
-  const [lo,hi]=RAMP[dark?'dark':'light'][phi?'b':'a'];
+  const R=RAMP[dark?'dark':'light'];
   const t=Math.max(0,Math.min(1,rate));
-  const c=lo.map((v,i)=>v+(hi[i]-v)*t);
+  const k=phi?(blend===undefined?1:blend):0;    // 0 all blue, 1 all orange
+  const c=R.a[0].map((_,i)=>{
+    const A=R.a[0][i]+(R.a[1][i]-R.a[0][i])*t;
+    const B=R.b[0][i]+(R.b[1][i]-R.b[0][i])*t;
+    return A+(B-A)*k;
+  });
   // Evidence rides on SATURATION, not lightness, so it cannot be mistaken for
   // the rate. A cell standing on 3 problems is visibly greyer than one standing
   // on 12 at the same height.
@@ -248,7 +277,7 @@ function draw(){
     ctx.beginPath(); ctx.moveTo(cs[0].sx,cs[0].sy);
     for(let k=1;k<4;k++) ctx.lineTo(cs[k].sx,cs[k].sy);
     ctx.closePath();
-    ctx.fillStyle=tone(best(a,b),win(a,b),ev(a,b));
+    ctx.fillStyle=tone(best(a,b),win(a,b),ev(a,b),win(a,b)?MIX:0);
     ctx.fill();
     ctx.globalAlpha=.34; ctx.strokeStyle=css('--panel'); ctx.lineWidth=.7; ctx.stroke();
     ctx.globalAlpha=1;
@@ -293,6 +322,27 @@ cv.addEventListener('pointermove',e=>{if(!drag)return;
   pitch=Math.max(.16,Math.min(1.3,pitch+(e.clientY-ly)*.005));
   lx=e.clientX;ly=e.clientY;draw();});
 for(const t of['pointerup','pointercancel'])cv.addEventListener(t,()=>{drag=false;});
+const B0=document.getElementById('t0'), B1=document.getElementById('t1');
+function setMix(target){
+  if(anim) cancelAnimationFrame(anim);
+  const from=MIX, d=target-from;
+  if(matchMedia('(prefers-reduced-motion:reduce)').matches){MIX=target;draw();return;}
+  const t0=performance.now(), ms=520;
+  (function step(now){
+    const u=Math.min(1,(now-t0)/ms);
+    MIX=from+d*(u<.5?2*u*u:1-(-2*u+2)**2/2);   // ease in-out, no library
+    draw();
+    if(u<1) anim=requestAnimationFrame(step);
+  })(t0);
+}
+for(const [btn,v,other] of [[B0,0,null],[B1,1,null]]){
+  btn.addEventListener('click',()=>{
+    B0.classList.toggle('on',v===0); B1.classList.toggle('on',v===1);
+    B0.setAttribute('aria-pressed',String(v===0));
+    B1.setAttribute('aria-pressed',String(v===1));
+    setMix(v);
+  });
+}
 matchMedia('(prefers-color-scheme:dark)').addEventListener('change',draw);
 new MutationObserver(draw).observe(document.documentElement,
   {attributes:true,attributeFilter:['data-theme']});
