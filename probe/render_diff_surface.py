@@ -120,7 +120,7 @@ canvas:active{cursor:grabbing}
   <div class="key">
     <span><span class="sw" style="background:var(--lead-a)"></span>Qwen alone</span>
     <span><span class="sw" style="background:var(--lead-b)"></span>blind spots Phi covered</span>
-    <span>&#183; stronger orange = more problems patched</span>
+    <span>&#183; cap height = how many problems</span>
     <span>&#183; paler = fewer trials</span>
   </div>
   <p class="note"><strong>The caps are the whole argument for a second model.</strong>
@@ -158,6 +158,17 @@ function P(a,b,z,cx,cy,fit){
 const val=(a,b)=>{const g=D.g[a+'x'+b]; return g?g[1]:null;};   // best single model
 const uni=(a,b)=>{const g=D.g[a+'x'+b]; return g?g[2]:null;};   // either model
 const ev =(a,b)=>{const g=D.g[a+'x'+b]; return g?0.35+0.65*Math.min(1,g[0]/12):0;};
+// Fade toward the panel colour rather than lowering alpha. Both sheets are
+// drawn opaque, so orange is never a translucent wash over blue -- a cell is
+// one colour or the other, and the two run on exactly the same scale. The
+// earlier alpha version turned every patched cell into a muddy tan that read
+// as a third category.
+function shade(v,e){
+  const c=css(v), bg=css('--panel');
+  const h=x=>[1,3,5].map(i=>parseInt(x.slice(i,i+2),16));
+  const a=h(bg), b=h(c);
+  return `rgb(${a.map((q,i)=>Math.round(q+(b[i]-q)*e)).join(',')})`;
+}
 function draw(){
   const dpr=Math.min(devicePixelRatio||1,2);
   if(cv.width!==Math.round(W*dpr)){cv.width=Math.round(W*dpr);cv.height=Math.round(H*dpr);}
@@ -190,7 +201,7 @@ function draw(){
     for(let k=1;k<4;k++) ctx.lineTo(p[k].sx,p[k].sy);
     ctx.closePath();
     const e=(ev(A,B)+ev(A+1,B)+ev(A+1,B+1)+ev(A,B+1))/4;
-    ctx.fillStyle=css('--lead-a'); ctx.globalAlpha=0.45+0.55*e; ctx.fill();
+    ctx.fillStyle=shade('--lead-a',0.45+0.55*e); ctx.fill();
     ctx.globalAlpha=.45; ctx.strokeStyle=css('--paper'); ctx.lineWidth=.6; ctx.stroke();
     ctx.globalAlpha=1;
     // The patch. Union sits at or above the better single model everywhere, so
@@ -202,18 +213,16 @@ function draw(){
     const uz=[uni(A,B),uni(A+1,B),uni(A+1,B+1),uni(A,B+1)];
     if(!uz.some(v=>v===null)){
       const lift=uz.reduce((t,v,k)=>t+(v-z[k]),0)/4;
-      // Weight the cap by how far it actually lifts. A cell patched by one
-      // problem in twelve and a cell patched by four are both "orange" at a
-      // fixed alpha, which reads as a repaint of the region rather than as a
-      // quantity. Full strength at a third of the cell, which is the largest
-      // patch in the grid.
+      // How much Phi added is already in the geometry -- the cap sits exactly
+      // that far above the blue -- so it does not also need to be in the ink.
+      // Orange means one thing only: Phi solved something here that Qwen did
+      // not. Everywhere else the cap is skipped and the cell stays pure blue.
       if(lift > 0.005){
         const up=[Q(A,B,uz[0]),Q(A+1,B,uz[1]),Q(A+1,B+1,uz[2]),Q(A,B+1,uz[3])];
         ctx.beginPath(); ctx.moveTo(up[0].sx,up[0].sy);
         for(let k=1;k<4;k++) ctx.lineTo(up[k].sx,up[k].sy);
         ctx.closePath();
-        ctx.fillStyle=css('--lead-b');
-        ctx.globalAlpha=e*(0.30+0.62*Math.min(1,lift/0.33)); ctx.fill();
+        ctx.fillStyle=shade('--lead-b',0.45+0.55*e); ctx.fill();
         ctx.globalAlpha=.45; ctx.strokeStyle=css('--paper'); ctx.lineWidth=.6; ctx.stroke();
         ctx.globalAlpha=1;
       }

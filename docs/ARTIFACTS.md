@@ -362,7 +362,16 @@ Two sheets. The lower one is **Qwen alone** &mdash; the model you would actually
 deploy. The upper one is the union: problems either model got. Where Phi adds
 nothing the cap lands flat on the surface and vanishes; where Phi solved
 something Qwen missed, the cap lifts, and that gap is the coverage a second
-model buys. Cap opacity tracks the size of the lift.
+model buys.
+
+Both sheets are drawn **opaque**, with the low-evidence fade baked into the
+colour (a lerp toward the panel) rather than into alpha. A translucent cap
+composites orange over blue and turns every patched cell into a muddy tan that
+reads as a third category; here a cell is one colour or the other, and the two
+run on exactly the same scale. How much Phi added is carried by the geometry
+&mdash; the cap sits precisely that far above the blue &mdash; so it does not
+also need to be in the ink. Orange means one thing: Phi solved something here
+that Qwen did not.
 
 **Says:** 53 of 144 cells carry a cap, summing to exactly the 83 problems only
 Phi solved. Qwen alone reaches 75.2%; Qwen with Phi behind it reaches 83.1%. The
