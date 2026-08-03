@@ -82,8 +82,6 @@
     /** Controlled category filter. Omit and the panel keeps its own, which is
      *  what a lone panel wants; pass it when several panels share one legend so
      *  hiding a category hides it in all of them at once. */
-    hiddenCategories?: ReadonlySet<string>;
-    onToggleCategory?: (category: string) => void;
     /** Passed to the graph: how far the run has reached, in character offsets.
      *  null keeps the panel static. */
     playhead?: number | null;
@@ -111,8 +109,6 @@
     showMinimap = true,
     showInspectorHint = true,
     showZoomHint = true,
-    hiddenCategories: hiddenProp = undefined,
-    onToggleCategory = undefined,
     playhead = null,
     dimAhead = false,
     showInspector = true,
@@ -125,8 +121,6 @@
   // svelte-ignore state_referenced_locally
   // Initial value only, by design -- the panel owns the selection after mount.
   let selectedIndex: number | null = $state(initialSelectedIndex);
-  let ownHidden: Set<string> = $state(new Set());
-  const hiddenCategories = $derived(hiddenProp ?? ownHidden);
 
   type TooltipState = { x: number; y: number; row: FlameRow } | null;
   let tooltip: TooltipState = $state(null);
@@ -288,17 +282,6 @@
     selectedIndex = null;
   }
 
-  function toggleCategory(cat: string): void {
-    if (onToggleCategory) {
-      onToggleCategory(cat);
-      return;
-    }
-    const next = new Set(ownHidden);
-    if (next.has(cat)) next.delete(cat);
-    else next.add(cat);
-    ownHidden = next;
-  }
-
   const effectiveSelectedIndex = $derived(
     forceSelectedIndex !== null ? forceSelectedIndex : selectedIndex,
   );
@@ -368,7 +351,7 @@
   {/if}
 
   {#if showLegend}
-    <CategoryLegend {hiddenCategories} onToggle={toggleCategory} rows={trace.rows} {scheme} />
+    <CategoryLegend rows={trace.rows} {scheme} />
   {/if}
 
 
@@ -408,7 +391,6 @@
     <FlameGraph
       {trace}
       {scheme}
-      {hiddenCategories}
       selectedIndex={effectiveSelectedIndex}
       {hoveredIndex}
       {errorIndex}
@@ -464,8 +446,7 @@
       <FlameGraph
         {trace}
         {scheme}
-        {hiddenCategories}
-        selectedIndex={null}
+          selectedIndex={null}
         hoveredIndex={null}
         {errorIndex}
         width={chartWidth}

@@ -204,17 +204,91 @@
   }
 
   const ordered = $derived([...trace.segments].sort((a, b) => a.start - b.start));
-  const shown = $derived.by(() => {
-    const out: Array<{ start: number; text: string; colour: string; label: string }> = [];
-    for (const s of ordered) {
-      if (s.start >= cursor) break;
-      out.push({
-        start: s.start,
-        text: trace.text.slice(s.start, Math.min(s.end, cursor)),
-        colour: colourFor(s.category),
-        label: s.label,
-      });
+
+  /** The category colour at a character offset. Binary search, not a scan: this
+   *  runs once per rendered run, on every frame. */
+  function colourAt(pos: number): string {
+    let lo = 0, hi = ordered.length - 1, best = 0;
+    while (lo <= hi) {
+      const mid = (lo + hi) >> 1;
+      if (ordered[mid].start <= pos) { best = mid; lo = mid + 1; } else hi = mid - 1;
     }
+    return colourFor(ordered[best].category);
+  }
+
+  /**
+   * The maths and markdown the model wrote, located once per trace.
+   *
+   * Rendering these does NOT touch the alignment. The flame bars index which
+   * CHARACTERS are revealed, and that is still `text.slice(0, cursor)` exactly;
+   * only the paint changes. What rendering does constrain is timing -- half a
+   * formula is not valid LaTeX -- so a span stays raw until its closing
+   * delimiter has been typed, and then snaps into place.
+   *
+   * All of it lives in the final tenth of the two runs that answered, where the
+   * model writes its answer out properly. The run that never answered has none.
+   */
+  const marks = $derived.by(() => {
+    const t = trace.text;
+    const out: Array<{ start: number; end: number; kind: 'display' | 'inline' }> = [];
+    for (const m of t.matchAll(/\$\$[\s\S]+?\$\$/g)) {
+      out.push({ start: m.index!, end: m.index! + m[0].length, kind: 'display' });
+    }
+    for (const m of t.matchAll(/(?<!\$)\$(?!\$)[^$\n]+?\$(?!\$)/g)) {
+      const st = m.index!, en = st + m[0].length;
+      if (!out.some((o) => st >= o.start && en <= o.end)) {
+        out.push({ start: st, end: en, kind: 'inline' });
+      }
+    }
+    return out.sort((x, y) => x.start - y.start);
+  });
+
+  type Item =
+    | { k: 'text'; text: string; colour: string; bold?: boolean }
+    | { k: 'head'; text: string; colour: string }
+    | { k: 'rule' }
+    | { k: 'math'; tex: string; display: boolean };
+
+  /** Split a plain run on headings, rules and bold, keeping it text nodes so
+   *  Svelte escapes it. Only KaTeX output is ever inserted as HTML. */
+  function plain(from: number, to: number, out: Item[]) {
+    const raw = trace.text.slice(from, to);
+    if (!raw) return;
+    const colour = colourAt(from);
+    for (const line of raw.split(/(?<=\n)/)) {
+      // `\s*$` rather than `$`: each line still carries its trailing newline
+      // from the split, and `.` cannot match it, so a plain `$` never anchored
+      // and every heading fell through as body text.
+      const h = line.match(/^(#{1,6}) +(.*?)\s*$/);
+      if (h) { out.push({ k: 'head', text: h[2], colour }); continue; }
+      if (/^-{3,}\s*$/.test(line)) { out.push({ k: 'rule' }); continue; }
+      for (const part of line.split(/(\*\*[^*\n]+\*\*)/)) {
+        if (!part) continue;
+        const b = part.match(/^\*\*([^*\n]+)\*\*$/);
+        out.push(b
+          ? { k: 'text', text: b[1], colour, bold: true }
+          : { k: 'text', text: part, colour });
+      }
+    }
+  }
+
+  const shown = $derived.by(() => {
+    const out: Item[] = [];
+    let pos = 0;
+    for (const mk of marks) {
+      if (mk.start >= cursor) break;
+      if (mk.start > pos) plain(pos, Math.min(mk.start, cursor), out);
+      if (mk.end <= cursor) {
+        const body = trace.text.slice(mk.start, mk.end)
+          .replace(/^\$\$?|\$\$?$/g, '').trim();
+        out.push({ k: 'math', tex: body, display: mk.kind === 'display' });
+        pos = mk.end;
+      } else {
+        plain(mk.start, cursor, out);      // still being typed: show the source
+        return out;
+      }
+    }
+    if (pos < cursor) plain(pos, cursor, out);
     return out;
   });
 
@@ -237,12 +311,27 @@
     const op = c.op === '×' ? '\\times' : c.op === '−' ? '-' : '+';
     return `${group(c.a)} ${op} ${group(c.b)} = ${group(side === 'said' ? c.said : c.truth)}`;
   }
+  /**
+   * KaTeX supports `aligned`, not LaTeX's `align*`, and renders what it cannot
+   * parse in red -- which is how a stray `\end{align*}` ended up looking like
+   * an error in the middle of the answer. The model writes `align*` because
+   * that is what LaTeX wants; the mapping is a renderer detail, not a change to
+   * what it said.
+   */
+  const forKatex = (src: string) =>
+    src.replace(/\\(begin|end)\{align\*?\}/g, '\\$1{aligned}')
+       .replace(/\\(begin|end)\{eqnarray\*?\}/g, '\\$1{aligned}');
+
   const cache = new Map<string, string>();
-  function render(src: string): string {
-    let html = cache.get(src);
+  function render(src: string, display = false): string {
+    const key = (display ? 'd:' : 'i:') + src;
+    let html = cache.get(key);
     if (html === undefined) {
-      html = katex.renderToString(src, { throwOnError: false, displayMode: false });
-      cache.set(src, html);
+      html = katex.renderToString(forKatex(src), {
+        throwOnError: false,
+        displayMode: display,
+      });
+      cache.set(key, html);
     }
     return html;
   }
@@ -335,7 +424,12 @@
   <!-- The shape of the whole run, with the playhead crossing it. Minimap,
        inspector and zoom hint are off: this panel is a timeline here, and the
        two panes below are the inspector. -->
+  <!-- Keyed on the run. The clock already restarts on a tab switch, but
+       FlamePanel owns its zoom and selection, so without this you land on a new
+       run still zoomed into a range from the last one. Keying rebuilds it, so
+       every part of the state starts from the beginning. -->
   <div class="flame" class:busy={!idle}>
+    {#key which}
     <!-- An empty header: the run is already named by the tabs above, and the
          panel's own badge-and-pills header would say it a second time. -->
     {#snippet header()}<span class="sr-only">{flame.verdict}</span>{/snippet}
@@ -354,6 +448,7 @@
       maxChartHeight={150}
       formatTick={(t) => `${Math.round((t / flameSpan) * 100)}%`}
     />
+    {/key}
   </div>
 
   <div class="panes">
@@ -371,9 +466,12 @@
       class="pane stream" bind:this={streamEl} tabindex="0"
       style:overflow-y={idle ? 'auto' : 'hidden'}
       role="region" aria-labelledby="lab-stream">
-      {#each shown as s (s.start)}<span
-          class="seg" style:--c={s.colour} title={s.label}>{s.text}</span
-        >{/each}{#if !done}<span class="caret"></span>{/if}
+      {#each shown as it, i (i)}{#if it.k === 'text'}<span
+          class="seg" class:b={it.bold} style:--c={it.colour}>{it.text}</span
+        >{:else if it.k === 'head'}<span class="mdh" style:--c={it.colour}>{it.text}</span
+        >{:else if it.k === 'rule'}<span class="mdr"></span
+        >{:else}<span class="mth" class:disp={it.display}>{@html render(it.tex, it.display)}</span
+        >{/if}{/each}{#if !done}<span class="caret"></span>{/if}
     </div>
 
     <!-- svelte-ignore a11y_no_noninteractive_tabindex -->
@@ -490,6 +588,18 @@
     white-space: pre-wrap; word-break: break-word; color: var(--ink-dim);
   }
   .seg { color: var(--c); }
+  .seg.b { font-weight: 700; color: var(--ink); }
+  .mdh {
+    display: block; font-family: var(--font-sans); font-weight: 650;
+    font-size: 0.86rem; color: var(--ink); margin: 0.7em 0 0.25em;
+  }
+  .mdr {
+    display: block; height: 1px; background: var(--line); margin: 0.7em 0;
+  }
+  /* Rendered maths sits on the mono baseline without stretching the line box,
+     which would make the stream jump as each formula lands. */
+  .mth { font-size: 0.94em; }
+  .mth.disp { display: block; margin: 0.45em 0; overflow-x: auto; }
   .caret {
     display: inline-block; width: 0.5em; height: 1em; vertical-align: -0.15em;
     background: var(--accent); animation: blink 1s steps(2, start) infinite;

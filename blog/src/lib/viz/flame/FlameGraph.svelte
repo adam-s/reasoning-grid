@@ -17,7 +17,6 @@
     trace: AnyTrace;
     /** Which categories colour this chart. Defaults to the λ set. */
     scheme?: CategoryScheme;
-    hiddenCategories: ReadonlySet<string>;
     selectedIndex: number | null;
     hoveredIndex: number | null;
     /** Optional index of a segment to persistently mark as the root error.
@@ -52,7 +51,6 @@
   let {
     trace,
     scheme = LAMBDA_SCHEME,
-    hiddenCategories,
     selectedIndex,
     hoveredIndex,
     errorIndex = null,
@@ -135,16 +133,8 @@
     return metaFor(scheme, row.category).color;
   }
   function opacityFor(row: FlameRow): number {
-    if (hiddenCategories.has(row.category)) return 0.18;
     return row.muted ? 0.5 : 1;
   }
-  // Labels do NOT inherit the mute. A muted fill plus faded white text fades
-  // twice and the phase names stop being readable, which are the one thing the
-  // container rows exist to carry.
-  function labelOpacityFor(row: FlameRow): number {
-    return hiddenCategories.has(row.category) ? 0.18 : 1;
-  }
-
   function labelFor(row: FlameRow): string {
     const txt = row.text.replace(/\s+/g, ' ').trim();
     return txt || metaFor(scheme, row.category).label;
@@ -285,8 +275,7 @@
             y={y + h / 2 + 0.5}
             dominant-baseline="central"
             font-size={labelFontPx}
-            opacity={labelOpacityFor(row)}
-            pointer-events="none"
+                pointer-events="none"
           >{label}</text>
         {/if}
       {/if}

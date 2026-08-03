@@ -44,20 +44,6 @@
         })),
   );
 
-  let hiddenCategories = $state<Set<string>>(new Set());
-
-  // A category hidden under one lens has no counterpart under the other.
-  $effect(() => {
-    lens;
-    hiddenCategories = new Set();
-  });
-
-  function toggle(cat: string) {
-    const next = new Set(hiddenCategories);
-    next.has(cat) ? next.delete(cat) : next.add(cat);
-    hiddenCategories = next;
-  }
-
   // Leaves only; containers span their children and would be counted twice.
   const allLeaves = $derived(traces.flatMap((t) => t.rows.filter((r) => !r.container)));
 
@@ -73,14 +59,7 @@
     <button class:on={lens === 'ooda'} onclick={() => (lens = 'ooda')}>by OODA phase</button>
   </div>
 
-  <CategoryLegend
-    {hiddenCategories}
-    onToggle={toggle}
-    rows={allLeaves}
-    {scheme}
-    showShare={false}
-    showEmpty={lens === 'ooda'}
-  />
+  <CategoryLegend rows={allLeaves} {scheme} showEmpty={lens === 'ooda'} />
 
   {#each traces as trace (trace.key)}
     {#snippet head()}
@@ -106,7 +85,6 @@
       showMinimap={false}
       showInspectorHint={false}
       showZoomHint={false}
-      {hiddenCategories}
     />
   {/each}
 </div>
