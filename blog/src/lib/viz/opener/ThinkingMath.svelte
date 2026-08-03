@@ -183,10 +183,29 @@
   const TOTAL_BAD = OPENER.reduce(
     (n, t) => n + t.claims.filter((x) => !x.ok).length, 0);
 
+  /**
+   * The run's verdict, landing with the last of the text.
+   *
+   * Without it the maths pane simply stops while the thinking scrolls on, which
+   * reads as the figure being broken rather than as the model having finished
+   * its arithmetic. The trace does end in something checkable — the answer it
+   * reports, against the product — so that is the last row.
+   */
+  const verdict = $derived.by(() => {
+    if (cursor < trace.thinking.length) return null;
+    if (!trace.answer) return { said: null, truth: trace.truth, ok: false };
+    return { said: trace.answer, truth: trace.truth, ok: trace.answer === trace.truth };
+  });
+
   const landed = $derived(trace.claims.filter((c) => c.end <= cursor));
   const wrong = $derived(landed.filter((c) => !c.ok));
 
-  const group = (s: string) => s.replace(/\B(?=(\d{3})+(?!\d))/g, '{,}');
+  /** Thousands separators on the integer part only: 371.448 is not 371{,}448. */
+  const group = (s: string) => {
+    const [whole, frac] = s.split('.');
+    const g = whole.replace(/\B(?=(\d{3})+(?!\d))/g, '{,}');
+    return frac ? `${g}.${frac}` : g;
+  };
   function tex(c: Claim, side: 'said' | 'truth'): string {
     const op = c.op === '×' ? '\\times' : c.op === '−' ? '-' : '+';
     const rhs = side === 'said' ? c.said : c.truth;
@@ -360,6 +379,24 @@
           {/if}
         </div>
       {/each}
+      {#if verdict}
+        <div class="final" class:bad={!verdict.ok}>
+          <span class="ix mono">&rarr;</span>
+          <div>
+            <div class="lead">
+              {verdict.said ? 'It answered' : 'It never answered'}
+            </div>
+            {#if verdict.said}
+              <div class="eq">{@html render(group(verdict.said))}</div>
+            {/if}
+            {#if !verdict.ok}
+              <div class="lead">the product is</div>
+              <div class="eq actual">{@html render(group(verdict.truth))}</div>
+            {/if}
+          </div>
+          <span class="mark">{verdict.ok ? '✓' : '✗'}</span>
+        </div>
+      {/if}
     </div>
   </div>
 
@@ -497,6 +534,28 @@
   .claim.bad .eq :global(.katex) { color: var(--pos); }
   .claim .actual { opacity: 0.85; }
   .claim .eq.actual :global(.katex) { color: var(--ink); }
+
+  .final {
+    display: grid;
+    grid-template-columns: 1.6rem 1fr auto;
+    align-items: baseline;
+    gap: 2px 10px;
+    padding: 9px 6px;
+    margin-top: 4px;
+    border-top: 1px solid var(--line);
+    animation: land 260ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
+  }
+  .final .ix { color: var(--ink-faint); text-align: right; }
+  .final .lead {
+    font-family: var(--font-sans);
+    font-size: 0.7rem;
+    color: var(--ink-faint);
+    letter-spacing: 0.02em;
+  }
+  .final .eq { font-size: 0.86rem; margin: 1px 0 3px; }
+  .final .mark { font-size: 0.78rem; color: var(--ink-faint); }
+  .final.bad .mark { color: var(--pos); font-weight: 600; }
+  .final.bad .eq:not(.actual) :global(.katex) { color: var(--pos); }
 
   .controls {
     display: flex; align-items: center; gap: 12px; margin-top: 12px;

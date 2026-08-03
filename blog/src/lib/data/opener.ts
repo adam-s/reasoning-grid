@@ -1532,6 +1532,26 @@ export const OPENER: readonly OpenerTrace[] = [
     "said": "15",
     "truth": "15",
     "ok": true
+   },
+   {
+    "at": 10931,
+    "end": 10949,
+    "op": "×",
+    "a": "0.4",
+    "b": "4.62",
+    "said": "1.848",
+    "truth": "1.848",
+    "ok": true
+   },
+   {
+    "at": 10960,
+    "end": 10983,
+    "op": "+",
+    "a": "369.6",
+    "b": "1.848",
+    "said": "371.448",
+    "truth": "371.448",
+    "ok": true
    }
   ],
   "segments": [

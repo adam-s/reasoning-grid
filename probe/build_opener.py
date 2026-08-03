@@ -41,6 +41,13 @@ which rejects the model interrupting itself mid-number, as trace C does at
   trace C, never answered    52 claims, 0 false -- it does not fail at
                              arithmetic, it fails to commit
 
+Decimals are read too, because the approximation check a model runs at the end
+of a trace is done in them -- "0.4 x 4.62 = 1.848", "369.6 + 1.848 = 371.448".
+Skipping those left the maths pane silent through the last 30% of the wrong run,
+which is exactly where the model checks its answer, finds the check agrees, and
+carries on. Arithmetic is done with Decimal: binary floating point grades some of
+those wrong for being 1e-16 out.
+
 Subtraction was added after an adversarial pass asked what the extractor cannot
 see. It could only see x and +, so eleven subtraction claims went ungraded and
 "160 claims, 1 false" was really "160 multiplications and additions". All eleven
@@ -56,6 +63,9 @@ import json
 import os
 import re
 import sys
+from decimal import Decimal, getcontext
+
+getcontext().prec = 60          # exact for every value these traces contain
 
 OUT = "blog/src/lib/data/opener.ts"
 MODEL = "Qwen3-4B"
@@ -64,14 +74,26 @@ MODEL = "Qwen3-4B"
 # nines writes "87 / 9 = 9", meaning nine remainder six, and grading that as
 # false would report a correct check as an error. Subtraction has no such
 # second reading.
-EQ = re.compile(r"([\d,]+)\s*(×|x|\*|\+|-|−)\s*([\d,]+)\s*=\s*([\d,]+)")
+NUM = r"[\d,]+(?:\.\d+)?"
+EQ = re.compile(rf"({NUM})\s*(×|x|\*|\+|-|−)\s*({NUM})\s*=\s*({NUM})")
+
+
+def plain(d):
+    """A Decimal as the shortest exact decimal string: no exponent, no trailing
+    zeros invented by the arithmetic."""
+    t = format(d.normalize(), "f")
+    return t.rstrip("0").rstrip(".") if "." in t else t
 
 
 def wellformed(s):
-    """A number the model finished writing. Comma groups are exactly three."""
-    if s.startswith(",") or s.endswith(","):
+    """A number the model finished writing. Comma groups are exactly three, and
+    a decimal part is digits."""
+    head, _, frac = s.partition(".")
+    if frac and not frac.isdigit():
         return False
-    p = s.split(",")
+    if head.startswith(",") or head.endswith(","):
+        return False
+    p = head.split(",")
     return len(p) == 1 or (1 <= len(p[0]) <= 3 and all(len(g) == 3 for g in p[1:]))
 
 
@@ -88,14 +110,17 @@ def claims(t):
             continue                                   # a minus sign inside a range
         if re.match(r"[.,]\d|\s*[-+×x*/^]", t[m.end():m.end() + 2]):
             continue                                   # a decimal, or a rewriting
-        a, b, c = (int(v.replace(",", "")) for v in (x, y, z))
+        # Decimal, not float. The approximation check a model runs at the end
+        # of a trace is done in decimals -- "0.4 x 4.62 = 1.848" -- and binary
+        # floating point would grade some of those wrong for being 1e-16 out.
+        a, b, c = (Decimal(v.replace(",", "")) for v in (x, y, z))
         if not a or not b:
             continue
         sym = {"+": "+", "-": "−", "−": "−"}.get(op, "×")
         truth = a + b if sym == "+" else a - b if sym == "−" else a * b
         out.append({"at": m.start(), "end": m.end(), "op": sym,
-                    "a": str(a), "b": str(b), "said": str(c),
-                    "truth": str(truth), "ok": truth == c})
+                    "a": plain(a), "b": plain(b), "said": plain(c),
+                    "truth": plain(truth), "ok": truth == c})
     return out
 
 
