@@ -6,7 +6,7 @@
   import Section from './lib/components/Section.svelte';
   import Prose from './lib/components/Prose.svelte';
   import Placeholder from './lib/components/Placeholder.svelte';
-  import ThinkingMath from './lib/viz/opener/ThinkingMath.svelte';
+  import SyncedTrace from './lib/viz/opener/SyncedTrace.svelte';
   import FlamePanel from './lib/viz/flame/FlamePanel.svelte';
   import ThreeTraces from './lib/viz/flame/ThreeTraces.svelte';
   import SurfaceCanvas from './lib/viz/surface/SurfaceCanvas.svelte';
@@ -17,7 +17,7 @@
 
 <Layout>
   <Section eyebrow="carrychain" title="Where two models stop being reliable" width="figure">
-    <ThinkingMath />
+    <SyncedTrace />
   </Section>
 
   <Section eyebrow="01 · the surface" title="The grid" width="figure">

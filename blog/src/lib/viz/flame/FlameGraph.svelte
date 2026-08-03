@@ -42,6 +42,11 @@
     interactive?: boolean;
     minRowHeight?: number;
     targetHeight?: number;
+    /** How far the run has reached, in trace coordinates (character offsets).
+     *  null leaves the graph static, which is what every existing call does. */
+    playhead?: number | null;
+    /** Fade rows that start after the playhead. */
+    dimAhead?: boolean;
   };
 
   let {
@@ -63,6 +68,8 @@
     interactive = true,
     minRowHeight = 7,
     targetHeight = 520,
+    playhead = null,
+    dimAhead = false,
   }: Props = $props();
 
   const MAX_ROW_HEIGHT = 22;
@@ -233,6 +240,7 @@
     {@const w = rectW(row)}
     {@const y = rectY(row)}
     {@const h = rectH()}
+    {@const ahead = dimAhead && playhead !== null && row.start > playhead}
     {@const clipX = Math.max(0, x)}
     {@const clipW = Math.max(1, Math.min(width, x + w) - clipX)}
     {#if x + w >= 0 && x <= width}
@@ -248,7 +256,7 @@
         width={clipW}
         height={h}
         fill={fillFor(row)}
-        opacity={opacityFor(row)}
+        opacity={ahead ? opacityFor(row) * 0.2 : opacityFor(row)}
         rx="1.5"
         onmouseenter={(e) => scheduleHover(i, row, e)}
         onmousemove={(e) => scheduleHover(i, row, e)}
@@ -284,6 +292,14 @@
       {/if}
     {/if}
   {/each}
+
+  {#if playhead !== null}
+    <!-- The playhead is in TRACE coordinates, which are character offsets --
+         the same units a scrubbing cursor counts in. So a synchronised figure
+         needs no mapping between clocks: xScale(playhead) is exact. -->
+    <line class="playhead" x1={xScale(playhead)} x2={xScale(playhead)}
+      y1={0} y2={chartHeight} />
+  {/if}
 
   {#if showCursorGuide && cursorX !== null}
     <line
@@ -377,6 +393,10 @@
     stroke-width: 0.5;
     stroke-dasharray: 2 4;
   }
+
+  /* Solid, unlike the dashed hover guide: this marks how far the run has got,
+     which is a fact about the data, while the guide only tracks a mouse. */
+  .playhead { stroke: var(--accent); stroke-width: 1.5; pointer-events: none; }
 
   .cursor-guide {
     stroke: var(--ink);

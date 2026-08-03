@@ -84,6 +84,10 @@
      *  hiding a category hides it in all of them at once. */
     hiddenCategories?: ReadonlySet<string>;
     onToggleCategory?: (category: string) => void;
+    /** Passed to the graph: how far the run has reached, in character offsets.
+     *  null keeps the panel static. */
+    playhead?: number | null;
+    dimAhead?: boolean;
   };
 
   let {
@@ -104,6 +108,8 @@
     showZoomHint = true,
     hiddenCategories: hiddenProp = undefined,
     onToggleCategory = undefined,
+    playhead = null,
+    dimAhead = false,
   }: Props = $props();
 
   const stepCount = $derived(trace.stepCount ?? trace.rows.length);
@@ -400,6 +406,8 @@
       onClick={handleClick}
       enableZoom={true}
       minRowHeight={17}
+      {playhead}
+      {dimAhead}
     />
   </div>
 
