@@ -81,7 +81,7 @@ strong{font-weight:650}
 .score b{font-size:31px;font-weight:600;letter-spacing:-.02em;
   font-variant-numeric:tabular-nums;line-height:1}
 .score span{font-size:12px;color:var(--faint);letter-spacing:.03em}
-.qc b{color:var(--lead-a)} .pc b{color:var(--lead-b)}
+.qc b{color:var(--lead-a)} .pc b{color:var(--ink)}
 .plot{position:relative;border:1px solid var(--line);border-radius:5px;
   background:var(--panel);overflow:hidden}
 canvas{display:block;cursor:grab;touch-action:pan-y}
@@ -93,14 +93,12 @@ canvas:active{cursor:grabbing}
 .sw{display:inline-block;width:40px;height:11px;border-radius:2px;vertical-align:-1px;
   margin-right:7px}
 .ra{background:linear-gradient(90deg,rgb(232,236,243),rgb(27,42,94))}
-.rb{background:linear-gradient(90deg,rgb(247,237,224),rgb(138,74,18))}
 @media (prefers-color-scheme:dark){
-  .ra{background:linear-gradient(90deg,rgb(38,46,60),rgb(150,182,224))}
-  .rb{background:linear-gradient(90deg,rgb(56,45,32),rgb(232,170,86))}}
+  .ra{background:linear-gradient(90deg,rgb(38,46,60),rgb(150,182,224))}}
 :root[data-theme="dark"] .ra{background:linear-gradient(90deg,rgb(38,46,60),rgb(150,182,224))}
-:root[data-theme="dark"] .rb{background:linear-gradient(90deg,rgb(56,45,32),rgb(232,170,86))}
 :root[data-theme="light"] .ra{background:linear-gradient(90deg,rgb(232,236,243),rgb(27,42,94))}
-:root[data-theme="light"] .rb{background:linear-gradient(90deg,rgb(247,237,224),rgb(138,74,18))}
+.dotk{display:inline-block;width:9px;height:9px;border-radius:50%;vertical-align:-1px;
+  margin-right:7px;background:var(--ink);box-shadow:0 0 0 2px var(--panel)}
 .note{font-family:system-ui,-apple-system,sans-serif;font-size:13.5px;color:var(--faint);
   margin-top:22px;max-width:68ch;line-height:1.62}
 .note strong{color:var(--dim)}
@@ -110,8 +108,8 @@ canvas:active{cursor:grabbing}
   questions</p>
   <h1>The better model at every size</h1>
   <p class="lede">Start with Qwen alone, then add Phi and watch what moves. Height is
-  the chance of an exactly correct product; orange marks the cells where adding Phi
-  changed the answer. Drag to look along the slope.</p>
+  the chance of an exactly correct product, and the marked cells are the ones adding
+  Phi changes. Drag to look along the slope.</p>
   <div class="score">
     <div class="qc"><b>__NQO__</b><span>CELLS QWEN IS LEVEL OR HIGHER</span></div>
     <div class="pc"><b>__NP__</b><span>CELLS PHI IS HIGHER</span></div>
@@ -124,13 +122,12 @@ canvas:active{cursor:grabbing}
   </div>
   <div class="plot"><canvas id="c"></canvas><span class="hint">drag to rotate</span></div>
   <div class="key">
-    <span><span class="sw ra"></span>Qwen level or higher</span>
-    <span><span class="sw rb"></span>Phi higher</span>
-    <span>&#183; pale to deep = 0 to 100% correct</span>
+    <span><span class="sw ra"></span>0 to 100% correct</span>
+    <span><span class="dotk"></span>a cell where Phi scored higher</span>
     <span>&#183; greyer = fewer problems behind it</span>
   </div>
   <p class="note"><strong>Almost nothing moves.</strong> Switching from Qwen alone to
-  the better of the two lifts <strong>__NP__ tiles of __CELLS__</strong> and leaves the
+  the better of the two raises <strong>__NP__ cells of __CELLS__</strong> and leaves the
   rest exactly where they were. That is the comparison the toggle exists to make: a
   second model from a different vendor barely changes the surface.</p>
   <p class="note"><strong>The shape is the finding; the colour is nearly all one.</strong>
@@ -139,13 +136,13 @@ canvas:active{cursor:grabbing}
   Qwen is level or higher in <strong>__NQO__ of __CELLS__</strong> cells &mdash; and of
   the <strong>__NLEVEL__</strong> level ones, <strong>__NSAT__</strong> are both models
   at 100%, where there is nothing left to win.</p>
-  <p class="note"><strong>The __NP__ orange tiles are not a region Phi owns.</strong>
+  <p class="note"><strong>The __NP__ marked cells are not a region Phi owns.</strong>
   They are scattered rather than clustered, and every one rests on 12 problems or fewer,
   where a single problem moves a cell 8 to 33 points. Comparing each cell against the
   spread that binomial sampling alone would produce &mdash; widest in the middle, pinched
   to nothing at both ends &mdash; <strong>__OUT__ of __CELLS__</strong> cells land outside
-  their own noise floor, and <strong>__OUTP__ of them favour Phi</strong>. Every orange
-  tile on this surface is inside the range a coin would reach. __OUT__ of Qwen&rsquo;s leads are not.</p>
+  their own noise floor, and <strong>__OUTP__ of them favour Phi</strong>. Every marked
+  cell is inside the range a coin would reach. __OUT__ of Qwen&rsquo;s leads are not.</p>
   <p class="note"><strong>The two models fail at different distances, not in different
   places.</strong> Fitting where each one&rsquo;s success falls through a half puts Qwen
   at <strong>__DQ__&times;__DQ__</strong> digits and Phi at <strong>__DP__&times;__DP__</strong> —
@@ -160,13 +157,12 @@ canvas:active{cursor:grabbing}
   6&times;6 are nearly the same problem to these models, though long multiplication has
   to carry 2 partial products for one and 6 for the other. That is why this surface falls
   along its diagonals rather than along either axis.</p>
-  <p class="note"><strong>One tile per cell, not quads between cells.</strong> Colour
-  here is a category attached to a cell, and quads interpolate between four of them.
-  Painting a quad orange whenever any corner is orange would turn 15 cells into 40 of
-  121 quads; averaging the corners instead turns them into 7. So each cell owns a tile
-  spanning half a step in every direction, with corner heights averaged from the cells
-  meeting there &mdash; adjacent tiles share those values exactly, so the sheet stays
-  continuous, and exactly __NP__ tiles are orange.</p>
+  <p class="note"><strong>One hue, and a dot for the winner.</strong> Height is the
+  quantity and the ramp is keyed to it, so a second hue meaning <em>which model</em>
+  would be competing with a ramp meaning <em>how often</em>. Colouring the surface by
+  the winner cannot be honest anyway: the mesh is quads between cell centres, a quad has
+  four cells at its corners, and painting it by any one of them turns __NP__ cells into
+  40 of 121.</p>
   <p class="note"><strong>These are probabilities.</strong> A cell is the mean over its
   problems of how often each model got that problem right. Scoring by whether a model
   ever solved a problem is not a probability: it climbs with the number of times you
@@ -191,59 +187,31 @@ const at =(a,b)=>D.g[a+'x'+b]||null;            // [n, qwen, phi]
 // MIX is 0 for Qwen alone and 1 for the better of the two. Between them the
 // surface is interpolated rather than swapped: switching two static pictures
 // makes a reader hunt for what changed, and what changed is the entire point --
-// 15 tiles rise a little and turn orange, and 129 do not move at all.
+// 15 cells rise a little and gain a marker, and 129 do not move at all.
 let MIX=0, anim=null;
 const best=(a,b)=>{const g=at(a,b);
   return g?g[1]+(Math.max(g[1],g[2])-g[1])*MIX:null;};
 const win =(a,b)=>{const g=at(a,b); return g?(g[2]>g[1]?1:0):0;};
 const ev =(a,b)=>{const g=at(a,b); return g?0.55+0.45*Math.min(1,g[0]/12):0;};
-// Height anywhere on the half-step lattice, averaging only over the integer
-// neighbours the point actually lies between: at a cell centre that is the cell
-// itself EXACTLY, on an edge the two either side, at a corner the four meeting
-// there. Shared points come out identical from either tile, so no cracks.
+// ONE HUE, pale at a low rate and deep at a high one, keyed to the height --
+// which IS the quantity. A second hue meaning "which model" competes with a ramp
+// meaning "how often", and the two-hue version read as two instruments
+// disagreeing rather than one measuring. The cells where Phi scored higher are
+// marked with a dot instead.
 //
-// Averaging four cells for every point -- including cell centres -- is a 2x2 box
-// blur over the whole surface. It moved 13 of 144 cells by more than 10 points
-// and 12x7 by 22, drawn at 47% against a measured 25%. Subdividing each tile
-// into four sub-quads meeting at the cell centre puts a vertex back on the data,
-// so the sheet interpolates through every measured value.
-function lat(u,v){
-  const us=Number.isInteger(u)?[u]:[u-0.5,u+0.5];
-  const vs=Number.isInteger(v)?[v]:[v-0.5,v+0.5];
-  let t=0,k=0;
-  for(const a of us)for(const b of vs){const z=best(a,b); if(z!==null){t+=z;k++;}}
-  return k?t/k:null;
-}
-// The blog's surface ramp: pale at a low rate, deep at a high one, one hue,
-// because the rate is ordered rather than categorical. Here there are two hues
-// -- the ramp runs inside whichever model won the cell -- so lightness carries
-// how well and hue carries which. The blue endpoints are the blog's exactly;
-// the orange is built to match their luminance so neither family reads as
-// heavier than the other at the same rate.
-//
-// Dark theme inverts the direction. A pale-to-deep ramp on a dark panel puts
-// the plateau -- almost every cell -- at its least visible, which is backwards:
-// there, a high rate is the bright end.
-const RAMP={
-  light:{a:[[232,236,243],[27,42,94]],   b:[[247,237,224],[138,74,18]]},
-  dark: {a:[[38,46,60],  [150,182,224]], b:[[56,45,32],  [232,170,86]]},
-};
-function tone(rate,phi,e,blend){
+// Dark theme inverts the direction. Pale-to-deep on a dark panel puts the
+// plateau -- almost every cell -- at its least visible, which is backwards.
+const RAMP={light:[[232,236,243],[27,42,94]], dark:[[38,46,60],[150,182,224]]};
+function tone(rate,e){
   // Ask the ground how bright it is rather than matching a hex string, which
   // breaks the moment a token is retuned.
-  const bg=css('--paper'), h=[1,3,5].map(i=>parseInt(bg.slice(i,i+2),16));
-  const dark=0.2126*h[0]+0.7152*h[1]+0.0722*h[2] < 128;
-  const R=RAMP[dark?'dark':'light'];
+  const bg=css('--paper'), hx=[1,3,5].map(i=>parseInt(bg.slice(i,i+2),16));
+  const dark=0.2126*hx[0]+0.7152*hx[1]+0.0722*hx[2] < 128;
+  const [lo,hi]=RAMP[dark?'dark':'light'];
   const t=Math.max(0,Math.min(1,rate));
-  const k=phi?(blend===undefined?1:blend):0;    // 0 all blue, 1 all orange
-  const c=R.a[0].map((_,i)=>{
-    const A=R.a[0][i]+(R.a[1][i]-R.a[0][i])*t;
-    const B=R.b[0][i]+(R.b[1][i]-R.b[0][i])*t;
-    return A+(B-A)*k;
-  });
+  const c=lo.map((v,i)=>v+(hi[i]-v)*t);
   // Evidence rides on SATURATION, not lightness, so it cannot be mistaken for
-  // the rate. A cell standing on 3 problems is visibly greyer than one standing
-  // on 12 at the same height.
+  // the rate: a cell on 3 problems is greyer than one on 12 at the same height.
   const l=0.2126*c[0]+0.7152*c[1]+0.0722*c[2];
   return `rgb(${c.map(v=>Math.round(v+(l-v)*(1-e))).join(',')})`;
 }
@@ -272,25 +240,40 @@ function draw(){
   for(let a=1;a<=DIM;a++)for(let b=1;b<=DIM;b++)
     if(best(a,b)!==null) tiles.push({a,b,d:key(a,b)});
   tiles.sort((p,q)=>q.d-p.d);                      // far to near
-  const QUAD=[[-1,-1],[1,-1],[1,1],[-1,1]];
-  for(const t of tiles){
-    const a=t.a,b=t.b;
-    ctx.fillStyle=tone(best(a,b),win(a,b),ev(a,b),win(a,b)?MIX:0);
-    for(const [su,sv] of QUAD){
-      const cs=[[0,0],[su*0.5,0],[su*0.5,sv*0.5],[0,sv*0.5]]
-        .map(([u,v])=>Q(a+u,b+v,lat(a+u,b+v)));
-      ctx.beginPath(); ctx.moveTo(cs[0].sx,cs[0].sy);
-      for(let k=1;k<4;k++) ctx.lineTo(cs[k].sx,cs[k].sy);
-      ctx.closePath(); ctx.fill();
+  // Quads between cell centres, so the surface passes exactly through every
+  // measured value. Markers ride the same back-to-front pass -- drawn after,
+  // a marker on a far cell would print over terrain standing in front of it.
+  const items=[];
+  for(let i=1;i<DIM;i++)for(let j=1;j<DIM;j++)
+    items.push({k:0,i,j,d:key(i+0.5,j+0.5)});
+  if(MIX>0.01) for(let a=1;a<=DIM;a++)for(let b=1;b<=DIM;b++)
+    if(win(a,b)) items.push({k:1,i:a,j:b,d:key(a,b)});
+  items.sort((p,q)=>q.d-p.d);
+  ctx.lineJoin='round';
+  for(const it of items){
+    if(it.k===0){
+      const i=it.i,j=it.j;
+      const z=[best(i,j),best(i+1,j),best(i+1,j+1),best(i,j+1)];
+      if(z.some(v=>v===null)) continue;
+      const pt=[Q(i,j,z[0]),Q(i+1,j,z[1]),Q(i+1,j+1,z[2]),Q(i,j+1,z[3])];
+      ctx.beginPath(); ctx.moveTo(pt[0].sx,pt[0].sy);
+      for(let k=1;k<4;k++) ctx.lineTo(pt[k].sx,pt[k].sy);
+      ctx.closePath();
+      const e=(ev(i,j)+ev(i+1,j)+ev(i+1,j+1)+ev(i,j+1))/4;
+      ctx.fillStyle=tone((z[0]+z[1]+z[2]+z[3])/4,e); ctx.fill();
+      ctx.strokeStyle=css('--panel'); ctx.globalAlpha=.55; ctx.lineWidth=.6;
+      ctx.stroke(); ctx.globalAlpha=1;
+      continue;
     }
-    // One outline per TILE. Stroking the sub-quads would draw a grid at twice
-    // the resolution of the data behind it.
-    const rim=[[-0.5,-0.5],[0.5,-0.5],[0.5,0.5],[-0.5,0.5]]
-      .map(([u,v])=>Q(a+u,b+v,lat(a+u,b+v)));
-    ctx.beginPath(); ctx.moveTo(rim[0].sx,rim[0].sy);
-    for(let k=1;k<4;k++) ctx.lineTo(rim[k].sx,rim[k].sy);
-    ctx.closePath();
-    ctx.globalAlpha=.34; ctx.strokeStyle=css('--panel'); ctx.lineWidth=.7; ctx.stroke();
+    const z=best(it.i,it.j); if(z===null) continue;
+    const p=Q(it.i,it.j,z);
+    // rim in the panel colour, core in the ink: the ramp spans pale to deep and
+    // a single-colour dot disappears into one end of it
+    ctx.globalAlpha=Math.min(1,MIX);
+    ctx.beginPath(); ctx.arc(p.sx,p.sy,3.7,0,Math.PI*2);
+    ctx.fillStyle=css('--panel'); ctx.fill();
+    ctx.beginPath(); ctx.arc(p.sx,p.sy,2.1,0,Math.PI*2);
+    ctx.fillStyle=css('--ink'); ctx.fill();
     ctx.globalAlpha=1;
   }
   // axes, on the two ground edges nearest the camera

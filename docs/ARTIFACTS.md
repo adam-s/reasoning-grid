@@ -369,38 +369,43 @@ more than half a point.
 
 `probe/render_winner_surface.py` &rarr; `derived/winner-surface.html`
 
-The 3D companion to chart 14. **Height** is `max(Qwen, Phi)` as a probability
-&mdash; the best either model manages at that size. **Colour** is which model
-that was, and how well: the blog surface's pale-to-deep ramp
-(`blog/src/lib/viz/surface/project.ts`) runs *inside* each family, blue where
-Qwen is level or higher and orange where Phi is higher. Lightness carries how
-well, hue carries which. The blue endpoints are the blog's exactly; the orange
-is built to match their luminance so neither family reads as heavier at the same
-rate.
+The 3D companion to chart 14, and the figure the blog runs. Height is the
+probability of an exactly correct product; a toggle switches between **Qwen
+alone** and **the better of the two**, interpolating between the two height
+fields rather than swapping them, so a reader sees 15 cells rise and 129 stay
+put instead of hunting for the difference between two static pictures.
 
-Dark theme inverts the ramp direction. Pale-to-deep on a dark panel puts the
-plateau &mdash; almost every cell &mdash; at its least visible, which is
-backwards; there a high rate is the bright end. The theme is read from the
-luminance of `--paper` rather than by matching a hex string, so retuning a token
-does not silently break it.
+**Rendered exactly like chart 1** &mdash; the same `ramp` from
+`blog/src/lib/viz/surface/project.ts`, the same quads between cell centres, the
+same white seams, floor grid and camera-chosen axes. Two figures of the same
+quantity a section apart have to read as the same instrument. Every attempt to
+give this one its own palette made the pair read as two instruments disagreeing.
+The only differences are the grid, 12&times;12 rather than 14&times;14 because
+the paired sweep reaches only 12, and the toggle.
 
-Evidence rides on **saturation**, not lightness, so it cannot be confused with
-the rate: a cell standing on 3 problems is visibly greyer than one standing on
-12 at the same height.
+**One hue, and a dot for the winner.** Height is the quantity and the ramp is
+keyed to it, so a second hue meaning *which model* competes with a ramp meaning
+*how often*. Colouring the surface by the winner cannot be honest anyway: the
+mesh is quads between cell centres, a quad has four cells at its corners, and
+painting it by any one of them turns 15 cells into 40 of 121. The 15 cells where
+Phi scored higher get a marker &mdash; rim in the panel colour, core in the ink,
+because the ramp spans pale to deep and a single-colour dot vanishes into one
+end of it. Markers ride the same back-to-front pass as the quads; drawn after,
+a marker on a far cell prints over terrain standing in front of it.
 
-A **toggle** switches between Qwen alone and the better of the two, interpolating
-between the two height fields rather than swapping them: switching two static
-pictures makes a reader hunt for what changed, and what changed is the whole
-point &mdash; 15 tiles rise a little and turn orange, and 129 do not move at all.
+Dark theme inverts the ramp direction: pale-to-deep on a dark panel puts the
+plateau, almost every cell, at its least visible. The theme is read from the
+luminance of `--paper` rather than by matching a hex string. Evidence rides on
+**saturation** so it cannot be confused with the rate &mdash; a cell on 3
+problems is greyer than one on 12 at the same height.
 
-**Ported into the blog** as `blog/src/lib/viz/surface/WinnerSurface.svelte`,
-fed by `probe/build_winner.py` &rarr; `blog/src/lib/data/winner.ts`. It fills
-section 02, whose question &mdash; do they fail in the same places &mdash; is the
-one this chart answers. The component reuses `project.ts` unchanged; only the
-tile-per-cell drawing and the toggle are new.
+**Ported into the blog** as `blog/src/lib/viz/surface/WinnerSurface.svelte`, fed
+by `probe/build_winner.py` &rarr; `blog/src/lib/data/winner.ts`. It fills section
+02, whose question &mdash; do they fail in the same places &mdash; is the one
+this chart answers.
 
-**This chart stands alone.** Its notes now carry the three findings that were
-only in charts 16, 17 and 20: the fitted 50% boundaries (Qwen 9.2&times;9.2, Phi
+**This chart stands alone.** Its notes carry the three findings that were only in
+charts 16, 17 and 20: the fitted 50% boundaries (Qwen 9.2&times;9.2, Phi
 8.4&times;8.4, never crossing), the noise-floor test (10 of 144 cells outside,
 none favouring Phi), and the difficulty axis (total digits beats problem shape
 9.5&times;). Every one of those numbers is computed in
@@ -409,46 +414,14 @@ copied across as a literal &mdash; copying is how a page keeps quoting a figure
 its data stopped supporting. The other three scripts stay as the working that
 backs them.
 
-**Says:** the shape is the finding and the colour is nearly all one. Both models
-hold a plateau over the small sizes and fall off a cliff in the same place, so
-the surface would look much the same if either had drawn it alone. Qwen is level
-or higher in **129 of 144** cells, Phi higher in **15**, and those 15 are
-scattered rather than clustered &mdash; every one on 12 problems or fewer.
-
-**The design point: one tile per cell, not quads between cells.** Colour here is
-a category attached to a cell, and a quad interpolates between four of them, so
-there is no honest rule for colouring one. Painting a quad orange whenever any
-corner is orange turns 15 cells into **40 of 121 quads**; averaging the corners
-instead turns them into **7**. Neither is the answer. So each cell owns a tile
-spanning half a step in every direction, and the tile's corner heights are the
-mean of the cells meeting at that corner &mdash; adjacent tiles compute the same
-lattice point from the same neighbours, so the sheet stays continuous with no
-cracks, and exactly 15 tiles are orange.
-
-Each tile is **subdivided into four sub-quads meeting at the cell centre**, so a
-vertex lands on the measured value and the sheet interpolates through the data.
-Without it, averaging four cells at every vertex is a 2&times;2 box blur: it
-moved 13 of 144 cells by more than 10 points and 12&times;7 by 22, drawing 47%
-against a measured 25%. Chart 1's mesh never had this problem because its quad
-corners sit on the cells; a tile mesh only matches that if it subdivides. Only
-the tile rim is stroked &mdash; outlining the sub-quads would put a grid on the
-surface at twice the resolution of the data. This is the general fix for the failure that
-sank chart 13's fourth version: a quantity attached to grid vertices must be
-drawn with vertex-owned tiles, never with the faces between them.
-
----
-
-**Numbers here are stable; gaps mean a chart was withdrawn.** 12 and 13 scored a
-cell by whether a model *ever* solved each problem, which is not a probability
-&mdash; it rises with the number of times you ask, and the two models were not
-asked equally often. Their scripts were deleted rather than left to regenerate a
-wrong number under a familiar name. 18 and 19 were presentational variants of 14
-and were dropped once 15 carried their numbers in prose.
-
-Charts 16, 17 and 20 stay because chart 15 asserts things they measure. They
-share `probe/paired.py` (the loader and the P(correct) estimator) and
-`probe/chartpage.py` (the page shell), because four render scripts had already
-grown four copies of the loader and the estimator had changed under them once.
+**Two mesh mistakes, both worth keeping.** An earlier version drew the patch as
+a second *sheet* over the first; a sheet's area is set by the grid and the
+camera, so one patched corner painted all four quads touching it and orange
+covered 60% of the surface to represent 7.8% of the problems. The version after
+that used one tile per cell with corners averaged from the four cells meeting
+there &mdash; a 2&times;2 box blur that moved 13 of 144 cells by more than 10
+points and 12&times;7 by 22, drawing 47% against a measured 25%. Quads between
+cell centres have neither problem: their corners sit *on* the data.
 
 ### 16. Where each model stops being right half the time
 

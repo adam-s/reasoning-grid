@@ -1,37 +1,26 @@
 <script lang="ts">
   /**
-   * The better model at every size — Qwen alone, or the better of the two.
+   * The paired surface: Qwen alone, or the better of Qwen and Phi.
    *
-   * Height is the chance of an exactly correct product. Colour is which model
-   * reached it, with the reliability ramp running INSIDE each hue, so lightness
-   * carries how well and hue carries which.
+   * Rendering is SurfaceCanvas's, copied rather than reinterpreted — the same
+   * `ramp` from project.ts, the same quads between cell centres, the same white
+   * seams, floor grid and camera-chosen axes. Two figures of the same quantity
+   * a section apart should read as the same instrument, and every attempt to
+   * give this one its own palette made them read as two instruments disagreeing.
    *
-   * ## One tile per cell, not quads between cells
+   * ONE HUE. Height is the quantity and the ramp is keyed to it, so a second hue
+   * meaning "which model" would compete with a ramp meaning "how often". The 15
+   * cells where Phi scored higher are marked with a dot instead. A category
+   * cannot be painted onto quads honestly in any case: a quad spans four cells,
+   * so colouring it by any one of them inflates 15 cells into 40 of 121.
    *
-   * SurfaceCanvas draws quads spanning four cells, which is right when the only
-   * thing on the surface is a continuous height. Here colour is a CATEGORY
-   * attached to a cell, and a quad has four cells at its corners, so there is no
-   * honest rule for colouring one. Painting a quad orange whenever any corner is
-   * orange turns 15 cells into 40 of 121 quads; averaging the corners instead
-   * turns them into 7. Neither is 15.
-   *
-   * So each cell owns a tile spanning half a step in every direction, and the
-   * tile's corner heights are the mean of the cells meeting at that corner.
-   * Adjacent tiles compute the same corner from the same neighbours, so the
-   * sheet stays continuous with no cracks, and exactly 15 tiles are orange.
-   *
-   * The general rule, learned the expensive way on the published version: a
-   * quantity attached to grid VERTICES must be drawn with vertex-owned tiles,
-   * never with the faces between them. Faces interpolate, and on a steep slope
-   * they turn toward the camera and fill the screen — the sheet version put
-   * orange over 60% of the surface to represent 7.8% of the problems.
-   *
-   * Draw order and projection are project.ts, unchanged; see its note on why
-   * ground-plane ordering is exact for a heightfield rather than approximate.
+   * Grid is 12x12, not the 14x14 of the single-model surface, because the paired
+   * sweep only reaches 12. That is a real difference in what was measured, so
+   * the axes carry it rather than a smoother hiding it.
    */
   import { onMount, untrack } from 'svelte';
   import { WINNER } from '../../data/winner';
-  import { project, type Camera } from './project';
+  import { project, groundOrder, ramp, type Camera } from './project';
 
   let canvas: HTMLCanvasElement | null = $state(null);
   let host: HTMLDivElement | null = $state(null);
@@ -42,92 +31,27 @@
   let mix = $state(0);
   let target = $state(0);
   let yaw = $state(-0.62);
-  let pitch = $state(0.5);
+  let pitch = $state(0.52);
 
   const DIM = WINNER.dim;
-  const ZSCALE = 5.0;
-  const PAD = 54;
-  const HALF = 0.5;
-
-  const cam = $derived<Camera>({ yaw, pitch, dist: 900, zoom: 26 });
+  const ZSCALE = 5.2;
+  const PAD = 58;
   const F = WINNER.findings;
 
-  // The published chart's ramp, which is this repo's surface ramp: pale at a low
-  // rate, deep at a high one. Two hues rather than one, because the rate is
-  // ordered but the winner is not. Blue is the shared --accent; the orange is
-  // built to match its luminance so neither reads as heavier at the same rate.
-  const RAMP = {
-    qwen: [
-      [232, 236, 243],
-      [31, 58, 95],
-    ],
-    phi: [
-      [247, 237, 224],
-      [138, 74, 18],
-    ],
-  } as const;
+  const cam = $derived<Camera>({ yaw, pitch, dist: 900, zoom: 26 });
+  const order = $derived(groundOrder(DIM - 1, yaw));
 
-  function at(a: number, b: number) {
+  function cell(a: number, b: number) {
     return WINNER.cells[`${a}x${b}`] ?? null;
   }
-  /** Qwen alone at mix 0, the better of the two at mix 1. */
   function heightAt(a: number, b: number): number | null {
-    const c = at(a, b);
+    const c = cell(a, b);
     if (!c) return null;
     return c.qwen + (Math.max(c.qwen, c.phi) - c.qwen) * mix;
   }
   function phiWins(a: number, b: number): boolean {
-    const c = at(a, b);
+    const c = cell(a, b);
     return !!c && c.phi > c.qwen;
-  }
-  /** Fewer problems behind a cell, less saturated — never less bright, which
-   *  would compete with the rate for the same channel. */
-  function evidence(a: number, b: number): number {
-    const c = at(a, b);
-    return c ? 0.55 + 0.45 * Math.min(1, c.n / 12) : 0;
-  }
-
-  /**
-   * Height anywhere on the half-step lattice, averaging only over the integer
-   * neighbours a point actually lies between. At a cell centre that is the cell
-   * itself, EXACTLY; on an edge it is the two cells either side; at a corner the
-   * four meeting there. Adjacent tiles ask for the same shared point and get the
-   * same answer, so the sheet stays continuous.
-   *
-   * The first version averaged four cells for every point including cell
-   * centres, which is a 2x2 box blur over the whole surface. It moved 13 of 144
-   * cells by more than 10 points and 12x7 by 22 -- drawn at 47% against a
-   * measured 25%. SurfaceCanvas has no such problem because its quad corners sit
-   * ON the data; a tile mesh only matches that if the tile is subdivided so a
-   * vertex lands on the cell centre too.
-   */
-  function latticeHeight(u: number, v: number): number | null {
-    const us = Number.isInteger(u) ? [u] : [u - HALF, u + HALF];
-    const vs = Number.isInteger(v) ? [v] : [v - HALF, v + HALF];
-    let sum = 0;
-    let k = 0;
-    for (const a of us) {
-      for (const b of vs) {
-        const z = heightAt(a, b);
-        if (z !== null) {
-          sum += z;
-          k += 1;
-        }
-      }
-    }
-    return k ? sum / k : null;
-  }
-
-  function tone(rate: number, phi: boolean, ev: number, blend: number): string {
-    const t = Math.max(0, Math.min(1, rate));
-    const k = phi ? blend : 0;
-    const c = [0, 1, 2].map((i) => {
-      const A = RAMP.qwen[0][i] + (RAMP.qwen[1][i] - RAMP.qwen[0][i]) * t;
-      const B = RAMP.phi[0][i] + (RAMP.phi[1][i] - RAMP.phi[0][i]) * t;
-      return A + (B - A) * k;
-    });
-    const lum = 0.2126 * c[0] + 0.7152 * c[1] + 0.0722 * c[2];
-    return `rgb(${c.map((v) => Math.round(v + (lum - v) * (1 - ev))).join(',')})`;
   }
 
   function draw() {
@@ -144,15 +68,14 @@
     ctx.clearRect(0, 0, w, h);
 
     const mid = (DIM + 1) / 2;
-    // Fit the scene to the space actually free at whatever angle it is being
-    // viewed from, as a screen-space multiplier applied AFTER the perspective
-    // divide — a viewport zoom, not a camera move, so framing cannot skew the
-    // projection. Corners include the half-step the tiles extend past the grid.
+    // Project the scene's corners about the origin, then apply one screen-space
+    // multiplier: a viewport zoom rather than a camera move, so framing cannot
+    // touch the perspective the camera already decided.
     const raw = (a: number, b: number, z: number) =>
       project(a - mid, b - mid, z * ZSCALE, cam, 0, 0);
     let bx0 = Infinity, bx1 = -Infinity, by0 = Infinity, by1 = -Infinity;
-    for (const a0 of [1 - HALF, DIM + HALF]) {
-      for (const b0 of [1 - HALF, DIM + HALF]) {
+    for (const a0 of [1, DIM]) {
+      for (const b0 of [1, DIM]) {
         for (const z0 of [0, 1]) {
           const q = raw(a0, b0, z0);
           bx0 = Math.min(bx0, q.sx); bx1 = Math.max(bx1, q.sx);
@@ -170,76 +93,90 @@
       return { sx: cx + q.sx * fit, sy: cy + q.sy * fit, depth: q.depth };
     };
 
-    // floor grid, so the sheet reads as relief against something
-    ctx.strokeStyle = 'rgba(70,80,105,0.30)';
+    // floor grid first, so the surface sits on something
+    ctx.strokeStyle = 'rgba(70,80,105,0.32)';
     ctx.lineWidth = 1;
     ctx.beginPath();
     for (let g = 1; g <= DIM; g++) {
-      const a0 = P(g, 1, 0), a1 = P(g, DIM, 0);
-      const b0 = P(1, g, 0), b1 = P(DIM, g, 0);
-      ctx.moveTo(a0.sx, a0.sy); ctx.lineTo(a1.sx, a1.sy);
-      ctx.moveTo(b0.sx, b0.sy); ctx.lineTo(b1.sx, b1.sy);
+      const a0 = P(g, 1, 0);
+      const a1 = P(g, DIM, 0);
+      const b0 = P(1, g, 0);
+      const b1 = P(DIM, g, 0);
+      ctx.moveTo(a0.sx, a0.sy);
+      ctx.lineTo(a1.sx, a1.sy);
+      ctx.moveTo(b0.sx, b0.sy);
+      ctx.lineTo(b1.sx, b1.sy);
     }
     ctx.stroke();
 
-    // Tiles are keyed on their own cell centre, so the order is the same
-    // ground-plane ordering project.ts justifies — just over cells rather than
-    // over the quads between them.
-    const s = Math.sin(yaw), c = Math.cos(yaw);
-    const tiles: Array<{ a: number; b: number; d: number }> = [];
-    for (let a = 1; a <= DIM; a++) {
-      for (let b = 1; b <= DIM; b++) {
-        if (heightAt(a, b) !== null) tiles.push({ a, b, d: (a - mid) * s + (b - mid) * c });
+    // Quads and markers go into ONE back-to-front pass. Drawn afterwards, a
+    // marker on a far cell would print over terrain standing in front of it.
+    const n = DIM - 1;
+    const sy = Math.sin(yaw), cyw = Math.cos(yaw);
+    type Item = { kind: 0 | 1; i: number; j: number; d: number };
+    const items: Item[] = [];
+    for (let k = 0; k < order.length; k++) {
+      const q = order[k];
+      const i = Math.floor(q / n) + 1;
+      const j = (q % n) + 1;
+      items.push({ kind: 0, i, j, d: (i + 0.5 - mid) * sy + (j + 0.5 - mid) * cyw });
+    }
+    if (mix > 0.01) {
+      for (let a = 1; a <= DIM; a++) {
+        for (let b = 1; b <= DIM; b++) {
+          if (phiWins(a, b)) {
+            items.push({ kind: 1, i: a, j: b, d: (a - mid) * sy + (b - mid) * cyw });
+          }
+        }
       }
     }
-    tiles.sort((p, q) => q.d - p.d); // farthest first
+    items.sort((p, q) => q.d - p.d); // farthest first
 
-    // Each tile is four sub-quads meeting at the cell centre, so one vertex of
-    // the mesh lands exactly on the measured value and the surface interpolates
-    // THROUGH the data rather than past it -- the same guarantee SurfaceCanvas
-    // gets for free by putting its quad corners on the cells. The tile keeps a
-    // single colour across all four, which is the whole reason for tiles.
-    const QUADRANTS = [
-      [-1, -1], [1, -1], [1, 1], [-1, 1],
-    ] as const;
-    for (const tl of tiles) {
-      const { a, b } = tl;
-      ctx.fillStyle = tone(
-        heightAt(a, b) as number,
-        phiWins(a, b),
-        evidence(a, b),
-        phiWins(a, b) ? mix : 0,
-      );
-      for (const [su, sv] of QUADRANTS) {
-        const local: Array<[number, number]> = [
-          [0, 0],
-          [su * HALF, 0],
-          [su * HALF, sv * HALF],
-          [0, sv * HALF],
+    ctx.lineJoin = 'round';
+    for (const it of items) {
+      if (it.kind === 0) {
+        const { i, j } = it;
+        const zs = [
+          heightAt(i, j),
+          heightAt(i + 1, j),
+          heightAt(i + 1, j + 1),
+          heightAt(i, j + 1),
         ];
-        const pts = local.map(([u, v]) =>
-          P(a + u, b + v, latticeHeight(a + u, b + v) ?? 0),
-        );
+        if (zs.some((z) => z === null)) continue;
+        const pts = [
+          P(i, j, zs[0]!),
+          P(i + 1, j, zs[1]!),
+          P(i + 1, j + 1, zs[2]!),
+          P(i, j + 1, zs[3]!),
+        ];
+        const mean = (zs[0]! + zs[1]! + zs[2]! + zs[3]!) / 4;
+
         ctx.beginPath();
         ctx.moveTo(pts[0].sx, pts[0].sy);
-        for (let k = 1; k < 4; k++) ctx.lineTo(pts[k].sx, pts[k].sy);
+        for (let p = 1; p < 4; p++) ctx.lineTo(pts[p].sx, pts[p].sy);
         ctx.closePath();
+        ctx.fillStyle = ramp(mean);
         ctx.fill();
+        ctx.strokeStyle = 'rgba(255,255,255,0.55)';
+        ctx.lineWidth = 0.6;
+        ctx.stroke();
+        continue;
       }
-      // One outline per TILE, not per sub-quad: the sub-quads are a rendering
-      // detail and drawing their seams would put a grid on the surface at twice
-      // the resolution of the data behind it.
-      const rim = [
-        [-HALF, -HALF], [HALF, -HALF], [HALF, HALF], [-HALF, HALF],
-      ].map(([u, v]) => P(a + u, b + v, latticeHeight(a + u, b + v) ?? 0));
+      // A marker: a cell Phi scored higher on. White rim so it reads against
+      // the deep end of the ramp, dark core so it reads against the pale end —
+      // the ramp spans both, and a single-colour dot vanishes into one of them.
+      const z = heightAt(it.i, it.j);
+      if (z === null) continue;
+      const p = P(it.i, it.j, z);
+      ctx.globalAlpha = Math.min(1, mix);
       ctx.beginPath();
-      ctx.moveTo(rim[0].sx, rim[0].sy);
-      for (let k = 1; k < 4; k++) ctx.lineTo(rim[k].sx, rim[k].sy);
-      ctx.closePath();
-      ctx.globalAlpha = 0.45;
-      ctx.strokeStyle = '#ffffff';
-      ctx.lineWidth = 0.6;
-      ctx.stroke();
+      ctx.arc(p.sx, p.sy, 3.7, 0, Math.PI * 2);
+      ctx.fillStyle = 'rgba(255,255,255,0.94)';
+      ctx.fill();
+      ctx.beginPath();
+      ctx.arc(p.sx, p.sy, 2.1, 0, Math.PI * 2);
+      ctx.fillStyle = '#1f3a5f';
+      ctx.fill();
       ctx.globalAlpha = 1;
     }
 
@@ -255,7 +192,8 @@
     }
     const centre = P(mid, mid, 0);
     const outward = (px: number, py: number, by: number) => {
-      const dx = px - centre.sx, dy = py - centre.sy;
+      const dx = px - centre.sx;
+      const dy = py - centre.sy;
       const m = Math.hypot(dx, dy) || 1;
       return [px + (dx / m) * by, py + (dy / m) * by] as const;
     };
@@ -265,10 +203,11 @@
       { title: 'digits in A', fixed: near[1], along: 'a' as const },
       { title: 'digits in B', fixed: near[0], along: 'b' as const },
     ]) {
-      const pt = (v: number) =>
+      const at = (v: number) =>
         ax.along === 'a' ? P(v, ax.fixed, 0) : P(ax.fixed, v, 0);
-      const e0 = pt(1), e1 = pt(DIM);
-      ctx.strokeStyle = 'rgba(50,60,82,0.55)';
+      const e0 = at(1);
+      const e1 = at(DIM);
+      ctx.strokeStyle = 'rgba(50,60,82,0.58)';
       ctx.lineWidth = 1;
       ctx.beginPath();
       ctx.moveTo(e0.sx, e0.sy);
@@ -279,7 +218,7 @@
       ctx.fillStyle = 'rgba(52,62,84,0.92)';
       ctx.textAlign = 'center';
       for (let g = 2; g <= DIM; g += 2) {
-        const t0 = pt(g);
+        const t0 = at(g);
         const [tx, ty] = outward(t0.sx, t0.sy, 5);
         const [lx, ly] = outward(t0.sx, t0.sy, 15);
         ctx.beginPath();
@@ -288,8 +227,9 @@
         ctx.stroke();
         ctx.fillText(String(g), lx, ly);
       }
-      const midE = pt(mid);
-      const [ttx, tty] = outward(midE.sx, midE.sy, 33);
+
+      const midE = at(mid);
+      const [ttx, tty] = outward(midE.sx, midE.sy, 34);
       let angle = Math.atan2(e1.sy - e0.sy, e1.sx - e0.sx);
       if (angle > Math.PI / 2) angle -= Math.PI;
       if (angle < -Math.PI / 2) angle += Math.PI;
@@ -298,30 +238,30 @@
       ctx.rotate(angle);
       ctx.font = '600 11px system-ui, sans-serif';
       ctx.fillStyle = 'rgba(45,55,75,0.95)';
+      ctx.textAlign = 'center';
       ctx.fillText(ax.title, 0, 0);
       ctx.restore();
     }
   }
 
   $effect(() => {
-    mix; yaw; pitch; w; h;
+    mix; yaw; pitch; w; h; order;
     draw();
   });
 
   /**
    * Interpolate between the two height fields rather than swapping them.
    * Switching two static pictures makes a reader hunt for what changed, and
-   * what changed IS the point: 15 tiles rise a little and turn orange, and the
-   * other 129 do not move at all.
+   * what changed IS the point: 15 cells rise a little, 129 do not move.
+   *
+   * `mix` is read UNTRACKED. Read normally it would make this effect depend on
+   * the value its own animation frame writes, so every frame would invalidate
+   * the effect, cancel the pending frame and restart the tween with the clock
+   * reset — advancing by the first instant of an ease-in curve each time and
+   * never arriving.
    */
   $effect(() => {
     const to = target;
-    // `mix` is READ UNTRACKED. Reading it normally makes this effect depend on
-    // the value its own animation frame writes, so every frame invalidates the
-    // effect, cancels the pending frame and restarts the tween from wherever it
-    // got to -- with the clock reset, so each restart advances by the first
-    // instant of an ease-in curve. The result creeps toward the target and
-    // never arrives: the toggle appeared to do almost nothing.
     const from = untrack(() => mix);
     if (to === from) return;
     if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
@@ -345,7 +285,7 @@
       const r = e[0]?.contentRect;
       if (r) {
         w = Math.max(280, Math.floor(r.width));
-        h = Math.max(320, Math.round(Math.min(470, r.width * 0.54)));
+        h = Math.max(300, Math.round(Math.min(480, r.width * 0.58)));
       }
     });
     if (host) ro.observe(host);
@@ -364,8 +304,7 @@
   function move(e: PointerEvent) {
     if (!dragging) return;
     yaw += (e.clientX - lastX) * 0.008;
-    // below ~0.16 the floor collapses to a line and it stops being a chart
-    pitch = Math.max(0.16, Math.min(1.3, pitch + (e.clientY - lastY) * 0.005));
+    pitch = Math.max(0.08, Math.min(1.35, pitch + (e.clientY - lastY) * 0.005));
     lastX = e.clientX;
     lastY = e.clientY;
   }
@@ -380,10 +319,11 @@
 <figure class="winner">
   <div class="head">
     <span class="title">
-      {target === 0 ? 'Qwen alone' : 'The better of the two'} &mdash; P(exactly correct)
+      P(exactly correct) &mdash;
+      <strong>{target === 0 ? 'Qwen alone' : 'the better of the two'}</strong>
     </span>
     <span class="meta mono">
-      {WINNER.problems.toLocaleString()} problems · both models, same questions
+      {WINNER.models[0]} + {WINNER.models[1]} · {WINNER.problems.toLocaleString()} problems
     </span>
   </div>
 
@@ -404,27 +344,25 @@
     onpointerup={up}
     onpointercancel={up}
     role="img"
-    aria-label="Surface of the probability of an exactly correct product by the digit
-      counts of the two factors. {F.qwenLevelOrAhead} of {F.qwenLevelOrAhead + F.phiAhead}
-      cells are Qwen level or higher; the {F.phiAhead} where Phi is higher are orange and
-      scattered along the falling edge. Drag to rotate."
+    aria-label="Reliability surface for the two models together: digits in factor A by
+      digits in factor B by probability of an exactly correct product. Adding Phi raises
+      {F.phiAhead} of {F.phiAhead + F.qwenLevelOrAhead} cells and leaves the rest
+      unchanged. Drag to rotate."
   >
     <canvas bind:this={canvas} style:width="{w}px" style:height="{h}px"></canvas>
     <span class="hint mono">drag to rotate</span>
   </div>
 
   <div class="key">
-    <span><i class="sw qwen"></i>Qwen level or higher</span>
-    <span><i class="sw phi"></i>Phi higher</span>
-    <span class="dim">· pale to deep = 0 to 100% correct</span>
-    <span class="dim">· greyer = fewer problems behind it</span>
+    <span><i class="sw"></i>0 to 100% correct</span>
+    <span><i class="dot"></i>a cell where Phi scored higher</span>
+    <span class="dim">· 12&times;12, the sizes both models were asked</span>
   </div>
 
   <figcaption>
-    Switching from Qwen alone to the better of the two lifts
-    <strong>{F.phiAhead} tiles of {F.phiAhead + F.qwenLevelOrAhead}</strong> and leaves
-    the rest exactly where they were. Both models hold the small sizes and fall off the
-    same cliff: fitted, Qwen is still right half the time at
+    Adding Phi raises <strong>{F.phiAhead} cells of {F.phiAhead + F.qwenLevelOrAhead}</strong>
+    and leaves the rest exactly where they were. Both models hold the small sizes and fall
+    off the same cliff: fitted, Qwen is still right half the time at
     <strong>{F.halfAt[0]}&times;{F.halfAt[0]}</strong> digits and Phi at
     <strong>{F.halfAt[1]}&times;{F.halfAt[1]}</strong> &mdash; the same curve shifted by
     {(F.halfAt[0] - F.halfAt[1]).toFixed(1)} digits, never crossing. Overall
@@ -442,9 +380,10 @@
     justify-content: space-between;
     flex-wrap: wrap;
     gap: 4px 12px;
-    margin-bottom: 8px;
+    margin-bottom: 6px;
   }
   .title { font-size: var(--text-sm); color: var(--ink-dim); }
+  .title strong { color: var(--ink); }
   .meta { font-size: 0.68rem; color: var(--ink-faint); }
 
   .ctl {
@@ -469,7 +408,7 @@
   .ctl button + button { border-left: 1px solid var(--line); }
   .ctl button:hover { color: var(--ink); }
   .ctl button.on { background: var(--accent); color: var(--bg); }
-  .ctl button:focus-visible { outline: 2px solid var(--pos); outline-offset: -2px; }
+  .ctl button:focus-visible { outline: 2px solid var(--accent); outline-offset: -2px; }
 
   .stage {
     position: relative;
@@ -505,14 +444,23 @@
   .key .dim { color: var(--ink-faint); }
   .sw {
     display: inline-block;
-    width: 34px;
+    width: 40px;
     height: 10px;
     border-radius: 2px;
     vertical-align: -1px;
     margin-right: 7px;
+    background: linear-gradient(90deg, rgb(232, 236, 243), rgb(27, 42, 94));
   }
-  .sw.qwen { background: linear-gradient(90deg, rgb(232, 236, 243), rgb(31, 58, 95)); }
-  .sw.phi { background: linear-gradient(90deg, rgb(247, 237, 224), rgb(138, 74, 18)); }
+  .dot {
+    display: inline-block;
+    width: 9px;
+    height: 9px;
+    border-radius: 50%;
+    vertical-align: -1px;
+    margin-right: 7px;
+    background: var(--accent);
+    box-shadow: 0 0 0 2px var(--bg);
+  }
 
   figcaption {
     margin-top: 14px;

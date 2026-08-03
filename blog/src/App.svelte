@@ -52,14 +52,13 @@
     <WinnerSurface />
     <Prose>
       <p>
-        The orange tiles are where Phi scored higher, and they are the reason to be
+        The marked cells are where Phi scored higher, and they are a reason to be
         careful rather than a reason to run two models. Each cell holds 3, 6 or 12
         problems, so two <em>identical</em> models would land some distance apart by luck
         alone &mdash; furthest apart in the middle, where a coin flip has the most room.
         Measured against that, <strong>10 of 144 cells</strong> are further apart than
-        chance explains, and <strong>none of them favour Phi</strong>. Every orange tile
-        on the surface is inside the range a coin would reach; ten of Qwen's leads are
-        not.
+        chance explains, and <strong>none of them favour Phi</strong>. Every marked cell
+        is inside the range a coin would reach; ten of Qwen's leads are not.
       </p>
       <p>
         Phi's best cell looks convincing on its own &mdash; 100% against Qwen's 67%, a
