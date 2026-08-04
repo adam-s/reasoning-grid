@@ -1,5 +1,5 @@
 /**
- * The sixteen categories a carrychain thinking trace is labelled with.
+ * The sixteen categories a reasoning-grid thinking trace is labelled with.
  *
  * Derived from the traces themselves, not adapted from another study. The
  * previous set of nine came from a post about a different model on a different

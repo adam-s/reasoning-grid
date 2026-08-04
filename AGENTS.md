@@ -226,4 +226,4 @@ can read this file, follow it into `.agents/`, and find everything.
 
 ## Naming
 
-The project is `carrychain`, lowercase, everywhere it is written.
+The project is `reasoning-grid`, lowercase, everywhere it is written.

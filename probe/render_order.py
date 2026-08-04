@@ -212,11 +212,11 @@ def main():
     z = (tc / tn - pc / pn) / se
     pz = math.erfc(abs(z) / math.sqrt(2))
 
-    html = f"""<title>carrychain &mdash; does A&times;B differ from B&times;A?</title>
+    html = f"""<title>reasoning-grid &mdash; does A&times;B differ from B&times;A?</title>
 <style>{CSS}</style>
 <div class="wrap">
   <header>
-    <p class="eyebrow">carrychain &middot; Qwen3-4B &middot; {n} products, each run in
+    <p class="eyebrow">reasoning-grid &middot; Qwen3-4B &middot; {n} products, each run in
       both orders</p>
     <h1>For a language model, is 3&times;12 the same problem as 12&times;3?</h1>
     <p class="lede">They are different token sequences and invite different procedures,

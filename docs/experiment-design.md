@@ -11,7 +11,7 @@ Known superseded here: the 45-samples-per-cell figure (see methods 7c), the
 adaptive-n-by-observed-rate rule (7d), the claim that a single z per cell can
 answer the blind-spot question (7b), and the token-cost constants.
 
-Project name is still `carrychain`. A rename to something that does not hardcode
+Project name is still `reasoning-grid`. A rename to something that does not hardcode
 long multiplication is pending; see the end of this document.
 
 ---
@@ -820,12 +820,12 @@ may parse a filename.
 ### 12.4 Proposed layout
 
 ```text
-carrychain/
+reasoning-grid/
   pyproject.toml          uv, package name matches the project
   uv.lock
   AGENTS.md  CLAUDE.md
   .agents/
-  src/carrychain/
+  src/reasoning-grid/
     paths.py              single source of directory truth, env-overridable
     problems.py           seeded operand generation, shared across models
     prompts.py            prompt templates, versioned and hashed
@@ -967,7 +967,7 @@ low temperature is closer to greedy than to 0.7, so greedy has some external
 validity. A compromise: run the depth tier at the lowest temperature the model
 cards permit rather than at 0, which keeps the determinism story honest.
 
-**Project name.** `carrychain` names the test case rather than the question, and
+**Project name.** `reasoning-grid` names the test case rather than the question, and
 carries a term (carry) that does not exist in modular exponentiation, cube
 moves, or agent trajectories. `firsterror` is the leading alternative, because
 `P = p^N` is exactly the survival function for time-to-first-error, and that name

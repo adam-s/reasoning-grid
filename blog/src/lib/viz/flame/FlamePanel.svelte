@@ -13,9 +13,9 @@
    * `scheme` and `header` are both REQUIRED, and neither used to be. Both
    * defaulted to what the λ-bench reference figure wanted — λ's nine categories,
    * and a header built from a model badge, an algorithm id and a wall-clock.
-   * That figure is gone. A default scheme would have coloured a carrychain trace
+   * That figure is gone. A default scheme would have coloured a reasoning-grid trace
    * with the wrong nine labels instead of failing, and the default header would
-   * have rendered an empty badge from fields carrychain traces do not carry.
+   * have rendered an empty badge from fields reasoning-grid traces do not carry.
    */
   import { scaleLinear } from 'd3-scale';
   import { MediaQuery } from 'svelte/reactivity';

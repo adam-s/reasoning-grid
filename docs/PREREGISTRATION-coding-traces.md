@@ -29,7 +29,7 @@ occupied.
 ## What would falsify it
 
 - **A phase comes back empty.** Most likely DECIDE, which is what happened to
-  the first carrychain mapping and was a defect in the category definitions
+  the first reasoning-grid mapping and was a defect in the category definitions
   rather than a finding about the model. A second empty DECIDE, under
   definitions written before the run, would be a real result.
 - **The moves are there but the ordering is not.** If phases occur in no

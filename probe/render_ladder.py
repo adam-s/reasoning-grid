@@ -167,11 +167,11 @@ def main():
     widest = max((hi - lo, nm, dims[i])
                  for nm, _, pts in series for i, (p, lo, hi, k) in enumerate(pts))
 
-    html = f"""<title>carrychain &mdash; where the measurement converges</title>
+    html = f"""<title>reasoning-grid &mdash; where the measurement converges</title>
 <style>{CSS}</style>
 <div class="wrap">
   <header>
-    <p class="eyebrow">carrychain &middot; diagonal ladder &middot; temp 0.7 &middot; thinking on</p>
+    <p class="eyebrow">reasoning-grid &middot; diagonal ladder &middot; temp 0.7 &middot; thinking on</p>
     <h1>Where the measurement converges, and where it is still noise</h1>
     <p class="lede">Each point is one cell of the grid with its 95% Wilson interval and
       its trial count. The heatmap shows the whole surface but makes every tile look

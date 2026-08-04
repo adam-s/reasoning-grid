@@ -15,7 +15,7 @@ const out = await page.evaluate(async () => {
   const { ALLOCATION } = await import('/src/lib/data/allocation.ts').catch(() => ({}));
   const { THINKING_MIX } = await import('/src/lib/data/thinking-mix.ts');
   const { OPENER } = await import('/src/lib/data/opener.ts');
-  const { CARRY_TRACES } = await import('/src/lib/data/carrychain-traces.ts');
+  const { CARRY_TRACES } = await import('/src/lib/data/reasoning-grid-traces.ts');
   const { SCORES, SCORES_GROUP } = await import('/src/lib/data/sampling.ts');
 
   const r = {};

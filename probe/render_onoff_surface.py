@@ -125,7 +125,7 @@ def gap_svg(by_min, W=880, H=290):
     return "\n".join(out)
 
 
-PAGE = """<title>carrychain &mdash; where reasoning earns its tokens</title>
+PAGE = """<title>reasoning-grid &mdash; where reasoning earns its tokens</title>
 <style>
 :root{ --paper:#fdfcf9; --panel:#f7f5f0; --line:#e8e4dc; --line-2:#d8d2c4;
   --ink:#1a1a1a; --dim:#5a5a5a; --faint:#9a9a9a; --navy:#1f3a5f;
@@ -189,7 +189,7 @@ canvas:active{cursor:grabbing}
   max-width:920px}
 </style>
 <div class="wrap">
-  <p class="eyebrow">carrychain &middot; Qwen3-4B &middot; __PROBS__ identical problems</p>
+  <p class="eyebrow">reasoning-grid &middot; Qwen3-4B &middot; __PROBS__ identical problems</p>
   <h1>Where reasoning earns its tokens</h1>
   <p class="lede col">Same model, same problems, same temperature. The only difference is
   whether the chat template lets it work before answering. The gap between these two

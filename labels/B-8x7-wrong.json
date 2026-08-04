@@ -3,7 +3,7 @@
   "uid": "40714cc609335d41",
   "cell": "8x7",
   "outcome": "converged_wrong",
-  "rubric": ".agents/reference/flame-rubric-carrychain.md",
+  "rubric": ".agents/reference/flame-rubric-reasoning-grid.md",
   "labelled_blind": true,
   "note": "B was labelled first, before A, as the rubric requires. Outcome was known (it is in the filename) but A's trace was not consulted while labelling B, so B's checks could not be graded against A's.",
 

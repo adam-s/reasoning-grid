@@ -1,6 +1,6 @@
 ---
 name: prose-review
-description: Read a piece of carrychain writing phrase by phrase for how it could be misread, then check it against Adam's voice and this repo's prose rules. Use when the user says "check this", "how does this read", "review the wording", "could this be taken wrong", or pastes a draft — and before publishing blog prose, a RESULTS write-up, or anything the essay will cite. Read-only; it reports and does not edit.
+description: Read a piece of reasoning-grid writing phrase by phrase for how it could be misread, then check it against Adam's voice and this repo's prose rules. Use when the user says "check this", "how does this read", "review the wording", "could this be taken wrong", or pastes a draft — and before publishing blog prose, a RESULTS write-up, or anything the essay will cite. Read-only; it reports and does not edit.
 allowed-tools: Read, Grep, Glob, Task
 model: opus
 effort: high
@@ -22,7 +22,7 @@ reader would take, do not report it.
 
 ## Step 0 — What is being reviewed
 
-carrychain's artifacts have known audiences, so infer rather than interrogate.
+reasoning-grid's artifacts have known audiences, so infer rather than interrogate.
 State the inference in one line and proceed.
 
 | artifact | reader | the bar |
@@ -109,7 +109,7 @@ constantly: **no colons and no em dashes**, which is stricter than anti-slop's
 around it.
 
 The short version: **the repo owns the surface, the voice owns the reasoning.**
-Sentence length, paragraph length and reading level are carrychain's call —
+Sentence length, paragraph length and reading level are reasoning-grid's call —
 shorten without apology. Explanation over slogan, context before the claim,
 support instead of naked assertion, no hype and no lecturing — that is the voice,
 and it survives the shortening.

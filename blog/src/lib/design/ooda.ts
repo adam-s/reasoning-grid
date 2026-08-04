@@ -48,7 +48,7 @@
  * Neither call can empty a phase, which is the property the previous mapping
  * lacked.
  */
-import { carryCategoryMeta, type CarryCategory, type Ooda } from './carrychain-categories';
+import { carryCategoryMeta, type CarryCategory, type Ooda } from './reasoning-grid-categories';
 import type { CategoryScheme, SchemeMeta } from './scheme';
 
 export const OODA_PHASES = ['OBSERVE', 'ORIENT', 'DECIDE', 'ACT'] as const;

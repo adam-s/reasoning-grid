@@ -175,11 +175,11 @@ def main():
              ("either model", f"{either:.1%}"),
              ("coverage gained", f"+{either-solo:.1%}")]
 
-    html = f"""<title>carrychain &mdash; do two models fail in the same places?</title>
+    html = f"""<title>reasoning-grid &mdash; do two models fail in the same places?</title>
 <style>{CSS}</style>
 <div class="wrap">
   <header>
-    <p class="eyebrow">carrychain &middot; {n:,} paired problems &middot; {dim}&times;{dim}</p>
+    <p class="eyebrow">reasoning-grid &middot; {n:,} paired problems &middot; {dim}&times;{dim}</p>
     <h1>Two models, two companies, and the problems only one of them can do</h1>
     <p class="lede">Every problem below was given to both models &mdash; same digits, same
       seed, same settings. That pairing is what makes the question answerable: two models

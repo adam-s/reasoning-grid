@@ -1,7 +1,7 @@
 # Data visualization reference
 
 Survey of what is actually used across `~/Projects`, so a later session does not
-re-derive it. **Nothing here is in use by carrychain yet.** This is a pointer
+re-derive it. **Nothing here is in use by reasoning-grid yet.** This is a pointer
 file for when the grid needs rendering.
 
 Surveyed 2026-07-30.
@@ -102,7 +102,7 @@ Worth stating because it is not obvious from any single file:
 
 So the browser never sees raw records, and the reduction step is a committed,
 re-runnable script rather than a notebook. That is the same separation
-carrychain uses between `runs/` and `derived/`.
+reasoning-grid uses between `runs/` and `derived/`.
 
 ---
 
@@ -111,7 +111,7 @@ carrychain uses between `runs/` and `derived/`.
 A bundled `dataviz` skill exists and carries a **validated categorical palette**
 plus a runnable checker (`scripts/validate_palette.js`) that tests lightness
 band, chroma floor, colour-blind separation and contrast. It was used for the
-carrychain artifacts; both light and dark palettes passed.
+reasoning-grid artifacts; both light and dark palettes passed.
 
 Values that passed, for reuse:
 
@@ -126,7 +126,7 @@ dismissable — it obliges a visible label or a table view.
 
 ---
 
-## For the carrychain grid, when we come back to it
+## For the reasoning-grid grid, when we come back to it
 
 The deliverable is `x` = digits of A, `y` = digits of B, `z` = probability. That
 is a **heatmap**, which means a sequential ramp (one hue, light to dark), not a

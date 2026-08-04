@@ -17,12 +17,12 @@ WHAT IT IS
 
 Eight traces from Claude Haiku, Opus and Sonnet on long multiplication and
 modular exponentiation, 903 segments, labelled with the nine categories that
-carrychain's v1 scheme was later adapted from.
+reasoning-grid's v1 scheme was later adapted from.
 
 CATEGORIES, NOT OODA PHASES, AND THAT IS DELIBERATE
 
 The obvious chart is share-of-thinking per OODA phase. It cannot be drawn
-honestly from this scheme. `.agents/reference/flame-rubric-carrychain.md` maps
+honestly from this scheme. `.agents/reference/flame-rubric-reasoning-grid.md` maps
 `STRATEGY` (this scheme's `DECOMPOSITION`) to BOTH Orient and Decide, because
 in these traces the model states a plan and commits in one breath. A phase
 chart would have to double-count the largest category or put it somewhere by

@@ -174,11 +174,11 @@ def main():
             cross = f"{lo}&ndash;{hi}"
             break
 
-    html = f"""<title>carrychain &mdash; what the model spends, and what it gets</title>
+    html = f"""<title>reasoning-grid &mdash; what the model spends, and what it gets</title>
 <style>{CSS}</style>
 <div class="wrap">
   <header>
-    <p class="eyebrow">carrychain &middot; Qwen3-4B &middot; 3,132 runs &middot;
+    <p class="eyebrow">reasoning-grid &middot; Qwen3-4B &middot; 3,132 runs &middot;
       temp 0.7 &middot; identical problems</p>
     <h1>Without reasoning, it doesn&rsquo;t try harder on harder problems</h1>
     <p class="lede">Same model, same 196 cells, same seeded problems. One difference:

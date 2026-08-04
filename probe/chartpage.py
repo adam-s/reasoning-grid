@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""The page shell every carrychain chart is served in.
+"""The page shell every reasoning-grid chart is served in.
 
 One copy, because five copies of a theme drift into five themes. Everything
 specific to a chart -- the figure, its key, its notes -- is passed in.
@@ -60,7 +60,7 @@ svg{display:block;width:100%;height:auto}
 .note strong{color:var(--dim)}
 """
 
-SHELL = """<title>carrychain &mdash; __TITLE__</title>
+SHELL = """<title>reasoning-grid &mdash; __TITLE__</title>
 <style>__CSS____EXTRA__</style>
 <div class="wrap">
   <p class="eyebrow">__EYEBROW__</p>

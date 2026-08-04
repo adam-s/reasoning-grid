@@ -42,7 +42,7 @@ def diag(beta):
     return -beta[0] / (2 * beta[1] + beta[2])
 
 
-PAGE = """<title>carrychain &mdash; the better model at every size</title>
+PAGE = """<title>reasoning-grid &mdash; the better model at every size</title>
 <style>
 :root{ --paper:#fdfcf9; --panel:#f7f5f0; --line:#e6e2d9; --line-2:#cdc7bb; --ink:#191817;
   --dim:#57544e; --faint:#a29d94; --lead-a:#1f3a5f; --lead-b:#c9853a; }
@@ -106,7 +106,7 @@ canvas:active{cursor:grabbing}
 .note strong{color:var(--dim)}
 </style>
 <div class="wrap">
-  <p class="eyebrow">carrychain &middot; __INST__ problems &middot; both models, same
+  <p class="eyebrow">reasoning-grid &middot; __INST__ problems &middot; both models, same
   questions</p>
   <h1>The better model at every size</h1>
   <p class="lede">Start with Qwen alone, then add Phi and watch what moves. Height is

@@ -26,7 +26,7 @@ is what is on the site.
 
 ```sh
 cd ~/Projects/blog
-./scripts/sync-app.sh ~/Projects/carrychain/blog carrychain
+./scripts/sync-app.sh ~/Projects/reasoning-grid/blog reasoning-grid
 # then add a <dt>/<dd> to index.html, commit, push -- CI does s3 sync + invalidation
 ```
 
@@ -34,8 +34,8 @@ cd ~/Projects/blog
 same build to an arbitrary subpath, so asset URLs must be relative.
 
 See `~/Projects/blog/.claude/CLAUDE.md` for the AWS side (S3 + CloudFront +
-Route53, and the CloudFront Function that rewrites `/carrychain/` to
-`/carrychain/index.html`).
+Route53, and the CloudFront Function that rewrites `/reasoning-grid/` to
+`/reasoning-grid/index.html`).
 
 ## House style — do not re-pick this
 
@@ -123,8 +123,8 @@ Published versions of all of them, with their URLs and findings, are in
 ## The flame stack is shared, and takes its categories as a prop
 
 `viz/flame/` came from the λ-bench post importing `design/categories.ts`
-directly, so it could only ever render λ's nine. carrychain now has **sixteen of
-its own** (`design/carrychain-categories.ts`), derived from its own traces rather
+directly, so it could only ever render λ's nine. reasoning-grid now has **sixteen of
+its own** (`design/reasoning-grid-categories.ts`), derived from its own traces rather
 than adapted from a study of a different model on a different task, so
 `design/scheme.ts` carries the set as a value and the components take it as a
 `scheme` prop.
@@ -137,9 +137,9 @@ Every figure below inherits that number.
 
 `scheme` and `header` are both required, and neither used to be. Each defaulted
 to what the λ reference figure wanted, and that figure is gone. A default scheme
-would colour a carrychain trace with the wrong nine labels rather than failing,
+would colour a reasoning-grid trace with the wrong nine labels rather than failing,
 and the λ header is model-specific chrome — a model badge, an algorithm id, a
-wall-clock — built from fields carrychain traces do not carry, so it rendered
+wall-clock — built from fields reasoning-grid traces do not carry, so it rendered
 empty. Rows are typed structurally (`AnyFlameRow`) rather than by a literal
 union: a chart needs a colour for the string it was handed, and a category the
 scheme is missing is a data bug, not something to catch by narrowing a component.

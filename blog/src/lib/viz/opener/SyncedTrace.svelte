@@ -47,9 +47,9 @@
   import katex from 'katex';
   import 'katex/dist/katex.min.css';
   import { OPENER, type Claim } from '../../data/opener';
-  import { CARRY_TRACES } from '../../data/carrychain-traces';
+  import { CARRY_TRACES } from '../../data/reasoning-grid-traces';
   import { CARRY_SCHEME } from '../../design/scheme';
-  import { carryCategoryMeta } from '../../design/carrychain-categories';
+  import { carryCategoryMeta } from '../../design/reasoning-grid-categories';
   import FlamePanel from '../flame/FlamePanel.svelte';
 
   let which = $state(0);

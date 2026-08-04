@@ -1,6 +1,6 @@
 ---
 name: red-team-test
-description: Launch a red-team reviewer (Opus) to attack carrychain's tests — tautological assertions, fixtures that do not resemble real model output, and the gaps that let the answer parser ship broken four times. Use when the user says "red team the tests", "audit the tests", or after changing the parser or the reducer.
+description: Launch a red-team reviewer (Opus) to attack reasoning-grid's tests — tautological assertions, fixtures that do not resemble real model output, and the gaps that let the answer parser ship broken four times. Use when the user says "red team the tests", "audit the tests", or after changing the parser or the reducer.
 ---
 
 # Red-team review (tests)

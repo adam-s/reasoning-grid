@@ -9,7 +9,7 @@
  *
  * `start` and `width` are CHARACTER OFFSETS in the trace, not seconds.
  */
-import type { CarryCategory } from '../design/carrychain-categories';
+import type { CarryCategory } from '../design/reasoning-grid-categories';
 
 export type CarryFlameRow = {
   readonly depth: number;

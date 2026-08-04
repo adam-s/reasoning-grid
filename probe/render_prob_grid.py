@@ -133,7 +133,7 @@ def grid(g, W=960):
     return "\n".join(o), dim
 
 
-PAGE = """<title>carrychain &mdash; where each model stops being reliable</title>
+PAGE = """<title>reasoning-grid &mdash; where each model stops being reliable</title>
 <style>
 :root{ --paper:#fdfcf9; --panel:#f7f5f0; --line:#e6e2d9; --ink:#191817; --dim:#57544e;
   --faint:#a29d94; --lead-a:#1f3a5f; --lead-b:#c9853a; --hi:#c9853a; }
@@ -185,7 +185,7 @@ svg{display:block;width:100%;min-width:660px;height:auto}
 .note strong{color:var(--dim)}
 </style>
 <div class="wrap">
-  <p class="eyebrow">carrychain &middot; __INST__ problems &middot; both models, same
+  <p class="eyebrow">reasoning-grid &middot; __INST__ problems &middot; both models, same
   questions</p>
   <h1>Where each model stops being reliable</h1>
   <p class="lede">One cell per problem size. The two bars are the chance each model

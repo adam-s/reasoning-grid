@@ -1,7 +1,7 @@
 # v1 labels — frozen
 
 The first labelling pass, against the nine categories in
-[../../.agents/reference/flame-rubric-carrychain.md](../../.agents/reference/flame-rubric-carrychain.md).
+[../../.agents/reference/flame-rubric-reasoning-grid.md](../../.agents/reference/flame-rubric-reasoning-grid.md).
 Read-only. Nothing regenerates these; a script cannot rebuild a judgment.
 
 ## Why they are frozen rather than replaced
@@ -33,7 +33,7 @@ where Qwen actually spends its time.
 ## What survives on its own merits
 
 Splitting λ's single `VERIFICATION` into `RECHECK` and `CROSSCHECK` is
-carrychain's own, argued from 516 traces before labelling began, and it carries
+reasoning-grid's own, argued from 516 traces before labelling began, and it carries
 the finding. v2 has to earn that distinction again rather than inherit it, but it
 is not the reason for the redo.
 

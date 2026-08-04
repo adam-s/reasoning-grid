@@ -428,11 +428,11 @@ def main():
       </table></div>
     </section>"""
 
-    html = f"""<title>carrychain &mdash; {dim}&times;{dim} reliability grid</title>
+    html = f"""<title>reasoning-grid &mdash; {dim}&times;{dim} reliability grid</title>
 <style>{CSS}</style>
 <div class="wrap">
   <header>
-    <p class="eyebrow">carrychain &middot; sweep {doc['sweep']}</p>
+    <p class="eyebrow">reasoning-grid &middot; sweep {doc['sweep']}</p>
     <h1>{args.title}</h1>
     <p class="lede">Every cell is a multiplication size. Each is run many times, and its
       shade is the share of runs that returned the exactly correct product &mdash; deep

@@ -1,6 +1,6 @@
 # Classifying a thinking trace into a flame chart
 
-How the λ-bench variance post did it, and what changes for carrychain.
+How the λ-bench variance post did it, and what changes for reasoning-grid.
 
 Source: `agent-capability-threshold`, branch `sonnet-variance-demo`, published in
 the post's own Methods section. Ten commits went into the classification alone,
@@ -92,7 +92,7 @@ Three parts, and only the third has to be earned:
    only be written after seeing bad charts. Note the shouted caveat on
    ARITHMETIC: the model kept reaching for it.
 
-## What changes for carrychain
+## What changes for reasoning-grid
 
 **Segmentation.** Splitting at newlines gives them 30–130 segments; it gives us
 **213**, because Qwen writes short lines (median 52 chars — `"So 34."`,

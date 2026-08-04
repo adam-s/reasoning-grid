@@ -186,11 +186,11 @@ def main():
         kb, nb = sum(c["k"] for c in b), sum(c["n"] for c in b)
         rows.append((f"{lo}&ndash;{hi}", ka, na, kb, nb))
 
-    html = f"""<title>carrychain &mdash; is the reasoning doing the arithmetic?</title>
+    html = f"""<title>reasoning-grid &mdash; is the reasoning doing the arithmetic?</title>
 <style>{CSS}</style>
 <div class="wrap">
   <header>
-    <p class="eyebrow">carrychain &middot; Qwen3-4B &middot; 196 cells &times; 2 &middot;
+    <p class="eyebrow">reasoning-grid &middot; Qwen3-4B &middot; 196 cells &times; 2 &middot;
       temp 0.7 &middot; identical problems</p>
     <h1>Is the reasoning doing the arithmetic, or the weights?</h1>
     <p class="lede">Same model, same {len(on)} cells, same seeded problems, same

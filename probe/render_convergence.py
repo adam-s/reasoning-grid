@@ -251,11 +251,11 @@ def main():
     half = n // 2
     swing = max(abs(sum(outcomes[:i]) / i - p) for i in range(max(half, 1), n + 1))
 
-    html = f"""<title>carrychain &mdash; has one cell converged?</title>
+    html = f"""<title>reasoning-grid &mdash; has one cell converged?</title>
 <style>{CSS}</style>
 <div class="wrap">
   <header>
-    <p class="eyebrow">carrychain &middot; {mname} &middot; {a}&times;{b} &middot;
+    <p class="eyebrow">reasoning-grid &middot; {mname} &middot; {a}&times;{b} &middot;
       temp 0.7 &middot; thinking on</p>
     <h1>One cell, {n} trials, and whether the number has settled</h1>
     <p class="lede">The grid reports {p:.0%} for this cell. This is what that single

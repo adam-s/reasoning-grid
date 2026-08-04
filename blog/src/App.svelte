@@ -164,10 +164,17 @@
    */
 </script>
 
+<!-- The badge back to the site, same markup, position and breakpoint as the
+     clap and separate posts. A post that reads as part of adamsohn.com has to
+     say so somewhere, and the corner is where the other four say it. It is
+     dropped under 560px because a fixed element floats over the text on a
+     phone, which is the same reason those posts drop it. -->
+<a class="byline mono" href="https://adamsohn.com">adamsohn.com</a>
+
 <Layout>
   <Section width="measure">
     <Prose>
-      <h1>Model reasoning mapped to an OODA loop</h1>
+      <h1>Model Reasoning Mapped to an OODA Loop</h1>
     </Prose>
   </Section>
 
@@ -542,7 +549,7 @@
 
        LOCKED IS A CHECKING RESULT, NOT A SIZE RESULT, and two drafts got this
        backwards. The four traces are chosen at NEIGHBOURING difficulty (see the
-       generated header on carrychain-traces.ts: N = 56 to 77, one per way the
+       generated header on reasoning-grid-traces.ts: N = 56 to 77, one per way the
        checking machinery can behave), so size is the controlled variable and
        cannot carry a conclusion. Locked sits at 5x13, mid-range, and its own
        blurb is "Had the right answer, a broken check destroyed it." Using it as
@@ -594,6 +601,21 @@
 </Layout>
 
 <style>
+  .byline {
+    position: fixed;
+    top: var(--space-md);
+    right: var(--space-lg);
+    z-index: 30;
+    font-size: 0.74rem;
+    color: var(--ink-faint);
+    border-bottom: 1px solid var(--line-strong);
+    text-decoration: none;
+  }
+  .byline:hover { color: var(--accent); }
+  @media (max-width: 560px) {
+    .byline { display: none; }
+  }
+
   /* The buttons and the figure they drive are one unit for scrolling. The
      margin is what stops the row landing flush against the top edge of the
      viewport when a moment is played. */

@@ -10,7 +10,7 @@
    * labels that were already published rather than anything collected here.
    *
    * Eight traces, 903 segments, Claude Haiku, Opus and Sonnet on long
-   * multiplication and modular exponentiation. Same nine categories carrychain's
+   * multiplication and modular exponentiation. Same nine categories reasoning-grid's
    * first labelling scheme was adapted from. The categories describe all three
    * models and every segment lands in one. The proportions do not agree at all.
    *
@@ -18,7 +18,7 @@
    *
    * TWO DESIGN CHOICES, ONE ARGUMENT EACH.
    *
-   * Not phases: `.agents/reference/flame-rubric-carrychain.md` maps `STRATEGY`
+   * Not phases: `.agents/reference/flame-rubric-reasoning-grid.md` maps `STRATEGY`
    * (this scheme's `DECOMPOSITION`) to BOTH Orient and Decide, because the model
    * states a plan and commits in one breath. A phase chart has to double-count
    * the largest category or place it by fiat, and since `DECOMPOSITION` is 31%

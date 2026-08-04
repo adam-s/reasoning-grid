@@ -121,7 +121,7 @@ def main():
     out = {
         "trace": "C", "uid": doc["instance_uid"], "cell": doc["cell"],
         "outcome": doc["outcome"], "temperature": doc["temperature"],
-        "rubric": ".agents/reference/flame-rubric-carrychain.md",
+        "rubric": ".agents/reference/flame-rubric-reasoning-grid.md",
         "labelled_blind": False,
         "note": (
             "Labelled after A and B, whose labels were already locked and were not "

@@ -1,6 +1,6 @@
 ---
 name: red-team-review
-description: Launch a red-team reviewer (Opus) to find real defects in carrychain's measurement harness and charts — silent data corruption, broken invariants, figures that overstate what was measured. Not style nits. Use when the user asks for a "red team" or "bug hunt", or before publishing a number or a figure.
+description: Launch a red-team reviewer (Opus) to find real defects in reasoning-grid's measurement harness and charts — silent data corruption, broken invariants, figures that overstate what was measured. Not style nits. Use when the user asks for a "red team" or "bug hunt", or before publishing a number or a figure.
 ---
 
 # Red-team review
@@ -45,7 +45,7 @@ Every failure this project has actually shipped produced believable output:
    not encode, or a caption whose number is hard-coded rather than derived from
    the data beside it.
 4. **`labels/` against the fail conditions in
-   [flame-rubric-carrychain.md](../../reference/flame-rubric-carrychain.md).**
+   [flame-rubric-reasoning-grid.md](../../reference/flame-rubric-reasoning-grid.md).**
    Judgment, not measurement, so nothing downstream catches an error. Check them
    mechanically.
 

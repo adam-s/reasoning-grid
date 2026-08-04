@@ -7,7 +7,7 @@
  * chart takes the scheme as an input instead. `scheme` is REQUIRED, not
  * defaulted: it was briefly defaulted to the λ scheme so the λ reference figure
  * kept rendering without changes, and when that figure was dropped the default
- * became a silent fallback that would colour a carrychain trace with the wrong
+ * became a silent fallback that would colour a reasoning-grid trace with the wrong
  * nine labels rather than failing.
  *
  * Rows are typed structurally rather than by a literal union. A chart does not
@@ -63,7 +63,7 @@ export function metaFor(scheme: CategoryScheme, category: string): SchemeMeta {
   return scheme.meta[category] ?? scheme.fallback;
 }
 
-import { CARRY_CATEGORIES, carryCategoryMeta } from './carrychain-categories';
+import { CARRY_CATEGORIES, carryCategoryMeta } from './reasoning-grid-categories';
 
 export const CARRY_SCHEME: CategoryScheme = {
   order: CARRY_CATEGORIES,

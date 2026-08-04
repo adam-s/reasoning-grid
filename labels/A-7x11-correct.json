@@ -3,7 +3,7 @@
   "uid": "2a5d6f4d7556b739",
   "cell": "7x11",
   "outcome": "converged_right",
-  "rubric": ".agents/reference/flame-rubric-carrychain.md",
+  "rubric": ".agents/reference/flame-rubric-reasoning-grid.md",
   "labelled_blind": false,
   "note": "Labelled second, after B's labels were written and locked. No B label was revised afterward. Where the same borderline appeared in both traces -- a place-value doubt resolved by converting to scientific notation (B[10], A[11], A[14]) -- both got CROSSCHECK.",
 

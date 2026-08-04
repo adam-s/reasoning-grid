@@ -4,7 +4,7 @@
  "cell": "5x13",
  "outcome": "grind",
  "temperature": 0.0,
- "rubric": ".agents/reference/flame-rubric-carrychain.md",
+ "rubric": ".agents/reference/flame-rubric-reasoning-grid.md",
  "labelled_blind": false,
  "note": "Labelled after A and B, whose labels were already locked and were not revised. Segments 0-72 individually; 73-395 by mapping each of the 44 distinct texts once. See probe/label_grind.py. A later blind pass reproduced all 117 judgments from segment text alone and moved 16 of them; see the reconciliation section of labels/README.md.",
  "labels": [

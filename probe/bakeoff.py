@@ -44,6 +44,13 @@ vllm_image = (
 
 hf_cache = modal.Volume.from_name("huggingface-cache", create_if_missing=True)
 vllm_cache = modal.Volume.from_name("vllm-cache", create_if_missing=True)
+# THESE TWO NAMES DO NOT FOLLOW THE PROJECT RENAME, and must not be changed
+# casually. `carrychain-runs` is a Modal Volume that already holds every raw
+# generation on record, and this call creates a volume if it does not find one
+# -- so renaming the string here would silently bind to a new empty volume and
+# every sweep on disk would stop being reachable, with no error anywhere. The
+# app name is paired with it in the stop command above. Renaming them means
+# migrating the volume first, deliberately, not editing a literal.
 results_vol = modal.Volume.from_name("carrychain-runs", create_if_missing=True)
 
 app = modal.App("carrychain-bakeoff")

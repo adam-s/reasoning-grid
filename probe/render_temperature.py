@@ -179,11 +179,11 @@ def main():
     z = (p0 - p1) / se
     pv = math.erfc(abs(z) / math.sqrt(2))
 
-    html = f"""<title>carrychain &mdash; does temperature change the answer?</title>
+    html = f"""<title>reasoning-grid &mdash; does temperature change the answer?</title>
 <style>{CSS}</style>
 <div class="wrap">
   <header>
-    <p class="eyebrow">carrychain &middot; Qwen3-4B &middot; {ca}&times;{cb} &middot;
+    <p class="eyebrow">reasoning-grid &middot; Qwen3-4B &middot; {ca}&times;{cb} &middot;
       reasoning OFF &middot; top_p 1.0</p>
     <h1>Turning the randomness up makes it worse</h1>
     <p class="lede">The grid runs at one temperature, so it cannot answer this. An earlier

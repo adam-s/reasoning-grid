@@ -90,7 +90,7 @@
   --radius-sm: 3px;
   --radius-md: 5px;
 
-  /* ---- carrychain's semantic assignment of the shared hues ----
+  /* ---- reasoning-grid's semantic assignment of the shared hues ----
      ONE language, start to finish. See blog/README.md.
        reliability  a single warm ramp, pale -> deep. Sequential data gets one
                     hue; a rainbow invents boundaries the numbers do not have.

@@ -232,7 +232,7 @@ def main():
     args = ap.parse_args()
 
     root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-    ts = open(os.path.join(root, "blog/src/lib/data/carrychain-traces.ts")).read()
+    ts = open(os.path.join(root, "blog/src/lib/data/reasoning-grid-traces.ts")).read()
     built = json.loads(ts[ts.index("= [") + 2:ts.rindex("];") + 1])
 
     out = []

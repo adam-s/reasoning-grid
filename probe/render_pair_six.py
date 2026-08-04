@@ -276,7 +276,7 @@ def boundaries(grid, W=880, H=430):
     return "\n".join(o)
 
 
-PAGE = """<title>carrychain &mdash; six views of one pair</title>
+PAGE = """<title>reasoning-grid &mdash; six views of one pair</title>
 <style>
 :root{ --paper:#fdfcf9; --panel:#f7f5f0; --line:#e8e4dc; --line-2:#d8d2c4;
   --ink:#1a1a1a; --dim:#5a5a5a; --faint:#9a9a9a;
@@ -339,7 +339,7 @@ canvas:active{cursor:grabbing}
   max-width:920px}
 </style>
 <div class="wrap">
-  <p class="eyebrow">carrychain &middot; __N__ problems &middot; both models, same questions</p>
+  <p class="eyebrow">reasoning-grid &middot; __N__ problems &middot; both models, same questions</p>
   <h1>Six views of one pair</h1>
   <p class="lede col">Qwen and Phi answered the same __N__ multiplications. Qwen is the
   better model at every difficulty. The question is not which to pick &mdash; it is

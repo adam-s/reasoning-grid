@@ -176,7 +176,7 @@ def main():
     )
     html = chartpage.page(
         "which axis is difficulty",
-        f"carrychain &middot; {len(by_tot)} totals &middot; {len(inst):,} problems",
+        f"reasoning-grid &middot; {len(by_tot)} totals &middot; {len(inst):,} problems",
         "Which axis is difficulty?",
         "Each panel fixes the total number of digits. Across a panel the problem "
         "changes shape &mdash; more partial products, shorter ones. Flat panels mean "

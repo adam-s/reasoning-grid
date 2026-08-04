@@ -181,7 +181,7 @@ def main():
     )
     html = chartpage.page(
         "do the two models disagree by more than noise?",
-        f"carrychain &middot; {len(pts)} cells &middot; {len(inst):,} problems",
+        f"reasoning-grid &middot; {len(pts)} cells &middot; {len(inst):,} problems",
         "Is the disagreement bigger than the noise?",
         "Each cell is a point: the two models&rsquo; average rate across, how far "
         "apart they landed up. The dashed funnel is how far apart pure sampling noise "

@@ -208,11 +208,11 @@ def main():
     rows = [("temperature 0", disc, n, "var(--cold)", "vs T=0.7"),
             ("asked twice", cf, len(ctl), "var(--hot)", "T=0.7 vs T=0.7")]
 
-    html = f"""<title>carrychain &mdash; does greedy decoding help?</title>
+    html = f"""<title>reasoning-grid &mdash; does greedy decoding help?</title>
 <style>{CSS}</style>
 <div class="wrap">
   <header>
-    <p class="eyebrow">carrychain &middot; Qwen3-4B &middot; {n} hard problems &middot;
+    <p class="eyebrow">reasoning-grid &middot; Qwen3-4B &middot; {n} hard problems &middot;
       reasoning on &middot; run once at each temperature</p>
     <h1>Turning the randomness off changes the answer, but not for the better</h1>
     <p class="lede">If a model keeps changing its mind, the obvious fix is to stop it

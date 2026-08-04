@@ -29,7 +29,7 @@ import sys
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from reduce_grid import load  # noqa: E402
 
-PAGE = """<title>carrychain &mdash; watching the surface settle</title>
+PAGE = """<title>reasoning-grid &mdash; watching the surface settle</title>
 <style>
 :root{ --paper:#f5f7fa; --ink:#111621; --muted:#5a6478; --line:#d9dfe9; --card:#fff;
        --ramp-lo:#e6ebf3; --ramp-hi:#1b2a5e; --signal:#c0761a; }
@@ -70,7 +70,7 @@ input[type=range]{flex:1;min-width:200px;accent-color:var(--ramp-hi)}
 </style>
 <div class="wrap">
   <header>
-    <p class="eyebrow">carrychain &middot; __MODEL__ &middot; __CELLS__ cells &middot;
+    <p class="eyebrow">reasoning-grid &middot; __MODEL__ &middot; __CELLS__ cells &middot;
       temp 0.7 &middot; thinking on</p>
     <h1>Watching the surface settle</h1>
     <p class="lede">x is the digits of A, y the digits of B, height is the share of runs

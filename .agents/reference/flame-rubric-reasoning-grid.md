@@ -1,4 +1,4 @@
-# Classification rubric — carrychain multiplication traces
+# Classification rubric — reasoning-grid multiplication traces
 
 Written **before** any labelling. If run A's checks get graded more generously
 than run B's, the comparison the post rests on is worthless — and unlike a

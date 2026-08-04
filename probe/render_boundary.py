@@ -180,7 +180,7 @@ def main():
     )
     html = chartpage.page(
         "where each model crosses 50%",
-        f"carrychain &middot; {len(inst):,} problems &middot; both models, same questions",
+        f"reasoning-grid &middot; {len(inst):,} problems &middot; both models, same questions",
         "Where each model stops being right half the time",
         "One line per model: the problem sizes where its chance of an exactly correct "
         "product falls through a half. The question is whether the two lines cross.",

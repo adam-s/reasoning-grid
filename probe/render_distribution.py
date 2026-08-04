@@ -184,11 +184,11 @@ def main():
     dstar = math.sqrt(math.exp(-A / B))
     mname = args.model.split("/")[-1]
 
-    html = f"""<title>carrychain &mdash; the grid is a distribution, not a curve</title>
+    html = f"""<title>reasoning-grid &mdash; the grid is a distribution, not a curve</title>
 <style>{CSS}</style>
 <div class="wrap">
   <header>
-    <p class="eyebrow">carrychain &middot; {mname} &middot; {len(cs)} cells &middot;
+    <p class="eyebrow">reasoning-grid &middot; {mname} &middot; {len(cs)} cells &middot;
       {sum(c['n'] for c in cs.values()):,} runs</p>
     <h1>The grid is a distribution, not a curve</h1>
     <p class="lede">One dot per cell, at the share of its runs that returned the exactly

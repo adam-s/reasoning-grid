@@ -133,7 +133,7 @@ Two v1 categories do not earn their place:
 ## What survives on its own merits
 
 The split of λ's single `VERIFICATION` into re-derivation (move 11) and
-independent check (move 12) is carrychain's own and the traces support it: A ran
+independent check (move 12) is reasoning-grid's own and the traces support it: A ran
 mod 9, 10, 100 and 1000 and was right; B re-derived everything and ran one weak
 independent check and was wrong. v2 should keep the distinction and re-earn it,
 not inherit it. Move 13 argues it needs a third branch rather than two.

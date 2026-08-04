@@ -34,7 +34,7 @@ TRACES = [
      "Locked", "Had the right answer, a broken check destroyed it, and it locked up."),
 ]
 
-# Category -> OODA phase, mirroring blog/src/lib/design/carrychain-categories.ts.
+# Category -> OODA phase, mirroring blog/src/lib/design/reasoning-grid-categories.ts.
 # Kept as one dict so a container band cannot disagree with the leaf colours.
 PHASE = {
     "FRAME": "Observe", "REDERIVE": "Observe", "CROSSCHECK": "Observe",
@@ -65,7 +65,7 @@ def phase_runs(labels):
         runs.append({"start": i, "end": j, "label": PHASE[labels[i]]})
         i = j + 1
     return runs
-OUT = "blog/src/lib/data/carrychain-traces.ts"
+OUT = "blog/src/lib/data/reasoning-grid-traces.ts"
 MAX_TEXT = 420          # tooltips do not need more, and C repeats one line 275 times
 
 
@@ -188,7 +188,7 @@ def main():
  *
  * `start` and `width` are CHARACTER OFFSETS in the trace, not seconds.
  */
-import type {{ CarryCategory }} from '../design/carrychain-categories';
+import type {{ CarryCategory }} from '../design/reasoning-grid-categories';
 
 export type CarryFlameRow = {{
   readonly depth: number;
