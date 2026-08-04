@@ -221,15 +221,14 @@
         early. That reading treats every cycle as a fresh start, and it misses what Boyd
         was pointing at. His fight has no fresh starts. The speed a pilot burns in one
         turn is still gone when the next turn begins, so a small disadvantage per cycle
-        compounds into an unrecoverable one. Software knows the shape. Every shortcut
+        compounds into an unrecoverable one. Software calls it technical debt. Every shortcut
         one sprint takes slows every sprint after it, and slows them by more each time.
       </p>
       <p>
-        A reasoning model works the same way, and this part is not an analogy. It reads
+        A reasoning model works the same way. It reads
         what is in front of it, settles on a next step, writes that step down, and what
-        it wrote becomes part of what it reads on the next pass. Nothing survives between
-        steps except by being written into the text. I ran thousands of multiplication
-        problems through these models, and
+        it wrote becomes part of what it reads on the next pass. I ran thousands of
+        multiplication problems through these models, and
         <a
           href="https://adamsohn.com/reliably-incorrect/"
           target="_blank"
