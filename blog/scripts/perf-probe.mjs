@@ -87,7 +87,10 @@ const snap = (label) => async (page) => {
 };
 
 const b = await chromium.launch();
-const ctx = await b.newContext({ viewport: { width: W, height: H } });
+// Touch is emulated below 900px so the `pointer: coarse` rules that size the
+// controls actually apply. Without it every control reports its mouse size and
+// the touch-target check is measuring the wrong page.
+const ctx = await b.newContext({ viewport: { width: W, height: H }, hasTouch: W < 900 });
 await ctx.addInitScript(INSTRUMENT);
 const page = await ctx.newPage();
 const cdp = await ctx.newCDPSession(page);
@@ -105,7 +108,11 @@ console.log(`load            rafCalls ${s0.rafCalls}  live ${s0.rafLive}  nodes 
 const a = await page.evaluate(() => window.__inst.rafCalls);
 await page.waitForTimeout(2000);
 const bq = await page.evaluate(() => window.__inst.rafCalls);
-console.log(`IDLE BURN       ${((bq - a) / 2).toFixed(1)} rAF/sec with no interaction  ${bq - a > 20 ? '*** ANIMATING WHILE IDLE ***' : 'ok'}`);
+// A figure that loops while the reader is looking at it is a design choice,
+// not a defect. The defect is a figure that loops while it is off screen, and
+// the only way to tell them apart is to measure at the top and then again with
+// every opener figure scrolled well away. Both numbers are printed.
+console.log(`IDLE, ON SCREEN ${((bq - a) / 2).toFixed(1)} rAF/sec at the top of the page (looping figures are visible here)`);
 
 // --- enumerate controls ---
 const controls = await page.evaluate(() =>
@@ -153,7 +160,16 @@ if (s2.rafLive > 3) console.log(`  *** ${s2.rafLive} rAF callbacks queued at res
 const c1 = await page.evaluate(() => window.__inst.rafCalls);
 await page.waitForTimeout(2000);
 const c2 = await page.evaluate(() => window.__inst.rafCalls);
-console.log(`IDLE BURN post  ${((c2 - c1) / 2).toFixed(1)} rAF/sec after all animations settled  ${c2 - c1 > 20 ? '*** LEAKED LOOP ***' : 'ok'}`);
+console.log(`IDLE, POST      ${((c2 - c1) / 2).toFixed(1)} rAF/sec once every animation has settled`);
+// The one that matters. Scroll the openers out of range and wait: anything
+// still scheduling frames here is painting something nobody can see.
+await page.evaluate(() => window.scrollTo(0, document.documentElement.scrollHeight));
+await page.waitForTimeout(1200);
+const d1 = await page.evaluate(() => window.__inst.rafCalls);
+await page.waitForTimeout(2000);
+const d2 = await page.evaluate(() => window.__inst.rafCalls);
+const offscreen = (d2 - d1) / 2;
+console.log(`IDLE, OFF SCREEN ${offscreen.toFixed(1)} rAF/sec with the opener figures scrolled away  ${offscreen > 20 ? '*** STILL ANIMATING OUT OF SIGHT ***' : 'ok'}`);
 
 // --- leaked timers / listeners ---
 if (s2.intervals.length) console.log(`  *** ${s2.intervals.length} uncleared setInterval:`, s2.intervals.slice(0, 5));

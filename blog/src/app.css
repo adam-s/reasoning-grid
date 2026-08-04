@@ -168,6 +168,42 @@ p  { font-size: var(--text-base); line-height: var(--leading-relaxed); }
 
 a { color: var(--accent); }
 
+/* ---- CONTROLS ON A FINGER ------------------------------------------------
+   Every control in the figures was built at mouse scale: the run tabs are 27px
+   tall, the transport buttons 26px square, the eight moment links 27px, and the
+   two scrubbers 16px. A finger pad covers about 9mm, which is why 44px is the
+   floor everyone converged on, and a 26px circle is a control most readers hit
+   on the second or third try.
+
+   REAL SIZE, NOT A HIT AREA. Growing an invisible pseudo-element under each
+   control keeps the design identical and was the first thing tried. It puts
+   overlapping 44px boxes on the moment links, which sit in two wrapped rows
+   with an 8px gap, so the row above quietly steals taps aimed at the row below
+   -- a worse bug than the one being fixed, and an invisible one. Growing the
+   control itself reflows the row, so what is hit is what is seen.
+
+   COARSE POINTERS ONLY. On a mouse these sizes are correct as drawn, and this
+   page is read on a laptop as often as on a phone. */
+@media (pointer: coarse) {
+  button,
+  [role='button'],
+  select {
+    min-height: 44px;
+  }
+  /* Square controls need the width too: a 26px play button that is only made
+     taller is a 26x44 sliver. */
+  button.play,
+  button.icon {
+    min-width: 44px;
+  }
+  /* The thumb is what the finger is aiming at, and it is the track's height
+     that limits it. The track keeps its drawn thickness; the input around it
+     grows. */
+  input[type='range'] {
+    min-height: 44px;
+  }
+}
+
 .mono {
   font-family: var(--font-mono);
   font-variant-numeric: tabular-nums;

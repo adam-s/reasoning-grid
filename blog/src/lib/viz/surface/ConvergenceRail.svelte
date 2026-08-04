@@ -71,7 +71,7 @@
   };
 </script>
 
-<div class="rail" aria-label="Running pass rate for six cells, at the same trial count as the surface">
+<div class="rail" aria-label="Running pass rate for {ranked.length} cells, at the same trial count as the surface">
   {#each ranked as l (l.cell)}
     {@const i = Math.min(t, l.n) - 1}
     <div class="row" animate:flip={{ duration: reduced.current ? 0 : 260 }}>

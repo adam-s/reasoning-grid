@@ -43,6 +43,7 @@
    * rather than one beat, which stops the conclusion blurring past.
    */
   import { onMount, tick, untrack } from 'svelte';
+  import { onscreen } from '../onscreen.svelte';
   import katex from 'katex';
   import 'katex/dist/katex.min.css';
   import { OPENER, type Claim } from '../../data/opener';
@@ -248,6 +249,7 @@
   let { onBusyChange, onMoment, scrollTarget = null }: Props = $props();
 
   let rootEl: HTMLElement | null = $state(null);
+  const visible = onscreen(() => rootEl);
   let presentGen = 0;
   let presentTimer = 0;
 
@@ -480,7 +482,9 @@
 
   $effect(() => {
     runId;                      // a reset must restart this loop, not be eaten by it
-    if (!playing) return;
+    // Scrolling away pauses rather than stops: `elapsed` is read untracked
+    // below, so coming back resumes from where it got to instead of restarting.
+    if (!playing || !visible.current) return;
     // `elapsed` is read UNTRACKED: read normally this effect would depend on
     // the value its own frame writes, cancelling and restarting the run every
     // frame with the clock reset, and it would crawl.

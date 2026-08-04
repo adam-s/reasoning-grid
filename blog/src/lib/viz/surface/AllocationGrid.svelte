@@ -99,6 +99,7 @@
                 title="{a} x {b} digits · predicted {Math.round(c.p * 100)}% · {c.runs} runs"
                 onmouseenter={() => (hover = `${a}x${b}`)}
                 onmouseleave={() => (hover = null)}
+                onpointerdown={() => (hover = `${a}x${b}`)}
                 role="presentation"
               >{c.runs}</div>
             {:else}
@@ -115,7 +116,13 @@
             {Math.round(hovered.p * 100)}% &middot;
             {hovered.runs} runs
           {:else}
-            hover a cell
+            <!-- The instruction has to match the pointer. Said "hover a cell"
+                 on a phone, where hovering is not a thing a finger does, and
+                 the readout was the only route to the number behind each
+                 colour -- so on touch the figure asked for a gesture that does
+                 not exist and gave up the value entirely. -->
+            <span class="hint-fine">hover a cell</span>
+            <span class="hint-coarse">tap a cell</span>
           {/if}
         </span>
         <span>{ALLOC_MAX_B} digits</span>
@@ -127,11 +134,16 @@
     Colour is the predicted pass rate. The number is the runs that cell earns
     under cost-weighted Neyman allocation. The ridge follows a hyperbola rather
     than the diagonal, because difficulty tracks the two digit counts multiplied
-    together, so 5 by 13 costs the same attention as 8 by 8.
+    together, so 3 by 12 costs the same attention as 6 by 6.
   </figcaption>
 </figure>
 
 <style>
+  .hint-coarse { display: none; }
+  @media (pointer: coarse) {
+    .hint-fine { display: none; }
+    .hint-coarse { display: inline; }
+  }
   .alloc { margin: var(--space-lg) 0; }
 
   /* Two halves, and they stack rather than shrink on a narrow screen. A 12 by

@@ -42,6 +42,8 @@
    * comes to even odds.
    */
   import { untrack } from 'svelte';
+  import { onscreen } from '../onscreen.svelte';
+  import { observeWidth } from '../observeWidth.svelte';
   import { project, type Camera } from '../surface/project';
   import {
     simulate,
@@ -71,6 +73,8 @@
   const CYCLE = RUN_MS + HOLD_MS;
 
   let host: HTMLElement | null = $state(null);
+  /** Both loops below run forever. This is what stops them off screen. */
+  const visible = onscreen(() => host);
   let stageEl: HTMLCanvasElement | null = $state(null);
   let railEl: HTMLCanvasElement | null = $state(null);
 
@@ -509,7 +513,7 @@
   // One writer, as in IterationRings: the frame loop owns `elapsed`, and a seek
   // bumps `runId` to tear the loop down before the new position is read.
   $effect(() => {
-    if (reduced) return;
+    if (reduced || !visible.current) return;
     runId;
     let t = untrack(() => elapsed);
     let prev = 0;
@@ -525,7 +529,7 @@
 
   /** Slow orbit, surrendered permanently once the reader drags. */
   $effect(() => {
-    if (grabbed || reduced) return;
+    if (grabbed || reduced || !visible.current) return;
     let prev = 0;
     let raf = requestAnimationFrame(function tick(ts: number) {
       if (prev) yaw += ((ts - prev) / 1000) * 0.055;
@@ -547,13 +551,8 @@
     return () => m.removeEventListener('change', sync);
   });
 
-  $effect(() => {
-    if (!host) return;
-    const ro = new ResizeObserver(([e]) => {
-      w = Math.max(300, Math.round(e.contentRect.width));
-    });
-    ro.observe(host);
-    return () => ro.disconnect();
+  observeWidth(() => host, (width) => {
+    w = Math.max(300, Math.round(width));
   });
 
   // --- paint --------------------------------------------------------------
@@ -684,7 +683,13 @@
   .stage {
     position: relative;
     width: 100%;
-    touch-action: none;
+    /* VERTICAL SWIPES BELONG TO THE PAGE. This stage is 400px tall and full
+       width, which on a phone is close to half the screen, so `none` meant a
+       reader swiping up through the section put a finger down here and the
+       article stopped moving while the camera orbited instead. `pan-y` hands
+       vertical back to the page and keeps horizontal drags for the orbit,
+       which is what the surface figure has always done. */
+    touch-action: pan-y;
     cursor: grab;
     background: linear-gradient(180deg, rgba(240,237,229,0.5), rgba(253,252,249,0) 62%);
     border-radius: var(--radius-md);

@@ -51,6 +51,8 @@
    * .agents/reference/label-rubric-qwen-multiplication.md
    */
   import { untrack } from 'svelte';
+  import { onscreen } from '../onscreen.svelte';
+  import { observeWidth } from '../observeWidth.svelte';
   import { OPENER } from '../../data/opener';
   import { CATEGORY_PHASE, OODA_SCHEME, OODA_PHASES, type OodaPhase } from '../../design/ooda';
   import { metaFor } from '../../design/scheme';
@@ -177,6 +179,8 @@
   const CYCLE = RUN_MS + HOLD_MS;
 
   let host: HTMLElement | null = $state(null);
+  /** This figure loops forever, so without a gate it loops off screen too. */
+  const visible = onscreen(() => host);
   let ringsEl: HTMLCanvasElement | null = $state(null);
   let headEl: HTMLCanvasElement | null = $state(null);
   let w = $state(880);
@@ -197,12 +201,39 @@
   // Geometry still follows the NUMBER OF RINGS rather than a constant -- these
   // were written as /6 when there were three traces, so a fourth drew off the
   // right-hand edge and the figure silently showed three.
-  const COLS = $derived(RINGS.length);
-  const ROWS = 1;
+  /**
+   * THE ROW WRAPS BEFORE THE DISCS COLLIDE.
+   *
+   * `R_OUT` floors at 52 so a ring never shrinks into a smudge, but `centreX`
+   * kept dividing the width by four regardless, so below 416px of container the
+   * floor won and the discs grew wider than the columns holding them. At a
+   * 390px viewport that put the first ring's left edge 14px off the canvas and
+   * overlapped every neighbour by ten. Nothing caught it: the overflow is
+   * inside a canvas, so no DOM element is wider than its parent and a viewport
+   * sweep that measures elements sees a clean page.
+   *
+   * A column needs twice the radius floor plus its gutters, so 132px. Below
+   * four of those the grid drops to two columns and the second row picks up the
+   * rest -- `centreY` already divides by `COLS`, and `.cards` follows the same
+   * variable, so the labels stay under the rings they name.
+   */
+  const MIN_COL_W = 2 * 52 + 2 * 14;
+  const COLS = $derived(
+    w >= RINGS.length * MIN_COL_W ? RINGS.length : w >= 2 * MIN_COL_W ? 2 : 1,
+  );
+  const ROWS = $derived(Math.ceil(RINGS.length / COLS));
   const GUTTER = 14;
   const R_OUT = $derived(Math.max(52, Math.min(w / (2 * COLS) - GUTTER, 118)));
   const R_IN = $derived(Math.max(7, R_OUT * 0.11));
-  const CELL_H = $derived(Math.round(R_OUT * 2 + GUTTER * 2));
+  /**
+   * On one row the labels sit under the canvas and need no space inside it.
+   * Once the grid wraps they cannot: a single strip of labels below a canvas
+   * holding two rows of rings puts the first two words under the LAST two
+   * rings, which is worse than the clipping it was introduced to fix. Wrapped,
+   * each row reserves a strip at its own foot and the words are placed into it.
+   */
+  const LABEL_H = $derived(COLS < RINGS.length ? 30 : 0);
+  const CELL_H = $derived(Math.round(R_OUT * 2 + GUTTER * 2 + LABEL_H));
   const H = $derived(CELL_H * ROWS);
 
   const progress = $derived(Math.min(1, elapsed / RUN_MS));
@@ -213,6 +244,8 @@
     return (w * (2 * (i % COLS) + 1)) / (2 * COLS);
   }
   function centreY(i: number): number {
+    // The label strip is at the FOOT of the cell, so the ring centres in what
+    // is left above it rather than in the whole cell.
     return Math.floor(i / COLS) * CELL_H + R_OUT + GUTTER;
   }
 
@@ -430,7 +463,7 @@
   // reads the new position. Two writers on this value is the bug that has bit
   // this figure's sibling three times.
   $effect(() => {
-    if (!playing || reduced) return;
+    if (!playing || reduced || !visible.current) return;
     runId;
     let t = untrack(() => elapsed);
     let prev = 0;
@@ -451,6 +484,18 @@
       if (m.matches) {
         playing = false;
         elapsed = RUN_MS;
+      } else {
+        // The latch has to release. Turning reduced motion ON froze the hero
+        // and turning it back OFF left it frozen, because nothing ever set
+        // `playing` true again -- so a reader who toggled the system setting
+        // while the page was open was stuck with a still figure until reload.
+        //
+        // NO `runId += 1` HERE. That reads the value it writes, and reading it
+        // inside an effect makes the effect depend on itself -- which is an
+        // update-depth crash on load, not a subtle one. Nothing needs it:
+        // `playing` going false to true restarts the clock effect by itself.
+        playing = true;
+        elapsed = 0;
       }
     };
     sync();
@@ -458,13 +503,8 @@
     return () => m.removeEventListener('change', sync);
   });
 
-  $effect(() => {
-    if (!host) return;
-    const ro = new ResizeObserver(([e]) => {
-      w = Math.max(300, Math.round(e.contentRect.width));
-    });
-    ro.observe(host);
-    return () => ro.disconnect();
+  observeWidth(() => host, (width) => {
+    w = Math.max(300, Math.round(width));
   });
 
   // --- render ------------------------------------------------------------
@@ -496,7 +536,14 @@
   }
 </script>
 
-<figure class="rings" bind:this={host} style:--ring-cols={COLS}>
+<figure
+  class="rings"
+  class:wrapped={COLS < RINGS.length}
+  bind:this={host}
+  style:--ring-cols={COLS}
+  style:--cell-h="{CELL_H}px"
+  style:--label-h="{LABEL_H}px"
+>
   <div class="stage" style:height="{H}px">
     <canvas bind:this={ringsEl} style:width="{w}px" style:height="{H}px"></canvas>
     <canvas class="over" bind:this={headEl} style:width="{w}px" style:height="{H}px"></canvas>
@@ -575,6 +622,26 @@
     padding: 0;
     display: grid;
     grid-template-columns: repeat(var(--ring-cols, 4), 1fr);
+  }
+  /* Wrapped, the label grid is laid over the stage on the same row pitch the
+     canvas draws to, and each word is pinned to the foot of its own cell --
+     which is the strip `LABEL_H` reserved. The figure is the positioning
+     context rather than the stage because the stage is its first child and
+     starts at the same origin, which keeps the markup in one piece. */
+  .rings.wrapped { position: relative; }
+  .rings.wrapped .cards {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    grid-auto-rows: var(--cell-h);
+    align-items: end;
+    /* The rings underneath own the pointer: the words are not controls. */
+    pointer-events: none;
+  }
+  .rings.wrapped .card {
+    min-height: var(--label-h);
+    align-items: center;
   }
   .card {
     display: flex;

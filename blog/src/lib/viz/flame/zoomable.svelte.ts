@@ -77,14 +77,27 @@ export const zoomable: Action<SVGSVGElement, ZoomableParams> = (
 
   // ── wheel ──
 
+  /**
+   * A WHEEL EVENT THIS FIGURE DOES NOT USE MUST REACH THE PAGE.
+   *
+   * This used to call preventDefault on every wheel event and map a plain
+   * vertical wheel to zoom. The figure sits inline in the middle of a long
+   * article, so scrolling down the page with the cursor anywhere over it stopped
+   * the page dead and zoomed the trace instead, with nothing on screen to say
+   * why. `touch-action: pan-y` already protected touch, which left the trap set
+   * for exactly the mouse and trackpad readers who make up most of this page.
+   *
+   * Zoom now takes the modifier every map on the web uses. preventDefault moved
+   * inside the branches that actually consume the event, so anything this figure
+   * ignores scrolls the article as usual.
+   */
   const wheelHandler = (ev: WheelEvent): void => {
     if (!params.enabled) return;
 
-    ev.preventDefault();
-    ev.stopImmediatePropagation();
-
     // Ctrl/Cmd + wheel → zoom at cursor
     if (ev.ctrlKey || ev.metaKey) {
+      ev.preventDefault();
+      ev.stopImmediatePropagation();
       const rect = node.getBoundingClientRect();
       const cursorPx = ((ev.clientX - rect.left) / rect.width) * vp().viewportWidth;
       queueZoom((ev.deltaY / 1000) * vp().zoom, cursorPx);
@@ -93,21 +106,18 @@ export const zoomable: Action<SVGSVGElement, ZoomableParams> = (
 
     // Shift + wheel → horizontal pan
     if (ev.shiftKey && ev.deltaY !== 0) {
+      ev.preventDefault();
+      ev.stopImmediatePropagation();
       queuePan(ev.deltaY, 0);
       return;
     }
 
-    // Horizontal-dominant trackpad swipe → horizontal pan
+    // Horizontal-dominant trackpad swipe → horizontal pan. Vertical-dominant is
+    // the reader scrolling the page, and is left alone.
     if (Math.abs(ev.deltaX) > Math.abs(ev.deltaY) && ev.deltaX !== 0) {
+      ev.preventDefault();
+      ev.stopImmediatePropagation();
       queuePan(ev.deltaX, 0);
-      return;
-    }
-
-    // Plain vertical wheel → zoom at cursor
-    if (ev.deltaY !== 0) {
-      const rect = node.getBoundingClientRect();
-      const cursorPx = ((ev.clientX - rect.left) / rect.width) * vp().viewportWidth;
-      queueZoom((ev.deltaY / 1000) * vp().zoom, cursorPx);
     }
   };
 
@@ -240,6 +250,21 @@ export const zoomable: Action<SVGSVGElement, ZoomableParams> = (
     node.addEventListener('pointermove', pointerMoveHandler);
     node.addEventListener('pointerup', pointerUpHandler);
     node.addEventListener('pointercancel', pointerUpHandler);
+    /**
+     * THE RELEASE CAN HAPPEN SOMEWHERE ELSE.
+     *
+     * Pointer capture is only taken once the drag passes the click threshold,
+     * which leaves a gap: press inside the figure, move three pixels, release
+     * outside it. No pointerup reaches the node, so `isDragging` stays true with
+     * no button held, and the next time the cursor crosses the figure it pans
+     * under a bare mouse until the reader presses and releases inside again.
+     *
+     * The window sees every release, so it is what closes the gap. It cannot
+     * take the place of capture — capture is what keeps a real drag smooth once
+     * it leaves the node — so both are here.
+     */
+    window.addEventListener('pointerup', pointerUpHandler);
+    window.addEventListener('pointercancel', pointerUpHandler);
     teardowns.push(
       () => node.removeEventListener('wheel', wheelHandler),
       () => node.removeEventListener('keydown', keyHandler),
@@ -247,6 +272,8 @@ export const zoomable: Action<SVGSVGElement, ZoomableParams> = (
       () => node.removeEventListener('pointermove', pointerMoveHandler),
       () => node.removeEventListener('pointerup', pointerUpHandler),
       () => node.removeEventListener('pointercancel', pointerUpHandler),
+      () => window.removeEventListener('pointerup', pointerUpHandler),
+      () => window.removeEventListener('pointercancel', pointerUpHandler),
     );
   }
 

@@ -18,6 +18,7 @@
    * Draw order is exact, not approximate; see project.ts.
    */
   import { onMount } from 'svelte';
+  import { observeWidth } from '../observeWidth.svelte';
   import { SURFACE } from '../../data/surface';
   import { project, groundOrder, rateAt, ramp, type Camera } from './project';
   import ConvergenceRail from './ConvergenceRail.svelte';
@@ -147,7 +148,21 @@
   const railW = $derived(showRail ? RAIL_W : 0);
   const order = $derived(groundOrder(DIM - 1, yaw));
 
-  const cellsAtT = $derived(Object.values(SURFACE.cells).filter((o) => o.length >= 1).length);
+  /**
+   * Cells that actually have `t` trials behind them, which is not all of them.
+   *
+   * This read `o.length >= 1` and so was the constant 196 under a title that
+   * says "after {t} trials". At the end of the scrub the header claimed 196
+   * cells at 55 trials, which is 10,780 outcomes against the 2,426 that exist;
+   * only one cell reaches 55. `rateAt` already truncates each cell at its own
+   * ceiling, so the surface was honest and the number above it was not.
+   */
+  const cellsAtT = $derived(Object.values(SURFACE.cells).filter((o) => o.length >= t).length);
+  /** And the outcomes actually behind the shape, for the same reason. At t = 1
+   *  the surface stands on 196 of the 2,426, one per cell. */
+  const outcomesAtT = $derived(
+    Object.values(SURFACE.cells).reduce((a, o) => a + Math.min(t, o.length), 0),
+  );
 
   function heightAt(a: number, b: number): number | null {
     const r = rateAt(SURFACE.cells[`${a}x${b}`], t);
@@ -354,21 +369,20 @@
     draw();
   });
 
-  onMount(() => {
-    const ro = new ResizeObserver((e) => {
-      const r = e[0]?.contentRect;
-      if (r) {
-        w = Math.max(280, Math.floor(r.width));
-        // Where the rail is shown the plot must be at least as tall as it is,
-        // or eight sparklines run off the bottom of a plot that shrank with the
-        // window. Below the rail's breakpoint the shorter floor applies again.
-        const floor = r.width > RAIL_MIN_W ? 450 : 300;
-        h = Math.max(floor, Math.round(Math.min(480, r.width * 0.58)));
-      }
-    });
-    if (host) ro.observe(host);
+  observeWidth(() => host, (width) => {
+    w = Math.max(280, Math.floor(width));
+    // Where the rail is shown the plot must be at least as tall as it is, or
+    // eight sparklines run off the bottom of a plot that shrank with the
+    // window. Below the rail's breakpoint the shorter floor applies again.
+    const floor = width > RAIL_MIN_W ? 450 : 300;
+    h = Math.max(floor, Math.round(Math.min(480, width * 0.58)));
+  });
 
-    return () => ro.disconnect();
+  onMount(() => () => {
+    // A `walk` parked on its scroll-settle timer outlives the component
+    // otherwise, and wakes to set `motion` on state nothing renders. Bumping
+    // the generation makes it return instead. Same reason as the panels below.
+    walkGen += 1;
   });
 
   const lessMotion = () =>
@@ -518,7 +532,8 @@
   <div class="head">
     <span class="title">P(exactly correct) after <strong>{t}</strong> {t === 1 ? 'trial' : 'trials'}</span>
     <span class="meta mono">
-      {SURFACE.model} · {cellsAtT} cells · {SURFACE.outcomes.toLocaleString()} outcomes
+      {SURFACE.model} · {cellsAtT} of {DIM * DIM} cells · {outcomesAtT.toLocaleString()} of
+      {SURFACE.outcomes.toLocaleString()} outcomes
     </span>
   </div>
 

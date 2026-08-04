@@ -40,6 +40,7 @@
    * that repo's main branch says later.
    */
   import { THINKING_MIX as MIX } from '../../data/thinking-mix';
+  import { observeWidth } from '../observeWidth.svelte';
 
   /* One hue per model. Three is few enough that hue alone carries it, and the
      row labels stay legible without a colour key on every dot. */
@@ -49,16 +50,38 @@
     sonnet: 'var(--model-a)',
   };
 
-  const PAD = { l: 132, r: 96, t: 26, b: 62 };
+  /**
+   * ---- ONE SCALE FOR THE TYPE AND THE ROOM IT NEEDS -----------------------
+   *
+   * Same treatment, and the same reason, as BoundaryWedge: the svg is
+   * `width: 100%` over a fixed viewBox, so at a 430px viewport this 698-unit
+   * box renders the category labels at 7.7px, the ticks at 6.5px and the model
+   * key at 7.1px. `u` is one rendered CSS pixel in viewBox units, and the
+   * gutters take it too -- the left gutter holds the longest category name, so
+   * growing that name without growing the gutter pushes it off the edge.
+   *
+   * At u = 1 every number here is what it was, so the desktop figure does not
+   * move. See the long note in BoundaryWedge for why it clamps in only one
+   * direction.
+   */
+  let host: HTMLElement | null = $state(null);
+  let u = $state(1);
+
+  /** Fixed: `u` is measured against the viewBox, so it cannot depend on u. */
+  const W = 698;
   const ROW = 30;
-  const PW = 470;
-  const W = PAD.l + PW + PAD.r;
-  const H = PAD.t + MIX.order.length * ROW + PAD.b;
+  const PAD = $derived({ l: 132 * u, r: 96 * u, t: 26 * u, b: 62 * u });
+  const PW = $derived(W - PAD.l - PAD.r);
+  const H = $derived(PAD.t + MIX.order.length * ROW + PAD.b);
+
+  observeWidth(() => host, (px) => {
+    u = Math.min(1.9, Math.max(1, W / px));
+  });
 
   /* Both footers hang off the plot's bottom edge rather than off `H`, so the
      axis title and the key cannot land in the same band when the row count
      changes. They collided the first time this rendered. */
-  const FOOT = PAD.t + MIX.order.length * ROW;
+  const FOOT = $derived(PAD.t + MIX.order.length * ROW);
 
   type Row = {
     key: string;
@@ -98,7 +121,7 @@
   })();
 </script>
 
-<figure>
+<figure bind:this={host} style:--u={u}>
   <svg
     viewBox="0 0 {W} {H}"
     role="img"
@@ -110,11 +133,11 @@
     {#each TICKS as t}
       <line x1={sx(t)} y1={PAD.t} x2={sx(t)} y2={PAD.t + rows.length * ROW}
             class="grid" class:zero={t === 0} />
-      <text x={sx(t)} y={PAD.t - 10} class="tick mid">{pct(t)}</text>
+      <text x={sx(t)} y={PAD.t - 10 * u} class="tick mid">{pct(t)}</text>
     {/each}
 
     {#each rows as r, i}
-      <text x={PAD.l - 12} y={sy(i) + 4} class="cat">{r.label}</text>
+      <text x={PAD.l - 12 * u} y={sy(i) + 4 * u} class="cat">{r.label}</text>
 
       <!-- The connector is the finding on every row: its length IS the
            disagreement between the models on that category. -->
@@ -132,15 +155,15 @@
       {/each}
     {/each}
 
-    <text x={sx(widest.pts.reduce((a, b) => (b.share > a.share ? b : a)).share) + 14}
-          y={sy(MIX.order.indexOf(widest.key)) + 4}
+    <text x={sx(widest.pts.reduce((a, b) => (b.share > a.share ? b : a)).share) + 14 * u}
+          y={sy(MIX.order.indexOf(widest.key)) + 4 * u}
           class="callout">{ratio}× apart</text>
 
-    <text x={PAD.l + PW / 2} y={FOOT + 24} class="axis">share of labelled thinking segments</text>
+    <text x={PAD.l + PW / 2} y={FOOT + 24 * u} class="axis">share of labelled thinking segments</text>
 
     {#each MIX.models as m, i}
-      <circle cx={PAD.l + i * 96} cy={FOOT + 48} r="5" fill={HUE[m.model]} />
-      <text x={PAD.l + i * 96 + 11} y={FOOT + 48} class="key">{m.model}</text>
+      <circle cx={PAD.l + i * 96 * u} cy={FOOT + 48 * u} r="5" fill={HUE[m.model]} />
+      <text x={PAD.l + i * 96 * u + 11 * u} y={FOOT + 48 * u} class="key">{m.model}</text>
     {/each}
   </svg>
 
@@ -173,14 +196,14 @@
 
   .cat {
     font-family: var(--font-sans);
-    font-size: 13px;
+    font-size: calc(13px * var(--u, 1));
     fill: var(--ink);
     text-anchor: end;
   }
 
   .callout {
     font-family: var(--font-sans);
-    font-size: 12px;
+    font-size: calc(12px * var(--u, 1));
     font-weight: var(--weight-medium);
     fill: var(--ink);
     dominant-baseline: middle;
@@ -188,21 +211,21 @@
 
   .key {
     font-family: var(--font-sans);
-    font-size: 12px;
+    font-size: calc(12px * var(--u, 1));
     fill: var(--ink-dim);
     dominant-baseline: middle;
   }
 
   .tick {
     font-family: var(--font-mono);
-    font-size: 11px;
+    font-size: calc(11px * var(--u, 1));
     fill: var(--ink-faint);
   }
   .tick.mid { text-anchor: middle; }
 
   .axis {
     font-family: var(--font-sans);
-    font-size: 12px;
+    font-size: calc(12px * var(--u, 1));
     fill: var(--ink-dim);
     letter-spacing: 0.04em;
     text-anchor: middle;

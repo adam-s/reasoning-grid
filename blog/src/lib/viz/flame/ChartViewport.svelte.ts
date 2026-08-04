@@ -93,7 +93,11 @@ export class ChartViewport {
   // ── zoom ──
 
   /**
-   * Set zoom directly, clamped to [initialZoom, maxZoom].
+   * Set zoom directly, floored at `initialZoom`. There is no ceiling: the doc
+   * here used to claim a `maxZoom` that does not exist on this class and never
+   * has, which is worse than no doc because it reads as a guarantee callers can
+   * rely on. Zooming in is bounded by the data, not by this method.
+   *
    * Returns true if zoom was accepted.
    */
   setZoom(newZoom: number): boolean {

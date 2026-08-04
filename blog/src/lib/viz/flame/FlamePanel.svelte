@@ -23,6 +23,7 @@
   import CategoryLegend from './CategoryLegend.svelte';
   import MinimapBrush from './MinimapBrush.svelte';
   import { ChartViewport } from './ChartViewport.svelte';
+  import { observeWidth } from '../observeWidth.svelte';
   import type { Snippet } from 'svelte';
   import type { AnyFlameRow, AnyTrace, CategoryScheme } from '../../design/scheme';
   import { metaFor } from '../../design/scheme';
@@ -158,17 +159,13 @@
     }
   });
 
-  $effect(() => {
-    if (!containerEl) return;
-    const ro = new ResizeObserver((entries) => {
-      const cr = entries[0]?.contentRect;
-      if (cr) {
-        containerWidth = Math.max(280, Math.floor(cr.width));
-        viewport.updateViewportWidth(containerWidth);
-      }
-    });
-    ro.observe(containerEl);
-    return () => ro.disconnect();
+  observeWidth(() => containerEl, (width) => {
+    // The 280 floor stops the flame collapsing into a smear, and below a 280px
+    // container it wins -- which on a 320px phone drew a 280px chart inside a
+    // 270px box, 10px of it off the edge with nothing to scroll. `.flame-scroll`
+    // holds the overflow so the floor can stay.
+    containerWidth = Math.max(280, Math.floor(width));
+    viewport.updateViewportWidth(containerWidth);
   });
 
   const chartWidth = $derived(containerWidth);
@@ -537,7 +534,11 @@
     min-width: 0;
     max-width: 100%;
     /* height is set inline from FlamePanel's chartScrollHeight derived */
-    overflow-x: hidden;
+    /* `auto` rather than `hidden`, so the 280px floor on the chart width has
+       somewhere to go on a 320px phone instead of hanging 10px off the edge
+       where it can be neither seen nor reached. Above that container width the
+       chart matches its box and no scrollbar appears at all. */
+    overflow-x: auto;
     overflow-y: scroll;
     overscroll-behavior: contain;
     padding: var(--space-sm) 0;

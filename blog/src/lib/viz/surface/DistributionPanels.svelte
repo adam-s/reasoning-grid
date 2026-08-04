@@ -92,6 +92,8 @@
   let reveal = $state(0);
   let clock = $state(0);
   let playGen = $state(0);
+  /** Frame handle for the draw below, so teardown can cancel it. */
+  let drawRaf = 0;
   /** Once true, the figure has had its one automatic run and will not get
    *  another. The button can still replay it as often as it is pressed. */
   let seen = false;
@@ -134,6 +136,10 @@
     }
 
     const began = performance.now();
+    // THE HANDLE IS KEPT so the loop can be cancelled. Without it the only way
+    // this stopped was its own generation check, which means a component
+    // destroyed mid-draw left a loop running that wrote to dead state until it
+    // happened to finish.
     await new Promise<void>((done) => {
       const step = (now: number) => {
         if (gen !== playGen) return; // a newer play owns the clocks now
@@ -141,10 +147,10 @@
         const ease = (x: number) => x * x * (3 - 2 * x);
         reveal = ease(Math.min(1, ms / REVEAL_MS));
         clock = Math.min(1, Math.max(0, (ms - DRAW_FROM) / DRAW_MS));
-        if (reveal >= 1 && clock >= 1) { done(); return; }
-        requestAnimationFrame(step);
+        if (reveal >= 1 && clock >= 1) { drawRaf = 0; done(); return; }
+        drawRaf = requestAnimationFrame(step);
       };
-      requestAnimationFrame(step);
+      drawRaf = requestAnimationFrame(step);
     });
     if (gen !== playGen) return;
     onPlayChange?.(false);
@@ -189,7 +195,15 @@
       { rootMargin: '0px 0px -35% 0px', threshold: 0 },
     );
     io.observe(rootEl);
-    return () => io.disconnect();
+    return () => {
+      io.disconnect();
+      // Bumping the generation is what stops an in-flight `play` that is
+      // parked on its scroll-settle timer: it wakes after teardown, finds a
+      // generation that is no longer its own, and returns without starting a
+      // frame loop against state nothing is rendering.
+      playGen += 1;
+      cancelAnimationFrame(drawRaf);
+    };
   });
 
   // ---- histogram ------------------------------------------------------------
