@@ -86,25 +86,44 @@
      must not add more or the two would stack into a gap twice the size. */
   .row-label + .moments { margin-top: 0; }
 
+  /* EVEN CELLS, NOT A WRAPPING ROW.
+     Flex-wrap sizes each button to its own label and then breaks wherever it
+     runs out of width, so the four moments came out four different widths, and
+     the two rows of the figure broke in different places from each other. A
+     fixed column count gives every moment the same box at every width, and the
+     step numerals line up down the page. */
   .moments {
-    display: flex;
-    flex-wrap: wrap;
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
     gap: var(--space-sm);
     margin: var(--space-lg) 0;
     padding: 0;
     list-style: none;
   }
-  /* `display: contents` lets the buttons be direct flex children of the row, so
-     the `li` adds no box. A cued item has to become a box again, because the
-     cue is positioned against it. It is `inline-flex` rather than `block` so it
-     still sits in the row at its own width. */
-  li { display: contents; }
-  li.cued { display: inline-flex; position: relative; }
+  /* Every item is a real cell, and they are all the same kind of cell.
+     This used to be `display: contents` with the cued one promoted to
+     `inline-flex` so the cue had something to position against -- which made
+     exactly one button in the row size itself differently from its neighbours,
+     and it was always the one being pointed at. `position: relative` on all of
+     them costs nothing and the cue works from any. */
+  li {
+    display: block;
+    position: relative;
+    min-width: 0;
+  }
 
   button {
     display: inline-flex;
     align-items: baseline;
     gap: 8px;
+    /* Fills its cell, so the boxes are even whatever the labels do. */
+    width: 100%;
+    height: 100%;
+    /* And the two rows match each other. Equal columns mean a long label wraps
+       to two lines, which made the first row 48px tall against the second row's
+       31px -- even within itself, obviously uneven against its pair. The floor
+       is the two-line height, so every moment on the page is one size. */
+    min-height: 48px;
     padding: 6px 12px;
     background: var(--bg);
     border: 1px solid var(--line-strong);
@@ -158,8 +177,7 @@
      truncated. */
   @media (max-width: 700px) {
     .moments {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
       gap: 6px;
     }
     button { font-size: var(--text-xs); padding: 5px 10px; }
