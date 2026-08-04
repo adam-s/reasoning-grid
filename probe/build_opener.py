@@ -266,8 +266,13 @@ def main():
         print(f"  trace {tr['key']} {tr['cell']:>5}  {tr['outcome']:16s} "
               f"{len(text):6,} chars  {len(cl):3d} claims, {len(bad)} false")
         for c in bad:
-            print(f"      {int(c['a']):,} {c['op']} {int(c['b']):,} = {int(c['said']):,}"
-                  f"   actually {int(c['truth']):,}")
+            # Grouped only when integral. Claims are Decimal on purpose -- a model
+            # checking its magnitude writes "0.4 x 4.62 = 1.848", and forcing int()
+            # here crashed the build on the first trace that did.
+            def g(v):
+                return f"{int(v):,}" if re.fullmatch(r"-?\d+", v) else v
+            print(f"      {g(c['a'])} {c['op']} {g(c['b'])} = {g(c['said'])}"
+                  f"   actually {g(c['truth'])}")
 
     path = args.out if os.path.isabs(args.out) else os.path.join(root, args.out)
     os.makedirs(os.path.dirname(path), exist_ok=True)

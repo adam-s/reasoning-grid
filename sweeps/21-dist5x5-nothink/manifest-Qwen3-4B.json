@@ -1,0 +1,86 @@
+{
+  "sweep_id": "21-dist5x5-nothink",
+  "model": "Qwen/Qwen3-4B",
+  "status": "closed",
+  "schema_version": 2,
+  "code_git_sha": "344e145dbe83f6d33c98f7cad566cd1b39093d88",
+  "code_git_dirty": true,
+  "prompt_text": "Compute the exact product of {x} and {y}.\nWork it out however you like, but the final line of your reply must be exactly:\nANSWER: <the full integer>",
+  "prompt_sha256": "770f964ea0ebbd50",
+  "problem_pool_size": 8192,
+  "problem_seed": 20260730,
+  "engine": {
+    "vllm": "0.11.0",
+    "transformers": "4.57.0"
+  },
+  "batches": [
+    {
+      "batch": 0,
+      "n": 1024,
+      "wall_s": 73.2,
+      "tokens": 473986
+    },
+    {
+      "batch": 1,
+      "n": 1024,
+      "wall_s": 72.4,
+      "tokens": 486781
+    },
+    {
+      "batch": 2,
+      "n": 1024,
+      "wall_s": 75.3,
+      "tokens": 488527
+    },
+    {
+      "batch": 3,
+      "n": 1024,
+      "wall_s": 72.0,
+      "tokens": 473583
+    },
+    {
+      "batch": 4,
+      "n": 1024,
+      "wall_s": 75.4,
+      "tokens": 483393
+    },
+    {
+      "batch": 5,
+      "n": 380,
+      "wall_s": 48.8,
+      "tokens": 191936
+    }
+  ],
+  "gpu": "h200",
+  "thinking": "false",
+  "order_seed": "shared",
+  "budget_mode": "formula",
+  "temperature": 0.7,
+  "top_p": 1.0,
+  "axes": [
+    5
+  ],
+  "cells": [
+    [
+      5,
+      5
+    ]
+  ],
+  "n_live": 45,
+  "n_saturated": 10,
+  "n_lo": 10,
+  "n_hi": 50,
+  "chunk": 1024,
+  "n_planned": 5500,
+  "max_len": 32768,
+  "n_from": 500,
+  "cost": {
+    "est_output_tokens": 32650994,
+    "est_tok_per_s": 1610,
+    "mean_cell_N": 25.0,
+    "est_usd": 25.703,
+    "actual_usd": null
+  },
+  "n_actual": 5500,
+  "actual_output_tokens": 2598206
+}

@@ -21,6 +21,32 @@
   import { SURFACE } from '../../data/surface';
   import { project, groundOrder, rateAt, ramp, type Camera } from './project';
   import ConvergenceRail from './ConvergenceRail.svelte';
+  import Cue from '../opener/Cue.svelte';
+
+  /**
+   * ---- THE API THE PROSE DRIVES -------------------------------------------
+   *
+   * Same split as the trace figure: the figure exposes one method and reports
+   * one flag, and whoever owns the prose owns the button. `walk` is the whole
+   * surface, so it takes no arguments -- there is only one thing to be walked
+   * through, unlike a trace where the caller has to name a run and an offset.
+   *
+   * The flag exists so the caller can disable its own control while the walk
+   * is running. Without it a second press restarts the surface from one trial
+   * halfway through the first walk, which reads as the figure breaking.
+   */
+  type Props = {
+    onWalkChange?: (walking: boolean) => void;
+    /**
+     * The reader worked the figure's own controls -- played it, scrubbed it, or
+     * took hold of it. Fires for those and never for `walk`, so a caller showing
+     * a cue can drop it the moment the reader shows they have already found the
+     * figure. Pointing at a button someone has demonstrated they do not need is
+     * nagging; see the tour note in App.svelte, which is the same rule.
+     */
+    onReaderDrive?: () => void;
+  };
+  let { onWalkChange, onReaderDrive }: Props = $props();
 
   let canvas: HTMLCanvasElement | null = $state(null);
   let host: HTMLDivElement | null = $state(null);
@@ -34,10 +60,71 @@
   // four are shown truncated to 29 and the caption says so.
   const MAXT = Math.min(29, SURFACE.maxTrials);
 
+  /**
+   * ONE MOTION AT A TIME, as a mode rather than as a set of booleans. Playing
+   * and walking both drive `t` and only one of them can be true, so two flags
+   * would be four states for three situations, and the fourth is a surface
+   * being stepped by two loops at once.
+   *
+   *   idle  nothing is moving. The reader owns the slider and the camera.
+   *   play  the trial count advances. The camera stays where it was left.
+   *   walk  the trial count advances AND the camera turns with it.
+   */
+  type Motion = 'idle' | 'play' | 'walk';
+
+  /**
+   * Where the camera comes to rest. Also its opening value, so a page that is
+   * never touched looks like the end of a walk.
+   *
+   * Yaw is exactly a quarter turn, which is not a rounded-off number but the
+   * one angle that puts the 1x14 corner dead in front of the viewer. Off the
+   * diagonal that corner drifts to one side and the two axes stop being read
+   * at the same rate, which is the whole reason the surface is worth turning.
+   */
+  const REST_YAW = -Math.PI / 4;
+  /** Nearly edge-on, which is what makes the cliff a cliff. Seen from above the
+   *  fall-off is a colour change; seen from here it is a drop with the eye level
+   *  partway down it. Only 0.04 above the drag clamp, so there is almost nothing
+   *  left to flatten by hand -- deliberate, since flatter than this the plateau
+   *  closes up into a line. */
+  const REST_PITCH = 0.12;
+  /** Where a walk starts: further round and higher up, so the first frames are
+   *  read down the cliff rather than across it, and the turn has somewhere to
+   *  go. */
+  const WALK_YAW = -1.34;
+  const WALK_PITCH = 0.92;
+  /** One trial per this many milliseconds, for both motions. The walk's turn is
+   *  paced off the same number so the camera lands as the last trial does. */
+  const STEP_MS = 130;
+
   let t = $state(1);
-  let playing = $state(false);
-  let yaw = $state(-0.62);
-  let pitch = $state(0.52);
+  let motion: Motion = $state('idle');
+  /** Bumped by every `walk` call so a second press restarts the run loop, which
+   *  a plain reassignment to the same mode would not. Same discipline as the
+   *  trace figure's presenter generation. */
+  let walkGen = $state(0);
+  /** Between the press and the first trial, while the page is scrolling. */
+  let arming = $state(false);
+  const moving = $derived(motion !== 'idle');
+  let rootEl: HTMLElement | null = $state(null);
+
+  /**
+   * The pointer is over the control row, so the play button wears a cue.
+   *
+   * HOVER, NOT ALWAYS. The row already sits under a labelled button that says
+   * what it does, and a permanent arrow on a second control turns the figure
+   * into a page of instructions. Showing it only while the pointer is in the
+   * row costs a reader who has already found the control nothing, and catches
+   * the one who is scanning the row without having spotted a 26px glyph.
+   *
+   * MOUSE ONLY. A touch pointer entering an element means a finger has landed
+   * on it, so the cue would appear and be pressed through in the same gesture.
+   * Nothing is lost by leaving it out: nobody needs telling to press what they
+   * are already touching.
+   */
+  let overControls = $state(false);
+  let yaw = $state(REST_YAW);
+  let pitch = $state(REST_PITCH);
   let hovered = $state<{ cell: string; p: number; n: number; total: number } | null>(null);
 
   // Height in world units. The grid is ~14 wide, so this decides how much of a
@@ -89,8 +176,14 @@
     // Project the scene's corners about the origin first, then apply a single
     // screen-space multiplier. That is a viewport zoom, not a camera move, so it
     // rescales without touching the perspective the camera already decided.
+    // EYE LEVEL SITS HALFWAY UP THE HEIGHT AXIS, not on the ground. Looking at
+    // z=0 puts the whole surface above the line of sight, so every cell is read
+    // from underneath and the plateau hides what is behind it. Centring on
+    // ZSCALE/2 means the reliable half rises above the eye and the collapsed
+    // half falls below it, and the boundary between them is the one place the
+    // surface crosses the viewer's own level.
     const raw = (a: number, b: number, z: number) =>
-      project(a - mid, b - mid, z * ZSCALE, cam, 0, 0);
+      project(a - mid, b - mid, z * ZSCALE - ZSCALE / 2, cam, 0, 0);
     let bx0 = Infinity, bx1 = -Infinity, by0 = Infinity, by1 = -Infinity;
     for (const a0 of [1, DIM]) {
       for (const b0 of [1, DIM]) {
@@ -278,18 +371,86 @@
     return () => ro.disconnect();
   });
 
+  const lessMotion = () =>
+    window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  /** Scroll settle before the first trial lands. Nothing measures the scroll,
+   *  so without the wait the reader watches the opening frames go past while
+   *  the page is still moving, which is the half they most need to see. Same
+   *  number and same reason as the trace figure's presenter. */
+  const SETTLE_MS = 420;
+
+  /**
+   * Start at one trial, at the opening angle, and turn while it assembles.
+   *
+   * A RESET, not a resume. Someone pressing this has asked to see the thing
+   * from the beginning, and starting the turn from wherever the last drag left
+   * the camera would give two readers two different figures.
+   *
+   * The figure comes into view first and the clock starts after. `arming`
+   * covers that gap in the reported flag, so the button is already disabled
+   * while the page is travelling and a second press cannot stack a second walk
+   * on top of the first.
+   */
+  export async function walk() {
+    const gen = ++walkGen;
+    arming = true;
+    motion = 'idle'; // nothing steps while the page is moving
+    t = 1;
+    yaw = WALK_YAW;
+    pitch = WALK_PITCH;
+
+    const still = lessMotion();
+    rootEl?.scrollIntoView({ behavior: still ? 'auto' : 'smooth', block: 'start' });
+    if (!still) {
+      await new Promise<void>((r) => setTimeout(r, SETTLE_MS));
+      // A second press while this one was travelling owns the figure now, and
+      // it has already set its own `arming`. Leave both alone.
+      if (gen !== walkGen) return;
+    }
+
+    arming = false;
+    motion = 'walk';
+  }
+
+  /** One place reports the flag, so every route out of `walk` -- finishing,
+   *  pausing, scrubbing, grabbing the surface -- clears it without each of them
+   *  having to remember to. */
+  $effect(() => {
+    onWalkChange?.(motion === 'walk' || arming);
+  });
+
   // Playback runs once and stops on the last frame. Looping would restart the
   // surface from a single trial every few seconds, and the whole claim is that
   // it stops moving -- an animation that keeps resetting says the opposite.
   $effect(() => {
-    if (!playing) return;
+    if (motion === 'idle') return;
+    const turning = motion === 'walk';
+    walkGen; // restart the loop when `walk` is pressed during a walk
+    // Read once. The RAF callback below is outside the effect's tracking scope,
+    // which is what keeps a loop that writes `t` from re-running itself.
+    const turnMs = (MAXT - 1) * STEP_MS;
     let raf = 0;
     let last = 0;
+    let began = 0;
     const step = (now: number) => {
-      if (now - last > 130) {
+      if (!began) { began = now; last = now; }
+      if (turning) {
+        // Smoothstep, so the turn eases out of the opening angle and settles
+        // into the resting one instead of stopping dead on the last frame.
+        const u = Math.min(1, (now - began) / turnMs);
+        const e = u * u * (3 - 2 * u);
+        yaw = WALK_YAW + (REST_YAW - WALK_YAW) * e;
+        pitch = WALK_PITCH + (REST_PITCH - WALK_PITCH) * e;
+      }
+      if (now - last > STEP_MS) {
         last = now;
         if (t >= MAXT) {
-          playing = false; // button falls back to play; the frame stays put
+          // Land on the resting angle exactly. The eased turn gets within a
+          // hair of it, and a surface left a hair off square is the kind of
+          // thing a reader sees without being able to say what is wrong.
+          if (turning) { yaw = REST_YAW; pitch = REST_PITCH; }
+          motion = 'idle'; // button falls back to play; the frame stays put
           return;
         }
         t += 1;
@@ -301,9 +462,14 @@
   });
 
   function togglePlay() {
+    onReaderDrive?.();
+    // Pausing a walk leaves the camera where it got to. The reader stopped it
+    // to look at that frame, and snapping the surface square would take away
+    // the thing they stopped for.
+    if (moving) { motion = 'idle'; return; }
     // pressing play on the last frame replays rather than doing nothing
-    if (!playing && t >= MAXT) t = 1;
-    playing = !playing;
+    if (t >= MAXT) t = 1;
+    motion = 'play';
   }
 
   // orbit
@@ -311,6 +477,7 @@
   let lastX = 0;
   let lastY = 0;
   function down(e: PointerEvent) {
+    onReaderDrive?.();
     dragging = true;
     lastX = e.clientX;
     lastY = e.clientY;
@@ -318,6 +485,24 @@
   }
   function move(e: PointerEvent) {
     if (!dragging) return;
+    /**
+     * TURNING IT BY HAND TAKES THE CAMERA, NOT THE CLOCK.
+     *
+     * A walk drives two things, and a drag only conflicts with one of them.
+     * Stopping the trial count as well would punish the reader for looking at
+     * the surface from a different side, which is the one thing the figure
+     * spends its whole existence inviting. So a walk demotes to a play: the
+     * camera is handed over mid-turn and the surface keeps filling.
+     *
+     * The demotion is here rather than in `down` on purpose. A press that never
+     * moves is not a drag, and killing the turn on a stray click would make the
+     * figure feel like it breaks when touched.
+     *
+     * Stopping is left to the controls that mean stop -- the pause button and
+     * the trial slider. Both of those are the reader asking about the count,
+     * which is the thing they actually stop.
+     */
+    if (motion === 'walk') motion = 'play';
     yaw += (e.clientX - lastX) * 0.008;
     pitch = Math.max(0.08, Math.min(1.35, pitch + (e.clientY - lastY) * 0.005));
     lastX = e.clientX;
@@ -329,7 +514,7 @@
   }
 </script>
 
-<figure class="surface">
+<figure class="surface" bind:this={rootEl}>
   <div class="head">
     <span class="title">P(exactly correct) after <strong>{t}</strong> {t === 1 ? 'trial' : 'trials'}</span>
     <span class="meta mono">
@@ -362,20 +547,28 @@
     {/if}
   </div>
 
-  <div class="controls">
-    <button
-      class="play"
-      onclick={togglePlay}
-      aria-label={playing ? 'Pause' : t >= MAXT ? 'Replay from the first trial' : 'Play'}
-    >
-      {playing ? '❚❚' : t >= MAXT ? '↺' : '▶'}
-    </button>
+  <!-- svelte-ignore a11y_no_static_element_interactions -->
+  <div
+    class="controls"
+    onpointerenter={(e) => { if (e.pointerType === 'mouse') overControls = true; }}
+    onpointerleave={() => (overControls = false)}
+  >
+    <span class="play-slot">
+      {#if overControls && !moving}<Cue text="press me" side="right" />{/if}
+      <button
+        class="play"
+        onclick={togglePlay}
+        aria-label={moving ? 'Pause' : t >= MAXT ? 'Replay from the first trial' : 'Play'}
+      >
+        {moving ? '❚❚' : t >= MAXT ? '↺' : '▶'}
+      </button>
+    </span>
     <input
       type="range"
       min="1"
       max={MAXT}
       bind:value={t}
-      oninput={() => (playing = false)}
+      oninput={() => { onReaderDrive?.(); motion = 'idle'; }}
       aria-label="Trials per cell"
     />
     <span class="count mono">{t}/{MAXT}</span>
@@ -384,7 +577,14 @@
 </figure>
 
 <style>
-  .surface { margin: var(--space-md) 0 var(--space-lg); }
+  .surface {
+    margin: var(--space-md) 0 var(--space-lg);
+    /* Aligning the figure's top to the viewport's top would push the walk
+       button off the screen, and the reader who wants to press it again then
+       has to hunt back up the page. This is roughly the button plus its own
+       margins, so it lands just above the fold and stays reachable. */
+    scroll-margin-top: 120px;
+  }
 
   .head {
     display: flex;
@@ -434,6 +634,22 @@
     align-items: center;
     gap: 10px;
     margin-top: 8px;
+  }
+  /* The cue positions against this, not against the row, so the arrowhead
+     lands on the button rather than somewhere along the slider. Sized to the
+     button by `inline-flex` for the same reason. */
+  .play-slot {
+    position: relative;
+    display: inline-flex;
+    flex: 0 0 auto;
+  }
+  /* The cue's own resting height puts its arrowhead level with the button's
+     bottom edge, which is exactly where the slider thumb sits at trial one.
+     Lifting it to the button's top edge keeps the arrow on the button and the
+     label clear of the track. The anchor belongs to the caller, which is why
+     this override lives here and not in Cue. */
+  .play-slot :global(.cue.right) {
+    bottom: 15px;
   }
   .play {
     flex: 0 0 auto;

@@ -1,155 +1,241 @@
 /**
- * The nine categories a carrychain thinking trace is labelled with.
+ * The sixteen categories a carrychain thinking trace is labelled with.
  *
- * Not the same nine as `categories.ts` — that file is the λ-bench set, kept
- * unmodified so the ported flame graph still renders its original data. Ours
- * differs in two places, and both differences are the argument:
+ * Derived from the traces themselves, not adapted from another study. The
+ * previous set of nine came from a post about a different model on a different
+ * task and was kept at nine "to stay comparable with the λ chart"; two of those
+ * nine named behaviours this task does not produce, and one absorbed five
+ * distinct moves. Provenance and the case against it:
+ * ../../../../labels/v1-lambda-derived/README.md
  *
- *   VERIFICATION splits into RECHECK and CROSSCHECK. Re-deriving a value the
- *   same way cannot catch a systematic slip, because the faculty that made the
- *   error is the one checking it. A different method with different failure
- *   modes can. One colour for both hides the only thing that separated the two
- *   runs in this post.
+ * Rubric, decision rules and results:
+ * ../../../../.agents/reference/label-rubric-qwen-multiplication.md
  *
- *   ARITHMETIC splits into PARTIAL_PRODUCT and ACCUMULATE. λ's prompt says
- *   arithmetic is rare in lambda calculus; ours is nothing but arithmetic, so a
- *   single category would swallow the trace. Computing many independent small
- *   products and summing them in one long dependent chain are different phases,
- *   and the error in run B is in the second.
+ * Each category maps to exactly ONE OODA phase. The previous scheme had one
+ * category in two phases, which is how a mapping stops being a function and how
+ * "there is no decide phase" became sayable.
  *
- * Colour. Three rules, in order:
+ * Colour, three rules in order:
  *
- * 1. RECHECK and CROSSCHECK are the argument, so they are the only two
- *    saturated colours and they are separated on every axis at once — amber
- *    against emerald in hue, warm against cool in temperature, and light
- *    against dark in VALUE at a measured 3.9:1. The value gap is the one that
- *    matters: it is what keeps them apart in greyscale and for the ~8% of men
- *    with red-green deficiency, for whom hue alone may carry nothing.
+ * 1. THE THREE KINDS OF CHECK are the argument, so they carry the saturated
+ *    colours and are separated on hue, temperature and VALUE at once. REDERIVE
+ *    against CROSSCHECK is the pair that decides two of the four traces, and the
+ *    value gap is what keeps them apart in greyscale and for the ~8% of men with
+ *    red-green deficiency, for whom hue alone may carry nothing. Ratios are
+ *    measured by scripts/check-contrast.mjs, not asserted: the previous palette
+ *    claimed a separation it did not have until it was measured.
+ * 2. THE DECIDE GROUP is the finding this rebuild exists for, so REVISE and
+ *    STALL are given distinct hues rather than greys — a run that changed its
+ *    mind and a run that could not must not read as the same colour.
+ * 3. EVERYTHING ELSE is chromatically quiet and separated by value. ACT borrows
+ *    the reliability surface's blue ramp, so doing the arithmetic looks the same
+ *    in this figure as in the grid.
  *
- *    Every ratio here was measured, because the first pass at this palette
- *    asserted the same separation without checking and had it at 2.1:1. Two
- *    other pairs were worse and invisible until measured: CROSSCHECK against
- *    ERROR_CORRECTION at 1.09:1 — the exact green-against-red that most needs
- *    a value gap — and RECHECK against STRATEGY at 1.02:1, the argument colour
- *    against the quarter of every trace it has to stand out from.
- * 1b. Blue against orange (PARTIAL_PRODUCT against RECHECK) is close in value
- *    on purpose. It is the one hue pair that survives every common form of
- *    colour blindness, so hue carries it and the value budget goes elsewhere.
- * 2. PARTIAL_PRODUCT and ACCUMULATE borrow the reliability surface's own ramp,
- *    mid-tone and deep. Doing the arithmetic looks the same in both figures.
- * 3. Everything else is chromatically quiet and separated by VALUE, not hue.
- *    The previous palette had TASK_SETUP, STATE_TRACKING and RESULT as three
- *    warm greys within a few points of each other and of STRATEGY, which is a
- *    quarter of every trace — four near-identical washes doing most of the
- *    area. They are now a warm grey, a cool grey and a dark neutral, at
- *    distinctly different lightnesses.
+ * LOOP is near-white on purpose. It is 43% of all segments and 69% of one trace,
+ * and it is the absence of work. Any colour with weight in it would make the
+ * locked-up run look busy, which is precisely the error the previous labels made
+ * by scoring those segments as arithmetic.
  *
- * Rubric: ../../../../.agents/reference/flame-rubric-carrychain.md
+ * The `description` strings are the rubric's operational definitions, written to
+ * be checkable rather than to be read as prose. They are what the legend and the
+ * tooltips show.
  */
 
 export const CARRY_CATEGORIES = [
-  'TASK_SETUP',
-  'STRATEGY',
-  'PARTIAL_PRODUCT',
-  'ACCUMULATE',
-  'STATE_TRACKING',
-  'RECHECK',
+  // running the algorithm
+  'FRAME',
+  'SURVEY',
+  'COMMIT',
+  'ABANDON',
+  'PRODUCT',
+  'SCALE',
+  'SUM',
+  'REPORT',
+  // checking the work
+  'REDERIVE',
   'CROSSCHECK',
-  'ERROR_CORRECTION',
-  'RESULT',
+  'SCALE_CHECK',
+  'CHECK_FLOATED',
+  // when a check disagrees
+  'ALARM',
+  'REVISE',
+  'STAND',
+  'STALL',
+  'LOOP',
+  'NONE',
 ] as const;
 
 export type CarryCategory = (typeof CARRY_CATEGORIES)[number];
 
-/** Which loop phase a category belongs to. `STRATEGY` spans two; see the rubric. */
-export type Ooda = 'observe' | 'orient' | 'decide' | 'act';
+/** Which loop phase a category belongs to. Exactly one, never two. */
+export type Ooda = 'observe' | 'orient' | 'decide' | 'act' | 'none';
 
 export type CarryCategoryMeta = {
   readonly label: string;
   readonly color: string;
   readonly symbol: string;
-  readonly ooda: readonly Ooda[];
+  readonly ooda: Ooda;
   readonly description: string;
   readonly example: string;
 };
 
 export const carryCategoryMeta = {
-  TASK_SETUP: {
-    label: 'Setup',
+  // ---- running the algorithm -------------------------------------------
+  FRAME: {
+    label: 'Frame',
     color: '#948d80',
-    symbol: 'S',
-    ooda: ['observe'],
-    description: 'Reading the problem, restating it, naming the operands.',
+    symbol: 'F',
+    ooda: 'observe',
+    description: 'Restating the problem: writing the operands down, counting their digits.',
     example: '"I need to compute the exact product of 80,379,530 and 4,621,821."',
   },
-  STRATEGY: {
-    label: 'Strategy',
-    color: '#e0d8c8',
-    symbol: 'D',
-    ooda: ['orient', 'decide'],
-    description:
-      'Choosing how to decompose the problem, or which check to run next. Choosing, not doing — a quarter of both traces is spent here.',
-    example: '"Maybe I can break 4,621,821 into 4,000,000 + 600,000 + 20,000 + ..."',
+  SURVEY: {
+    label: 'Survey',
+    color: '#ddd5c4',
+    symbol: '?',
+    ooda: 'orient',
+    description: 'Naming a way to proceed without taking it. No work follows.',
+    example: '"Alternatively, maybe I could factor out something."',
   },
-  PARTIAL_PRODUCT: {
+  COMMIT: {
+    label: 'Commit',
+    color: '#b8925a',
+    symbol: '>',
+    ooda: 'decide',
+    description: 'Taking a specific decomposition and proceeding with it.',
+    example: '"Let me write 30,957,123,778 as 30,000,000,000 + 957,123,778."',
+  },
+  ABANDON: {
+    label: 'Abandon',
+    color: '#a2937c',
+    symbol: 'x',
+    ooda: 'decide',
+    description: 'Dropping a decomposition part-way.',
+    example: '"This is getting really complex. Maybe I need another way."',
+  },
+  PRODUCT: {
     label: 'Partial',
     color: '#8fa8cb',
     symbol: '×',
-    ooda: ['act'],
-    description: 'Computing one piece: a digit times a chunk, one row of the long multiplication.',
-    example: '"80,379,530 × 8 = 643,036,240. Then × 100 = 64,303,624,000."',
+    ooda: 'act',
+    description: 'Computing one piece: a digit or chunk times the other operand.',
+    example: '"80,379,530 × 8 = 643,036,240."',
   },
-  ACCUMULATE: {
+  SCALE: {
+    label: 'Scale',
+    color: '#6b84b0',
+    symbol: '^',
+    ooda: 'act',
+    description:
+      'Producing a value by a power of ten, with no addition performed: shifts, appended zeros, scientific notation.',
+    example: '"6,161,688 × 10^10 = 6.161688 × 10^16."',
+  },
+  SUM: {
     label: 'Sum',
     color: '#3f5f92',
     symbol: '+',
-    ooda: ['act'],
-    description:
-      'Aligning and adding the partial products. One long dependent chain, where a single misalignment carries to the end.',
-    example: '"371,499,719,344,600 + 80,379,530 = ..."',
+    ooda: 'act',
+    description: 'Adding the pieces: alignment, carries, running totals — including any shift done in order to line them up.',
+    example: '"371,499,719,344,600 + 80,379,530 = 371,499,719,424,970."',
   },
-  STATE_TRACKING: {
-    label: 'State',
-    color: '#adb2b8',
-    symbol: 'T',
-    ooda: ['orient'],
-    description: 'Naming where it is — which chunk, which power of ten. Bookkeeping, not computing.',
-    example: '"Digits: 4 (millions), 6 (hundred thousands), 2 (ten thousands), ..."',
+  REPORT: {
+    label: 'Report',
+    color: '#5d574d',
+    symbol: '=',
+    ooda: 'act',
+    description: 'Stating the final product, and all text after the thinking ends.',
+    example: '"Therefore, the exact product is 371,499,719,424,970."',
   },
-  RECHECK: {
-    label: 'Recheck',
+
+  // ---- checking the work -----------------------------------------------
+  REDERIVE: {
+    label: 'Re-derive',
     color: '#f0b45f',
     symbol: 'R',
-    ooda: ['observe'],
+    ooda: 'observe',
     description:
-      'Re-deriving something by the same method. The faculty that produced the error is the one checking it, so it catches transcription slips and nothing else.',
-    example: '"Term1: correct. Term2: correct. Term3: correct. ..."',
+      'Computing a value again by the same method. The faculty that made the error is the one checking, so it catches transcription slips and nothing else.',
+    example: '"Term1: correct. Term2: correct. Term3: correct."',
   },
   CROSSCHECK: {
     label: 'Crosscheck',
     color: '#17624f',
     symbol: 'C',
-    ooda: ['observe'],
+    ooda: 'observe',
     description:
-      'Validating by a method with different failure modes: casting out nines, any modulus, last digit, digit count, magnitude. The only kind that can see what the first pass missed — and only as deep as the modulus it reaches.',
+      'Testing the digits by a method that fails differently: casting out nines, any modulus, last digit. The only kind that can see what the first pass missed.',
     example: '"87 mod 9 = 6, which matches the expected 6."',
   },
-  ERROR_CORRECTION: {
-    label: 'Correction',
-    color: '#d4503c',
-    symbol: '!',
-    ooda: ['decide'],
+  SCALE_CHECK: {
+    label: 'Scale check',
+    color: '#7fb3a3',
+    symbol: 'S',
+    ooda: 'observe',
     description:
-      'Detecting a specific error and changing a value. Neither trace in this post contains one — 128 segments, two false alarms, zero corrections.',
-    example: '(unobserved)',
+      'Testing the size rather than the digits: expected digit count, rough magnitude, a scientific-notation comparison. Blind to any error that does not move the exponent.',
+    example: '"8 digits times 7 digits should give 15. It has 15."',
   },
-  RESULT: {
-    label: 'Result',
-    color: '#5d574d',
-    symbol: '=',
-    ooda: ['act'],
-    description: 'Stating the final product, including the write-up after the thinking ends.',
-    example: '"Therefore, the exact product is 371,499,719,424,970."',
+  CHECK_FLOATED: {
+    label: 'Check floated',
+    color: '#e8dcc0',
+    symbol: '~',
+    ooda: 'orient',
+    description: 'Naming a check and not running it.',
+    example: '"Maybe I could verify with modular arithmetic." (nothing follows)',
+  },
+
+  // ---- when a check disagrees ------------------------------------------
+  ALARM: {
+    label: 'Alarm',
+    color: '#d98c3f',
+    symbol: '!',
+    ooda: 'orient',
+    description: 'Asserting that something may be wrong, or that two values disagree.',
+    example: '"There’s an error here! The last digit should be 0."',
+  },
+  REVISE: {
+    label: 'Revise',
+    color: '#d4503c',
+    symbol: '↺',
+    ooda: 'decide',
+    description:
+      'Changing a value already written down, including superseding an accepted total with a competing one.',
+    example: '"This is a mistake. The correct value is 6.6925 × 10^15."',
+  },
+  STAND: {
+    label: 'Stand',
+    color: '#96a68a',
+    symbol: '✓',
+    ooda: 'decide',
+    description: 'Examining an alarm and concluding nothing changes. The false alarm, resolved.',
+    example: '"So 970 ends with 0. That’s correct. No problem there."',
+  },
+  STALL: {
+    label: 'Stall',
+    color: '#9b7fa8',
+    symbol: '↻',
+    ooda: 'decide',
+    description:
+      'Holding a conflict open: re-checking a side already checked, restating the disagreement, settling nothing.',
+    example: '"But according to the other method it is different. Where is the mistake?"',
+  },
+  LOOP: {
+    label: 'Locked up',
+    color: '#dedad2',
+    symbol: '∞',
+    ooda: 'none',
+    description:
+      'The same text again with no new content. Computed by script, never judged: three or more identical consecutive segments, plus a truncated repeat where the context ran out.',
+    example: '"Let me add 42,177,834,871,396 to 31,633,376,153,547,000:" (×276)',
+  },
+  NONE: {
+    label: 'Unclassified',
+    color: '#c9b8b0',
+    symbol: '·',
+    ooda: 'none',
+    description:
+      'No category fit. Two segments of 636: factorising an operand to hunt for a shortcut, and declaring the work finished without naming a value. Both are real moves this scheme does not yet name, and they are drawn rather than hidden — a rubric that reports no misfits is not being tested.',
+    example: '"Let me factorize 21028. 21028 = 2² × 7 × 751."',
   },
 } as const satisfies Record<CarryCategory, CarryCategoryMeta>;
 
@@ -158,4 +244,5 @@ export const OODA_LABEL: Record<Ooda, string> = {
   orient: 'Orient',
   decide: 'Decide',
   act: 'Act',
+  none: 'Outside the loop',
 };

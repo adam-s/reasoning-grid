@@ -42,7 +42,7 @@
    * the landing. The stretch after the last claim takes its share of the text
    * rather than one beat, which stops the conclusion blurring past.
    */
-  import { onMount, untrack } from 'svelte';
+  import { onMount, tick, untrack } from 'svelte';
   import katex from 'katex';
   import 'katex/dist/katex.min.css';
   import { OPENER, type Claim } from '../../data/opener';
@@ -124,7 +124,12 @@
    * available in every state.
    */
   let seeking = $state(false);
-  const idle = $derived(!playing && !seeking);
+  /** The presenter's lock. Declared here rather than with the rest of the
+   *  presenter because `idle` reads it, and `idle` has to exist before
+   *  `seekTo`. A held lock means something is about to write the cursor, and
+   *  every reader of `idle` wants that treated as motion. */
+  let presenting: string | null = $state(null);
+  const idle = $derived(!playing && !seeking && presenting === null);
 
   /**
    * Bumped by every reset, and READ by the playback loop.
@@ -158,29 +163,160 @@
    * so there is nothing to keep in step by hand.
    */
   let seekRaf = 0;
-  function seekTo(offset: number) {
-    if (!idle) return;                          // the clock or another seek owns it
+  /**
+   * `force` exists for exactly one caller: `present`, below. It holds the lock
+   * itself while it scrolls and switches run, which makes `idle` false, so
+   * without a bypass the presenter could never drive the seek it exists to
+   * drive. Every other caller passes nothing and is refused while another
+   * writer owns the cursor, which is the invariant this file is built on.
+   *
+   * The promise resolves when the tween lands, so a caller can sequence work
+   * after arrival instead of guessing at a duration.
+   */
+  function seekTo(offset: number, force = false): Promise<void> {
+    if (!force && !idle) return Promise.resolve();  // another writer owns it
     const to = timeAt(offset);
     const from = elapsed;
     // The dead zone is in CHARACTERS. Expressed in milliseconds it scaled with
     // the local sweep rate -- 8ms is 291 characters inside the long tail of the
     // run that never answered, so a click near the cursor there did nothing.
-    if (Math.abs(cursorAt(to) - cursorAt(from)) < 2) return;
+    if (Math.abs(cursorAt(to) - cursorAt(from)) < 2) return Promise.resolve();
     cancelAnimationFrame(seekRaf);
     if (lessMotion()) {
       elapsed = to;
-      return;
+      return Promise.resolve();
     }
     seeking = true;
-    const t0 = performance.now();
-    const step = (now: number) => {
-      const u = Math.min(1, (now - t0) / 620);
-      const e = u < 0.5 ? 4 * u ** 3 : 1 - (-2 * u + 2) ** 3 / 2;
-      elapsed = from + (to - from) * e;
-      if (u < 1) seekRaf = requestAnimationFrame(step);
-      else seeking = false;
-    };
-    seekRaf = requestAnimationFrame(step);
+    return new Promise((resolve) => {
+      const t0 = performance.now();
+      const step = (now: number) => {
+        const u = Math.min(1, (now - t0) / 620);
+        const e = u < 0.5 ? 4 * u ** 3 : 1 - (-2 * u + 2) ** 3 / 2;
+        elapsed = from + (to - from) * e;
+        if (u < 1) seekRaf = requestAnimationFrame(step);
+        else { seeking = false; resolve(); }
+      };
+      seekRaf = requestAnimationFrame(step);
+    });
+  }
+
+  /**
+   * ---- THE PRESENTER -------------------------------------------------------
+   *
+   * Prose outside this component can send the reader to one moment in one run.
+   * That makes a fourth claimant on a cursor the rest of this file is careful
+   * to give exactly one writer at a time, so it gets its own state rather than
+   * another boolean bolted onto the pile.
+   *
+   * `presenting` is a LOCK, not a writer. While it is held the presenter is
+   * doing things that must not be interrupted -- switching run, scrolling the
+   * figure into view, then driving the seek -- and every control that could
+   * write the cursor is disabled for the duration. It is folded into `idle`, so
+   * the panes stop scrolling and the flame dims exactly as they do under the
+   * clock.
+   *
+   * WHERE THE READER IS is reported outward rather than held here. The prose
+   * owns which of its buttons reads as current, because the prose is what
+   * renders them, and a copy of that state on both sides is a copy that gets
+   * out of step. `onMoment` fires with an id on arrival and with null the
+   * moment the reader takes the cursor back by playing, scrubbing, switching
+   * run or clicking a bar. After any of those the label would be a lie.
+   *
+   * `presentGen` is the same discipline as `runId` and for the same reason.
+   * This function awaits three times, so a second click can land mid-flight and
+   * two presenters would then race to write one cursor. The generation check
+   * after every await makes the newest click the only one that finishes.
+   */
+  type Props = {
+    /** The presenter holds or releases the cursor. Prose driving it should
+     *  disable its own controls while this is true. */
+    onBusyChange?: (busy: boolean) => void;
+    /** The id of the moment the reader was delivered to, or null once they
+     *  have moved the cursor themselves. */
+    onMoment?: (id: string | null) => void;
+    /**
+     * What to bring into view before a moment plays. Defaults to this figure.
+     *
+     * Pass the element that wraps BOTH the figure and whatever controls drive
+     * it. Scrolling the figure alone puts its controls off-screen at exactly
+     * the moment the reader wants the next one, so they have to scroll back
+     * after every step. Give the wrapper a `scroll-margin-top` to taste; this
+     * aligns to its top rather than its centre so the controls land first.
+     */
+    scrollTarget?: HTMLElement | null;
+  };
+  let { onBusyChange, onMoment, scrollTarget = null }: Props = $props();
+
+  let rootEl: HTMLElement | null = $state(null);
+  let presentGen = 0;
+  let presentTimer = 0;
+
+  /** Scroll settle before the seek starts. Nothing measures the scroll, so the
+   *  reader would otherwise watch the animation land off-screen. */
+  const SETTLE_MS = 420;
+
+  export async function present(runIndex: number, offset: number, id: string) {
+    const gen = ++presentGen;
+    clearTimeout(presentTimer);
+    cancelAnimationFrame(seekRaf);
+    seeking = false;
+    playing = false;
+    presenting = id;
+    // ORDER MATTERS. `busy` must be true before the clear goes out, because a
+    // caller telling "the reader took the cursor back" apart from "a new
+    // moment is starting" has only these two signals to do it with. Both
+    // arrive as onMoment(null); only the busy flag distinguishes them.
+    onBusyChange?.(true);
+    onMoment?.(null);
+
+    try {
+      if (runIndex !== which) {
+        which = runIndex;
+        runId += 1;               // kill the clock loop already in flight
+        elapsed = 0;
+        await tick();             // knots and schedule now describe the new run
+        if (gen !== presentGen) return;
+      }
+
+      const still = lessMotion();
+      (scrollTarget ?? rootEl)?.scrollIntoView({
+        behavior: still ? 'auto' : 'smooth',
+        block: 'start',
+      });
+      if (!still) {
+        await new Promise<void>((r) => { presentTimer = window.setTimeout(r, SETTLE_MS); });
+        if (gen !== presentGen) return;
+      }
+
+      await seekTo(offset, true);
+      if (gen !== presentGen) return;
+      release();
+      onMoment?.(id);
+    } finally {
+      /**
+       * THE LOCK IS ALWAYS RELEASED. Every control on the page is disabled
+       * while it is held, so a throw anywhere above would leave the figure and
+       * both button rows dead with no way back except a reload.
+       *
+       * The gen check is what keeps this safe. A call that lost the race must
+       * NOT release, because the newer call is holding the lock now and this
+       * one has no business touching it.
+       */
+      if (gen === presentGen) release();
+    }
+  }
+
+  /** Idempotent, because both the success path and the finally call it. */
+  function release() {
+    if (presenting === null) return;
+    presenting = null;
+    onBusyChange?.(false);
+  }
+
+  /** The reader took the cursor back, so the prose may no longer claim to know
+   *  where they are. Safe to call when nothing is marked. */
+  function leaveSpotlight() {
+    onMoment?.(null);
   }
 
   // ---- the stream ---------------------------------------------------------
@@ -220,25 +356,13 @@
 
   const ordered = $derived([...trace.segments].sort((a, b) => a.start - b.start));
 
-  /**
-   * The step the playhead is inside, by binary search rather than a scan --
-   * this runs on every frame, over up to 396 segments.
-   *
-   * The segments tile the response with no gap, so the last one starting at or
-   * before the cursor is the one containing it. `cursor` is clamped one short
-   * of the end: at the very last character there is no "current" step, and the
-   * legend should not flash its final category as the run stops.
-   */
-  const activeCategory = $derived.by(() => {
-    const pos = Math.min(cursor, trace.text.length - 1);
-    if (pos < 0 || !ordered.length) return null;
-    let lo = 0, hi = ordered.length - 1, best = 0;
-    while (lo <= hi) {
-      const mid = (lo + hi) >> 1;
-      if (ordered[mid].start <= pos) { best = mid; lo = mid + 1; } else hi = mid - 1;
-    }
-    return ordered[best].category;
-  });
+  /* The panel's category legend is off. It listed sixteen entries above a
+     two-row chart and repeated, in words, what the bars already say in colour
+     -- and the hero directly above this figure already carries the key the
+     reader needs. Dropping it also removes the per-frame binary search that fed
+     its highlight: `activeCategory` had no other reader, and it ran on every
+     frame over up to 403 segments. Dropping a feature is only a simplification
+     if its plumbing goes with it. */
 
   /**
    * The stream is the response VERBATIM. Not rendered, not cleaned, not one
@@ -392,6 +516,7 @@
     playing = autoplay;
   }
   function toggle() {
+    leaveSpotlight();
     if (!playing && done) {
       reset(true);
       return;
@@ -402,6 +527,7 @@
   }
   const tabEls: Array<HTMLButtonElement | null> = $state([]);
   function pick(i: number) {
+    leaveSpotlight();
     which = i;
     reset(true);
   }
@@ -419,13 +545,14 @@
   const commas = (d: string) => d.replace(/\B(?=(\d{3})+(?!\d))/g, ',');
 </script>
 
-<figure class="synced">
+<figure class="synced" bind:this={rootEl}>
   <div class="head">
     <span class="sum mono">{commas(trace.x)} &times; {commas(trace.y)}</span>
     <div class="tabs" role="radiogroup" aria-label="which run" tabindex="-1" onkeydown={arrows}>
       {#each OPENER as t, i}
         <button
           role="radio" aria-checked={i === which} class:on={i === which}
+          disabled={presenting !== null}
           tabindex={i === which ? 0 : -1} bind:this={tabEls[i]}
           onclick={() => pick(i)}>{t.verdict}</button>
       {/each}
@@ -449,14 +576,13 @@
       scheme={CARRY_SCHEME}
       {header}
       playhead={cursor}
-      {activeCategory}
       dimAhead={true}
-      onSelect={(_i, row) => seekTo(row.start)}
+      onSelect={(_i, row) => { leaveSpotlight(); seekTo(row.start); }}
       showInspector={false}
       showMinimap={false}
       showInspectorHint={false}
       showZoomHint={false}
-      showLegend={true}
+      showLegend={false}
       maxChartHeight={150}
       formatTick={(t) => `${Math.round((t / flameSpan) * 100)}%`}
     />
@@ -520,14 +646,17 @@
   </div>
 
   <div class="controls">
-    <button class="play" onclick={toggle}
+    <button class="play" onclick={toggle} disabled={presenting !== null}
       aria-label={playing ? 'Pause' : done ? 'Replay' : 'Play'}>
       {playing ? '❚❚' : done ? '↺' : '▶'}
     </button>
     <input
       type="range" min="0" max={RUN_MS} step={RUN_MS / 200}
-      bind:value={elapsed}
-      oninput={() => { cancelAnimationFrame(seekRaf); seeking = false; playing = false; }}
+      bind:value={elapsed} disabled={presenting !== null}
+      oninput={() => {
+        leaveSpotlight();
+        cancelAnimationFrame(seekRaf); seeking = false; playing = false;
+      }}
       aria-label="position in the run"
       aria-valuetext="{Math.round((elapsed / RUN_MS) * 100)}% through,
         {landed.length} of {trace.claims.length} claims" />

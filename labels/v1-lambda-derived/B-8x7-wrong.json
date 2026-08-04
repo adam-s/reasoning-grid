@@ -1,0 +1,81 @@
+{
+  "trace": "B",
+  "uid": "40714cc609335d41",
+  "cell": "8x7",
+  "outcome": "converged_wrong",
+  "rubric": ".agents/reference/flame-rubric-carrychain.md",
+  "labelled_blind": true,
+  "note": "B was labelled first, before A, as the rubric requires. Outcome was known (it is in the filename) but A's trace was not consulted while labelling B, so B's checks could not be graded against A's.",
+
+  "labels": [
+    "TASK_SETUP",
+    "STRATEGY", "STRATEGY", "STRATEGY", "STRATEGY", "STRATEGY",
+    "PARTIAL_PRODUCT", "PARTIAL_PRODUCT", "PARTIAL_PRODUCT", "PARTIAL_PRODUCT",
+    "CROSSCHECK",
+    "PARTIAL_PRODUCT", "PARTIAL_PRODUCT",
+    "ACCUMULATE",
+    "STRATEGY",
+    "ACCUMULATE", "ACCUMULATE", "ACCUMULATE", "ACCUMULATE", "ACCUMULATE", "ACCUMULATE",
+    "RECHECK", "RECHECK", "RECHECK", "RECHECK", "RECHECK",
+    "STRATEGY", "STRATEGY",
+    "TASK_SETUP",
+    "STRATEGY", "STRATEGY", "STRATEGY", "STRATEGY", "STRATEGY",
+    "STATE_TRACKING",
+    "RECHECK", "RECHECK", "RECHECK", "RECHECK", "RECHECK", "RECHECK",
+    "ACCUMULATE",
+    "RECHECK", "RECHECK",
+    "STRATEGY", "STRATEGY", "STRATEGY", "STRATEGY", "STRATEGY", "STRATEGY", "STRATEGY",
+    "CROSSCHECK", "CROSSCHECK", "CROSSCHECK", "CROSSCHECK", "CROSSCHECK", "CROSSCHECK",
+    "CROSSCHECK",
+    "RECHECK",
+    "CROSSCHECK",
+    "RESULT", "RESULT", "RESULT", "RESULT"
+  ],
+
+  "subtasks": [
+    { "start": 0,  "end": 25, "label": "First method: place-value decomposition" },
+    { "start": 6,  "end": 12, "label": "Compute the seven partial products" },
+    { "start": 13, "end": 20, "label": "Sum them" },
+    { "start": 21, "end": 25, "label": "Re-add, step by step" },
+    { "start": 26, "end": 43, "label": "Second method: digit by digit" },
+    { "start": 33, "end": 42, "label": "Recompute and re-sum" },
+    { "start": 44, "end": 50, "label": "Search for a third method" },
+    { "start": 51, "end": 59, "label": "Structural checks" },
+    { "start": 53, "end": 56, "label": "Last-digit false alarm" },
+    { "start": 60, "end": 63, "label": "Report" }
+  ],
+
+  "annotations": [
+    { "segment": 20, "kind": "error_born",
+      "text": "371,499,719,344,600 + 80,379,530 stated as 371,499,719,424,970. The addend lands 1,000x low: the digits written are consistent with adding 80,370. Every other step in the trace is correct." },
+    { "segment": 25, "kind": "check_passed_on_the_error",
+      "text": "The recheck decomposes the addend correctly in words -- 'adding 80 million and 379,530' -- and then confirms a total that adds neither. Its own sentence contains the right answer." },
+    { "segment": 42, "kind": "not_independent",
+      "text": "The 'second method' reproduces the identical wrong total, because it is the same decomposition in a different order and ends in the same misaligned addition." },
+    { "segment": 47, "kind": "noticed_and_dropped",
+      "text": "'that's the same as before, which is what I did earlier' -- the model sees that its new method reduces to the old one, and abandons it without drawing the conclusion." },
+    { "segment": 49, "kind": "false_confirmation",
+      "text": "'two different methods gave me the same answer, maybe that's sufficient.' They were not different methods. This is the inference that closes the loop early." },
+    { "segment": 58, "kind": "the_check_it_declined",
+      "text": "'let me check the sum of the digits, but that might not help.' Casting out nines gives 3 for the answer and 4 for the truth. It was the one check that could see the error, and it was named and dropped in the same sentence. What it did instead was re-verify the seven partial products -- all of which were already correct." }
+  ],
+
+  "verified": {
+    "all_seven_partial_products_correct": true,
+    "sum_of_its_own_terms_equals_truth": true,
+    "answer_equals_sum_of_its_own_terms": false,
+    "shortfall": -80299160,
+    "answered": 371499719424970,
+    "truth": 371499799724130,
+    "mod9_answer": 4,
+    "mod9_truth": 3,
+    "mod11_answer": 4,
+    "mod11_truth": 0,
+    "mod100_answer": 70,
+    "mod100_truth": 30,
+    "last_digit_answer": 0,
+    "last_digit_truth": 0,
+    "digits_answer": 15,
+    "digits_truth": 15
+  }
+}

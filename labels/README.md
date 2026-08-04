@@ -1,24 +1,76 @@
-# labels/ — the hand-assigned categories
+# labels/ — the assigned categories
 
 These are judgments, not derivations, which is why they live here and not in
 [`derived/`](../derived/). Everything in `derived/` can be rebuilt from
 [`runs/`](../runs/) by running a script; these files cannot be rebuilt by
 anything. Delete them and the work is gone.
 
-One file per trace, against
-[../.agents/reference/flame-rubric-carrychain.md](../.agents/reference/flame-rubric-carrychain.md),
+## What the blog renders: `v2/`
+
+Current. Four traces, sixteen categories derived from these traces rather than
+adapted from another study, labelled blind against
+[../.agents/reference/label-rubric-qwen-multiplication.md](../.agents/reference/label-rubric-qwen-multiplication.md),
 which was written **before** any label was assigned.
 
+| file | trace | N | T | outcome |
+| --- | --- | --- | --- | --- |
+| `v2/A-7x11-correct.json` | 7×11 | 77 | 0.7 | correct; fourteen independent checks, all passed |
+| `v2/B-8x7-wrong.json` | 8×7 | 56 | 0.7 | wrong; checks blind to where its error was |
+| `v2/D-8x8-revised.json` | 8×8 | 64 | 0.7 | correct; found a conflict and revised a value |
+| `v2/C-5x13-grind.json` | 5×13 | 65 | 0.0 | never answered; a broken check destroyed a correct total |
+
+636 segments. 340 distinct judgments across 9 blind labellers, expanded by text
+identity; 292 labels computed rather than judged (`LOOP`, `REPORT`).
+
+Pipeline: `probe/segment_trace.py` → `probe/precompute_labels.py` →
+`probe/label_worklist.py` → blind pass → `probe/collect_labels.py`, which
+validates and fails rather than falling back to a default category.
+
+**Reproduction agreement is 72% (95% interval 61–81%), against 84% for the
+scheme these replace.** The intervals do not overlap. The cause is diagnosed and
+unfixed: `REDERIVE` outranks `PRODUCT` and `SUM` in the decision rules and
+absorbs them. The rubric records it in full, including that the previous rubric
+had already fixed this once and that v2 discarded the fix along with the
+vocabulary. Anything built on these labels inherits that number.
+
+`v2/raw/` holds what each labeller returned, `v2/pilot/` the two pilots,
+`v2/repro/` the reproduction pass.
+
+A v2 file carries `labels` (one category per segment, same length as the matching
+`derived/v2/segments-*.json`), the segmentation parameters it was cut with, and
+`computed` — how many labels came from a script rather than a judgment. There are
+no `subtasks`: the flame graph's container bands are runs of consecutive segments
+in the same OODA phase, derived in `probe/build_flame.py` from the labels
+themselves, so a container can never disagree with the leaves under it.
+
+## Frozen: `v1-lambda-derived/`
+
+The first pass, nine categories adapted from a study of **Sonnet 4.6 reasoning
+about lambda calculus** and kept at nine for comparability with that chart. Two
+of the nine named behaviours long multiplication does not produce, and one
+absorbed five distinct moves. Read-only, out of the labelling path, kept as
+provenance for the methods write-up: see
+[v1-lambda-derived/README.md](v1-lambda-derived/README.md).
+
+**They index the OLD segmentation** (64 segments per trace, no max-length cap),
+so they do not align segment-for-segment with `derived/v2/`. They are provenance,
+not a comparison set.
+
+## The v1 pass, for reference
+
+Everything below describes v1 and is kept because the published numbers it
+produced need a record.
+
 | file | trace | outcome |
-|---|---|---|
-| `A-7x11-correct.json` | Qwen3-4B, N=77, T=0.7 | answered, correct |
-| `B-8x7-wrong.json` | Qwen3-4B, N=56, T=0.7 | answered, wrong |
-| `C-5x13-grind.json` | Qwen3-4B, N=65, T=0 | never answered |
+| --- | --- | --- |
+| `v1-lambda-derived/A-7x11-correct.json` | Qwen3-4B, N=77, T=0.7 | answered, correct |
+| `v1-lambda-derived/B-8x7-wrong.json` | Qwen3-4B, N=56, T=0.7 | answered, wrong |
+| `v1-lambda-derived/C-5x13-grind.json` | Qwen3-4B, N=65, T=0 | never answered |
 
 ## What a file contains
 
 | field | |
-|---|---|
+| --- | --- |
 | `labels` | one category per segment, in order. Same length as the matching `derived/segments-*.json` |
 | `subtasks` | flat `{start, end, label}` ranges over segment indices. Depth is **derived from containment**, never stored — see `probe/build_flame.py` |
 | `annotations` | `{segment, kind, text}` — the moments the post argues about, pinned to where they happen |

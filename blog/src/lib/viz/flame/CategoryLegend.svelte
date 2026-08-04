@@ -16,7 +16,6 @@
    */
   import {
     metaFor,
-    LAMBDA_SCHEME,
     type CategoryScheme,
     type AnyFlameRow,
   } from '../../design/scheme';
@@ -28,13 +27,13 @@
      *  the run is doing at the playhead. null leaves every entry at full
      *  strength, which is what a static figure wants. */
     active?: string | null;
-    scheme?: CategoryScheme;
+    scheme: CategoryScheme;
     /** List every category in the scheme, not only the ones this trace used. */
     showEmpty?: boolean;
   };
 
   let {
-    rows = [], scheme = LAMBDA_SCHEME, showEmpty = false, active = null,
+    rows = [], scheme, showEmpty = false, active = null,
   }: Props = $props();
 
   /**

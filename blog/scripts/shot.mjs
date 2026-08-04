@@ -1,7 +1,7 @@
 // Screenshot one section at a given viewport, for reviewing a figure without a browser.
 //   node scripts/shot.mjs <out.png> [width] [section text]
 import { chromium } from '@playwright/test';
-const [out, w = '1280', needle = 'Three ways to finish'] = process.argv.slice(2);
+const [out, w = '1280', needle = 'Inside a single turn'] = process.argv.slice(2);
 const b = await chromium.launch();
 const p = await b.newPage({ viewport: { width: +w, height: 1400 }, deviceScaleFactor: 2 });
 await p.goto('http://localhost:5175/', { waitUntil: 'networkidle' });

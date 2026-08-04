@@ -1,22 +1,39 @@
 #!/usr/bin/env python3
 """Split a thinking trace into classifiable segments.
 
-Newline splitting -- what the lambda pipeline used -- gives 213 segments here
-against their 30-130, because Qwen writes fragments: median 52 characters, lines
-like "So 34." and "3+4=7.". A fragment carries no context, so the classifier
-cannot tell what it belongs to and the chart turns to noise.
+Newline splitting gives 213 segments on a trace this size, because Qwen writes
+fragments: median 52 characters, lines like "So 34." and "3+4=7.". A fragment
+carries no context, so the classifier cannot tell what it belongs to and the
+chart turns to noise.
 
-So a segment is a discourse MOVE, not a line. Break only at a marker that starts
-a new move, and only once the accumulated text is long enough to stand alone.
-That yields 64 segments per trace at a median of ~195 characters -- back inside
-the lambda band, with each segment recognisable as a step.
+So a segment is a discourse MOVE, not a line. Break at a marker that starts a new
+move, once the accumulated text is long enough to stand alone.
 
-    python probe/segment_trace.py --cell 7x11 --correct
-    python probe/segment_trace.py --cell 8x7 --wrong --out derived/segments-B.json
+`--min-chars` was originally 100 because that landed the trace inside the 30-130
+segment band of the project the flame components came from. That was never a fact
+about these traces and the constraint is gone; 100 is kept because nothing
+measured argues for moving it, not because of the band.
 
-Deliberately NOT a classifier. This only cuts; labels come from a separate pass
-against .agents/reference/flame-rubric-carrychain.md, so a segmentation change
-never silently relabels anything.
+`--max-chars` exists because the real defect is in the TAIL, not the median.
+Across the four labelled traces, 65 segments of 803 ran past 400 characters while
+holding 26% of all text, and reading them shows why that matters: one 1,043-char
+block computes six separate terms and would carry a single label. Forcing a break
+at the next line once a segment passes the cap drops those merged blocks from 65
+to 24, for 11% more segments.
+
+The asymmetry is the argument. Splitting one move in two costs a duplicate label
+on adjacent bars, which the chart renders identically and the shares count the
+same. Merging two moves puts a WRONG label on part of the text. So when the rule
+is uncertain, it should cut.
+
+What the cap cannot fix: the largest remaining blocks are single lines the model
+emitted with no internal newline -- 831 characters in one case -- and no
+line-boundary rule can split those.
+
+    python probe/segment_trace.py --uid 8129d2dbafcc8e77 -o derived/segments-D.json
+
+Deliberately NOT a classifier. This only cuts; labels come from a separate pass,
+so a segmentation change never silently relabels anything.
 """
 import argparse, glob, json, os, re, sys
 
@@ -34,9 +51,17 @@ BREAK = re.compile(
 THINK_END = "</think>"
 
 
-def segment(text: str, min_chars: int = 100):
+def segment(text: str, min_chars: int = 100, max_chars: int | None = 300):
     """Merge lines into moves. Returns [{index, start, end, text}] over the RAW
-    string, so offsets stay usable as flame-chart coordinates."""
+    string, so offsets stay usable as flame-chart coordinates.
+
+    Two break conditions, and they answer different failure modes:
+      - at a MARKER once the segment can stand alone (min_chars), which stops
+        fragments like "So 34." from being classified without context;
+      - at ANY line once the segment has run long (max_chars), which stops one
+        block from holding several moves under a single label.
+    Pass max_chars=None for marker-only breaking.
+    """
     segs, cur, cur_start = [], "", 0
     pos = 0
     for raw in text.split("\n"):
@@ -45,7 +70,8 @@ def segment(text: str, min_chars: int = 100):
         s = raw.strip()
         if not s:
             continue
-        if cur and BREAK.match(s) and len(cur) >= min_chars:
+        overlong = max_chars is not None and len(cur) >= max_chars
+        if cur and (overlong or (BREAK.match(s) and len(cur) >= min_chars)):
             segs.append((cur_start, line_start, cur.strip()))
             cur, cur_start = s, line_start
         else:
@@ -65,6 +91,9 @@ def main():
                          "cell+outcome picks whichever run happens to be median "
                          "length, which is not the trace the rubric describes.")
     ap.add_argument("--min-chars", type=int, default=100)
+    ap.add_argument("--max-chars", type=int, default=300,
+                    help="force a break at the next line once a segment passes "
+                         "this, so one block cannot hold several moves. 0 disables.")
     ap.add_argument("--cell", default=None, help="label only; taken from the record")
     ap.add_argument("--runs", default="runs")
     ap.add_argument("--glob", default="1[01]-grid1*-qwen-*.jsonl",
@@ -83,7 +112,7 @@ def main():
     r = hits[0]
     a, b = r["a"], r["b"]
 
-    segs = segment(r["raw_text"], args.min_chars)
+    segs = segment(r["raw_text"], args.min_chars, args.max_chars or None)
     cut = r["raw_text"].find(THINK_END)
     for s in segs:
         s["after_think"] = cut >= 0 and s["start"] >= cut
@@ -100,6 +129,7 @@ def main():
         "completion_tokens": r["completion_tokens"],
         "total_chars": len(r["raw_text"]),
         "min_chars": args.min_chars,
+        "max_chars": args.max_chars or None,
         "n_segments": len(segs),
         "segments": segs,
     }

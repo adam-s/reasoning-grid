@@ -25,6 +25,12 @@ export type WinnerData = {
   readonly generations: readonly [number, number];
   readonly overall: readonly [number, number];
   readonly cells: Readonly<Record<string, WinnerCell>>;
+  /** [B0, B1, B2] per model, for logit(p) = B0 + B1*(a+b) + B2*min(a,b).
+   *  Setting the logit to zero solves each model's 50% boundary in closed
+   *  form: two straight rays meeting on the diagonal at `halfAt`. Exported so
+   *  the boundary figure draws the fit that produced `halfAt` rather than a
+   *  second fit of its own that could drift away from it. */
+  readonly fits: readonly [readonly number[], readonly number[]];
   readonly findings: {
     /** cells where Phi's rate is strictly higher */
     readonly phiAhead: number;
@@ -54,11 +60,11 @@ export const WINNER: WinnerData = {
  ],
  "problems": 1062,
  "generations": [
-  1579,
+  1591,
   1206
  ],
  "overall": [
-  0.7441,
+  0.7423,
   0.5978
  ],
  "cells": {
@@ -699,7 +705,7 @@ export const WINNER: WinnerData = {
   },
   "11x8": {
    "n": 12,
-   "qwen": 0.5972,
+   "qwen": 0.5694,
    "phi": 0.3333
   },
   "11x9": {
@@ -783,6 +789,18 @@ export const WINNER: WinnerData = {
    "phi": 0.0833
   }
  },
+ "fits": [
+  [
+   9.005185,
+   -0.471842,
+   -0.0312
+  ],
+  [
+   6.879087,
+   -0.423866,
+   0.027855
+  ]
+ ],
  "findings": {
   "phiAhead": 15,
   "qwenLevelOrAhead": 129,
@@ -794,7 +812,7 @@ export const WINNER: WinnerData = {
   ],
   "outsideNoise": 10,
   "outsideNoisePhi": 0,
-  "swingWithinTotal": 0.093,
+  "swingWithinTotal": 0.0923,
   "swingBetweenTotals": 0.8843
  }
 };

@@ -7,9 +7,34 @@
    -- each post assigns the shared hues to its own quantities and then uses
    them consistently start to finish. */
 :root {
-  --font-serif: "Source Serif 4", "Source Serif Pro", Georgia, serif;
+  /* ---- typography: the house scale, byte-identical to the other posts ----
+     grpo, separate, lambda-variance and reliably-incorrect all carry exactly
+     these values. Nothing here is loaded as a webfont in any of them, so the
+     stack has to match CHARACTER FOR CHARACTER or two posts resolve to
+     different local families and render differently on the same machine. This
+     post previously led with "Source Serif 4"; it now leads with Pro, like the
+     other four. */
+  --font-serif: "Source Serif Pro", "Charter", "Iowan Old Style", Georgia, serif;
   --font-sans: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   --font-mono: "JetBrains Mono", "SF Mono", ui-monospace, monospace;
+
+  --text-xs: 0.75rem;
+  --text-sm: 0.875rem;
+  --text-base: 1.0625rem;
+  --text-lg: 1.25rem;
+  --text-xl: 1.5rem;
+  --text-2xl: 2rem;
+  --text-3xl: 2.75rem;
+
+  --leading-tight: 1.25;
+  --leading-snug: 1.4;
+  --leading-normal: 1.55;
+  --leading-relaxed: 1.7;
+
+  --weight-regular: 400;
+  --weight-medium: 500;
+  --weight-semibold: 600;
+  --weight-bold: 700;
 
   --bg: #fdfcf9;
   --panel: #f7f5f0;
@@ -42,24 +67,28 @@
   --maxw-fig: 880px;    /* a figure that needs room; matches ThinkingOps */
   --maxw-page: 1100px;  /* the shell */
 
+  /* The other four posts call the reading measure `--measure`; this one calls it
+     `--maxw` and its components are written against that. Both names, one value,
+     so a component copied either direction resolves. */
+  --measure: var(--maxw);
+
   /* ---- aliases the ported flame-graph components expect ----
      Those files came from agent-capability-threshold, which names some tokens
      differently. Aliasing here rather than editing them keeps the copies
      byte-identical to their source, so a future diff against that repo still
-     works. Delete these only if the components are rewritten. */
+     works. Delete these only if the components are rewritten.
+
+     The type tokens used to live here too, at values invented for this post --
+     `--text-base: 0.94rem` against the house 1.0625rem, and no `--text-xl` and
+     up at all. Meanwhile `body` hard-coded the correct 1.0625rem, so the tokens
+     and the applied rules disagreed and every component sized in `var(--text-*)`
+     rendered about 13% small. They are now the shared scale, above. */
   --surface: var(--panel);
   --border: var(--line);
   --ink-muted: var(--ink-dim);
   --ink-subtle: var(--ink-faint);
   --radius-sm: 3px;
   --radius-md: 5px;
-  --text-xs: 0.72rem;
-  --text-sm: 0.82rem;
-  --text-base: 0.94rem;
-  --text-lg: 1.08rem;
-  --weight-medium: 500;
-  --leading-snug: 1.35;
-  --leading-relaxed: 1.6;
 
   /* ---- carrychain's semantic assignment of the shared hues ----
      ONE language, start to finish. See blog/README.md.
@@ -95,22 +124,47 @@ body { -webkit-text-size-adjust: 100%; }
 
 body {
   font-family: var(--font-serif);
-  font-size: 1.0625rem;
-  line-height: 1.7;
+  font-size: var(--text-base);
+  line-height: var(--leading-relaxed);
   color: var(--ink);
+  font-feature-settings: "kern", "liga", "calt";
 }
 
 @media (max-width: 600px) {
   body { font-size: 1rem; line-height: 1.65; }
 }
 
-h1, h2, h3 {
-  font-family: var(--font-serif);
-  line-height: 1.2;
-  letter-spacing: -0.015em;
-  font-weight: 700;
+/* Measured off the live https://adamsohn.com/reliably-incorrect/ , not copied
+   from a local checkout -- the deployed page is the thing readers compare
+   against. Computed values there:
+
+     body   Source Serif Pro  17px / 28.9px   400   ls normal
+     h1     Source Serif Pro  44px / 55px     700   ls -0.88px  (-0.02em)
+     h2     Source Serif Pro  32px / 40px     700   ls -0.48px  (-0.015em)
+     h3     Inter             24px / 30px     500   ls -0.24px  (-0.01em)
+     label  Inter             12px / 20.4px   500   ls  0.96px  ( 0.08em)
+
+   THE TITLE HEADINGS ARE SERIF AND BOLD; THE SUBHEAD IS SANS AND MEDIUM. That
+   switch is the part a local copy of the tokens does not tell you, and it is
+   what makes an h3 read as a label on the section below it rather than as a
+   smaller title. */
+h1, h2, h3, h4, h5, h6 {
+  line-height: var(--leading-tight);
   color: var(--ink);
 }
+h1, h2 {
+  font-family: var(--font-serif);
+  font-weight: var(--weight-bold);
+}
+h1 { font-size: var(--text-3xl); letter-spacing: -0.02em; }
+h2 { font-size: var(--text-2xl); letter-spacing: -0.015em; }
+h3, h4, h5, h6 {
+  font-family: var(--font-sans);
+  font-weight: var(--weight-medium);
+  letter-spacing: -0.01em;
+}
+h3 { font-size: var(--text-xl); }
+p  { font-size: var(--text-base); line-height: var(--leading-relaxed); }
 
 a { color: var(--accent); }
 

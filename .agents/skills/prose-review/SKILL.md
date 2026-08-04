@@ -55,6 +55,28 @@ Two failure modes this repo produces more than most:
   is the defect [AGENTS.md](../../../AGENTS.md) exists to prevent. Flag any
   figure you cannot trace to `runs/`, `labels/`, or a `probe/` script.
 
+### The eighth lens: is a human the reader
+
+Run this over every paragraph of blog prose, after the seven. It catches what
+they do not, because nothing here is ambiguous — it is all perfectly clear to
+someone who already knows the answer, which is the problem.
+
+Ask four questions. Any "no" is a finding, and the rewrite is the deliverable.
+
+1. **What can the reader see?** If the paragraph contains no image, it was
+   written for a machine. Abstract nouns are the usual cause.
+2. **Where is the action?** If the verbs are *is*, *has*, *states*, *provides*
+   and the real action is buried in a noun, hand it back to a verb.
+3. **Whose vocabulary is this?** `decomposition`, `segment`, `lap`, `cell`,
+   `crosscheck` are this repo's words. A reader has met none of them.
+4. **Is any sentence about the writing rather than about the world?** "Start
+   with", "It is worth noting", "This section covers". Cut it and start at the
+   thing.
+
+The full list is [anti-slop.md](../../reference/anti-slop.md) rules 12 to 17.
+A paragraph can satisfy every other rule in that file and still fail all four of
+these, so do not treat a clean pass on the seven lenses as a clean pass.
+
 ## Step 2 — VERIFY, adversarially and cold
 
 A model that just flagged a phrase will defend it. Hand each candidate to a
@@ -74,8 +96,17 @@ the sub-agent is only how the context is kept fresh.
 
 Now, and only now, check register against
 [../../reference/voice/](../../reference/voice/) — the profile, the eight style
-rules, and the anti-patterns. Read that directory's README first: it records
-where the voice and this repo's rules genuinely conflict, and which wins.
+rules, the anti-patterns, and **`stated-preferences.md`**. Read that directory's
+README first: it records where the voice and this repo's rules genuinely
+conflict, and which wins.
+
+`stated-preferences.md` is the one to read closely and the one that overrides.
+The other four files are derived from a corpus of forum comments and describe
+what Adam once did; that file records what he has asked for directly, about
+drafts of this project. Where they disagree, it wins. Two that catch drafts
+constantly: **no colons and no em dashes**, which is stricter than anti-slop's
+"ration them", and **name the concept if it has a name** rather than describing
+around it.
 
 The short version: **the repo owns the surface, the voice owns the reasoning.**
 Sentence length, paragraph length and reading level are carrychain's call —

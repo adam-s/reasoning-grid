@@ -9,6 +9,13 @@
    * Extracted from the thinking-traces Figure so multiple sections can
    * render independently-controlled flame panels (e.g. the pass/fail pair
    * in ThinkingOps) without duplicating state.
+   *
+   * `scheme` and `header` are both REQUIRED, and neither used to be. Both
+   * defaulted to what the λ-bench reference figure wanted — λ's nine categories,
+   * and a header built from a model badge, an algorithm id and a wall-clock.
+   * That figure is gone. A default scheme would have coloured a carrychain trace
+   * with the wrong nine labels instead of failing, and the default header would
+   * have rendered an empty badge from fields carrychain traces do not carry.
    */
   import { scaleLinear } from 'd3-scale';
   import { MediaQuery } from 'svelte/reactivity';
@@ -18,7 +25,7 @@
   import { ChartViewport } from './ChartViewport.svelte';
   import type { Snippet } from 'svelte';
   import type { AnyFlameRow, AnyTrace, CategoryScheme } from '../../design/scheme';
-  import { LAMBDA_SCHEME, metaFor } from '../../design/scheme';
+  import { metaFor } from '../../design/scheme';
 
   // Rows are typed structurally so this panel and FlameGraph agree. The
   // literal-union Category stayed out: the chart needs a colour for whatever
@@ -31,15 +38,8 @@
   // tapped segment with its full text, which is the canonical mobile view.
   const canHover = new MediaQuery('(hover: hover)');
 
-  type Outcome = { label: string; tone: 'ok' | 'err' | 'neutral' };
-
   type Props = {
-    trace: AnyTrace & { stepCount?: number; model?: string; algorithmId?: string;
-                        detail?: string; elapsedSeconds?: number; outputTokens?: number };
-    /** Optional override: replaces the default "{algorithm} · {detail}" title suffix. */
-    titleOverride?: string | null;
-    /** Optional right-aligned outcome badge (e.g. "passed · 8,962"). */
-    outcome?: Outcome | null;
+    trace: AnyTrace & { stepCount?: number };
     /** Show the legend inside this panel. Turn off if a shared legend is used above. */
     showLegend?: boolean;
     /** Segment index to pre-highlight (renders as `selectedIndex` on first mount). */
@@ -51,16 +51,13 @@
     /** External override of selectedIndex; when non-null, overrides internal selection. */
     forceSelectedIndex?: number | null;
 
-    /* --- below: added for carrychain. Every one defaults to the λ behaviour, so
-       the reference figure renders exactly as it did before. --- */
-
     /** Which categories colour this panel. */
-    scheme?: CategoryScheme;
-    /** Replaces the default header entirely. The λ header is model-specific
-     *  (model badge, algorithm id, wall-clock) and does not fit every trace. */
-    header?: Snippet;
-    /** Formats an x-axis tick. λ shows raw offsets; a trace whose axis is a
-     *  share of itself wants "50%". */
+    scheme: CategoryScheme;
+    /** The panel's header. Every trace names itself differently, so the panel
+     *  does not try to. */
+    header: Snippet;
+    /** Formats an x-axis tick. The default is the raw offset; a trace whose axis
+     *  is a share of itself wants "50%". */
     formatTick?: (v: number) => string;
     /** Chooses tick positions for the visible domain. Needed when the labels are
      *  a transform of the axis: d3 picks round numbers in CHARACTERS, and those
@@ -97,15 +94,13 @@
 
   let {
     trace,
-    titleOverride = null,
-    outcome = null,
     showLegend = true,
     initialSelectedIndex = null,
     errorIndex = null,
     maxChartHeight = 360,
     forceSelectedIndex = null,
-    scheme = LAMBDA_SCHEME,
-    header = undefined,
+    scheme,
+    header,
     formatTick = undefined,
     tickValues = undefined,
     showMinimap = true,
@@ -298,60 +293,10 @@
     return text.slice(0, n).trimEnd() + '\u2026';
   }
 
-  function formatDuration(seconds: number): string {
-    const s = Math.round(seconds);
-    if (s < 60) return `${s}s`;
-    const m = Math.floor(s / 60);
-    const rem = s % 60;
-    return `${m}m ${rem.toString().padStart(2, '0')}s`;
-  }
-
-  function formatTokens(n: number): string {
-    return n.toLocaleString('en-US');
-  }
-
-  const titleText = $derived(
-    titleOverride ??
-      `${(trace.algorithmId ?? '').replace(/-/g, ' ')} · ${trace.detail ?? ''}`,
-  );
 </script>
 
 <div class="flame-panel">
-  {#if header}
-    {@render header()}
-  {:else}
-  <header class="figure-header">
-    <div class="title-row">
-      <span class="model-badge" data-model={trace.model}>{trace.model}</span>
-      <span class="detail">{titleText}</span>
-      {#if outcome}
-        <span class="outcome-badge" data-tone={outcome.tone}>{outcome.label}</span>
-      {/if}
-    </div>
-    <div class="meta-row">
-      {#if trace.elapsedSeconds !== undefined}
-        <span class="meta-pill">
-          <span class="meta-pill-value">{formatDuration(trace.elapsedSeconds)}</span>
-          <span class="meta-pill-label">thinking</span>
-        </span>
-      {/if}
-      {#if trace.outputTokens !== undefined}
-        <span class="meta-pill">
-          <span class="meta-pill-value">{formatTokens(trace.outputTokens)}</span>
-          <span class="meta-pill-label">output tokens</span>
-        </span>
-      {/if}
-      <span class="meta-pill">
-        <span class="meta-pill-value">{stepCount}</span>
-        <span class="meta-pill-label">steps</span>
-      </span>
-      <span class="meta-pill">
-        <span class="meta-pill-value">{trace.rows.length}</span>
-        <span class="meta-pill-label">annotated rows</span>
-      </span>
-    </div>
-  </header>
-  {/if}
+  {@render header()}
 
   {#if showLegend}
     <CategoryLegend rows={trace.rows} {scheme} active={activeCategory} />
@@ -515,100 +460,6 @@
     border: 1px solid var(--border);
     border-radius: var(--radius-md);
     overflow: hidden;
-  }
-
-  .figure-header {
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-    padding-bottom: var(--space-sm);
-    border-bottom: 1px solid var(--border);
-  }
-
-  .title-row {
-    display: flex;
-    align-items: baseline;
-    gap: var(--space-sm);
-    font-family: var(--font-serif);
-    font-size: var(--text-lg);
-    color: var(--ink);
-    flex-wrap: wrap;
-  }
-
-  .model-badge {
-    display: inline-block;
-    padding: 2px 8px;
-    font-family: var(--font-sans);
-    font-size: var(--text-xs);
-    font-weight: var(--weight-medium);
-    text-transform: uppercase;
-    letter-spacing: 0.06em;
-    color: var(--bg);
-    background: var(--ink);
-    border-radius: var(--radius-sm);
-  }
-  .model-badge[data-model='opus'] { background: #1f3a5f; }
-  .model-badge[data-model='sonnet'] { background: #2f7a6b; }
-  .model-badge[data-model='haiku'] { background: #6c757d; }
-
-  .detail {
-    font-family: var(--font-serif);
-    font-size: var(--text-base);
-    color: var(--ink-muted);
-  }
-
-  .outcome-badge {
-    margin-left: auto;
-    padding: 3px 10px;
-    font-family: var(--font-sans);
-    font-size: var(--text-xs);
-    font-weight: var(--weight-medium);
-    border-radius: var(--radius-sm);
-  }
-  .outcome-badge[data-tone='ok'] {
-    background: rgba(47, 168, 90, 0.12);
-    color: #1d7a40;
-  }
-  .outcome-badge[data-tone='err'] {
-    background: rgba(217, 76, 76, 0.12);
-    color: #9a2d2d;
-  }
-  .outcome-badge[data-tone='neutral'] {
-    background: var(--surface);
-    color: var(--ink-muted);
-  }
-
-  .meta-row {
-    display: flex;
-    flex-wrap: wrap;
-    gap: var(--space-sm);
-    font-family: var(--font-sans);
-    font-variant-numeric: tabular-nums;
-    margin-top: 2px;
-  }
-
-  .meta-pill {
-    display: inline-flex;
-    align-items: baseline;
-    gap: 6px;
-    padding: 4px 10px;
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: var(--radius-sm);
-  }
-
-  .meta-pill-value {
-    font-family: var(--font-mono);
-    font-size: var(--text-sm);
-    font-weight: var(--weight-medium);
-    color: var(--ink);
-  }
-
-  .meta-pill-label {
-    font-size: var(--text-xs);
-    color: var(--ink-muted);
-    text-transform: uppercase;
-    letter-spacing: 0.04em;
   }
 
   .chart-toolbar {
@@ -834,9 +685,6 @@
   @media (max-width: 720px) {
     .flame-panel {
       padding: var(--space-md);
-    }
-    .title-row {
-      font-size: var(--text-base);
     }
   }
 </style>

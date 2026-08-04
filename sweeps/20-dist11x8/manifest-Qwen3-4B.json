@@ -1,0 +1,57 @@
+{
+  "sweep_id": "20-dist11x8",
+  "model": "Qwen/Qwen3-4B",
+  "status": "closed",
+  "schema_version": 2,
+  "code_git_sha": "344e145dbe83f6d33c98f7cad566cd1b39093d88",
+  "code_git_dirty": true,
+  "prompt_text": "Compute the exact product of {x} and {y}.\nWork it out however you like, but the final line of your reply must be exactly:\nANSWER: <the full integer>",
+  "prompt_sha256": "770f964ea0ebbd50",
+  "problem_pool_size": 256,
+  "problem_seed": 20260730,
+  "engine": {
+    "vllm": "0.11.0",
+    "transformers": "4.57.0"
+  },
+  "batches": [
+    {
+      "batch": 0,
+      "n": 256,
+      "wall_s": 2091.2,
+      "tokens": 4437631
+    }
+  ],
+  "gpu": "h200",
+  "thinking": "true",
+  "order_seed": "shared",
+  "budget_mode": "max",
+  "temperature": 0.7,
+  "top_p": 1.0,
+  "axes": [
+    8,
+    11
+  ],
+  "cells": [
+    [
+      11,
+      8
+    ]
+  ],
+  "n_live": 45,
+  "n_saturated": 10,
+  "n_lo": 10,
+  "n_hi": 50,
+  "chunk": 256,
+  "n_planned": 256,
+  "max_len": 32768,
+  "n_from": 0,
+  "cost": {
+    "est_output_tokens": 4362912,
+    "est_tok_per_s": 1610,
+    "mean_cell_N": 88.0,
+    "est_usd": 3.547,
+    "actual_usd": null
+  },
+  "n_actual": 256,
+  "actual_output_tokens": 4437631
+}

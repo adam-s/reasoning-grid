@@ -331,6 +331,60 @@ and throttle concurrency.
 long reasoning even on trivial problems. Over a full grid, Qwen is ~87% of the
 bill.
 
+## 6f. Self-correction is a function of trace length, not of the model
+
+Regenerate: `python probe/revision_rate.py`
+
+A hand-labelled sample of three traces contained **zero** cases of the model
+changing a value it had already written down, and that was reported as a fact
+about the model. It is a fact about the sample. Across 2,558 correct, unclipped,
+naturally-stopped Qwen3-4B runs:
+
+| trace length | runs | contain a revision | median revisions |
+| --- | --- | --- | --- |
+| under 5k tokens | 1,274 | 1% | 0 |
+| 5k–10k | 572 | 10% | 0 |
+| 10k–20k | 605 | 29% | 0 |
+| 20k–40k | 107 | **80%** | 2 |
+
+The two labelled traces that produced the zero were 10,077 and 8,479 tokens —
+squarely in the band where **90% of runs do not revise**. Finding none was the
+expected outcome for traces that length, not a discovery.
+
+Why it happens is mechanical rather than mysterious: a revision needs a conflict
+to have been detected first, detection needs a check, and long runs check more.
+
+**This is a text-pattern count, not a label.** It requires an explicit statement
+that a written value was wrong, so it undercounts every silent recomputation.
+Direction and magnitude are solid; the percentages are a floor. The hand-labelled
+`REVISE` category in `labels/v2/` is the accurate instrument on the four traces
+that have one.
+
+## 6g. `outcome == "grind"` is merging two different endings
+
+Regenerate: `python probe/revision_rate.py`
+
+A run that locks into repeating one sentence and a run still producing new text
+when the ceiling arrives both come out as `grind`. Measured as the share of
+unique lines, they separate cleanly — locked-up traces sit near 30%, working ones
+near 90%:
+
+| temperature | grind traces | locked up | share |
+| --- | --- | --- | --- |
+| 0.0 | 34 | 16 | **47%** |
+| 0.7 | 85 | 6 | 7% |
+| 2.0 | 26 | 0 | 0% |
+
+So degenerate repetition is a temperature-0 behaviour, and the existing finding
+that T=0 grinds more is really two findings: it grinds more, and it grinds
+*differently*. One labelled trace repeats a single 113-character sentence 276
+times — 70% of its segments and 56% of its characters.
+
+This violates the project's own rule against collapsing "stopped early",
+"finished long" and "never finished" into one bucket, and it is recorded here
+rather than fixed silently: changing the `outcome` vocabulary would rewrite a
+field that published numbers already depend on.
+
 ## 7. What has NOT been measured
 
 - Any second model. Every number above is Qwen3-4B.
@@ -341,6 +395,10 @@ bill.
   rule.
 - Cross-GPU determinism at temperature 0.
 - Whether higher temperature rescues very hard cells (run in progress at time of writing).
+- Whether the revision rate in 6f holds for any model other than Qwen3-4B, and
+  whether revising actually helps: 6f counts revisions in runs that were already
+  correct, so it says nothing about whether a revision rescued a run or a wrong
+  run revised just as often.
 
 ---
 

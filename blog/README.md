@@ -105,6 +105,7 @@ sign.
 
 | slot | ports from | what it settles |
 |---|---|---|
+| `Dogfight` **(built, not ported)** | nothing — `scripts/dogfight-curve.mjs` checks it | **the opener's second figure, and the only modelled one on the page.** Two point-mass aircraft fly Boyd's own energy-manoeuvrability physics, each on its own OODA loop, with the MiG given the better aeroplane and its pilot a compounding per-cycle loop tax. **It now shows the fight and nothing else** — the win-rate curve, the slider, the readouts and the caption were all cut for simplicity, so the figure illustrates the mechanism and no longer evidences it. What the ensemble found, and what the figure used to display: the mechanism is real and rising, 12% to 67% of merges across the tax range, and **weak** — tripling the MiG pilot's loop still leaves the Sabre at 37%, and nothing in reach gets near the parable's nine-out-of-ten. Rerun the script to re-derive it |
 | `ThinkingMath` **(built)** | `probe/build_opener.py` | **the opener.** A run's thinking streams on the left; every closed arithmetic claim lands on the right, checked as it is made. 160 claims across three runs and exactly **one** is false -- an addition. Every multiplication in every run is correct, and the prose reads the same either way |
 | `SurfaceCanvas` **(built)** | `probe/build_surface.py` | x = digits of A, y = digits of B, z = P(correct), scrubbable over trial count and orbitable. Breaks at 8.56 digits; 100% → 3% |
 | `WinnerSurface` **(built)** | `probe/build_winner.py` | **the core argument, and it came back negative.** Toggle Qwen alone against the better of the two: 15 tiles of 144 move. Fitted, Qwen is still right half the time at 9.24 digits square and Phi at 8.39 — the same curve shifted 0.8 digits, never crossing. 10 cells are further apart than sampling noise explains and **none** favour Phi |
@@ -112,7 +113,6 @@ sign.
 | `EffortPrice` | `render_effort.py` | reasoning scales effort 7× with difficulty; without it the line is **flat**. Price per correct answer crosses over at ~30 operations |
 | `OrderNull` | `render_order.py` | A×B ≡ B×A (p=0.52), and the apparent effect died under a difficulty-matched control |
 | `TemperatureLadder` | `render_temperature.py`, `render_temp0.py` | nothing below T=1.0 is distinguishable; at T=0, **29 of 100 runs loop until the context runs out** against 3 at 0.7 |
-| `ThreeTraces` **(built)** | `probe/build_flame.py` | three Qwen traces at N=56/65/77, one per outcome. The run that got it right is not the careful one — it is the one whose checks could fail differently from the arithmetic under test |
 
 Also available and unported: `render_distribution.py` (φ=1.68 — size predicts
 difficulty but not completely), `render_ladder.py` (pass rate with Wilson bars).
@@ -123,27 +123,41 @@ Published versions of all of them, with their URLs and findings, are in
 ## The flame stack is shared, and takes its categories as a prop
 
 `viz/flame/` came from the λ-bench post importing `design/categories.ts`
-directly, so it could only ever render λ's nine. carrychain has a different nine
-(`design/carrychain-categories.ts`), so `design/scheme.ts` now carries the set as
-a value and the components take it as a `scheme` prop.
+directly, so it could only ever render λ's nine. carrychain now has **sixteen of
+its own** (`design/carrychain-categories.ts`), derived from its own traces rather
+than adapted from a study of a different model on a different task, so
+`design/scheme.ts` carries the set as a value and the components take it as a
+`scheme` prop.
 
-The λ scheme is the default, so `FlamePanel` renders the reference figure exactly
-as before and no existing call site changed. Rows are typed structurally
-(`AnyFlameRow`) rather than by a literal union: a chart needs a colour for the
-string it was handed, and a category the scheme is missing is a data bug, not
-something to catch by narrowing a component.
+The categories, the decision rules, the blind pass and its **72% reproduction
+agreement — lower than the 84% of the scheme they replace, with the cause
+diagnosed and unfixed** — are in
+[../.agents/reference/label-rubric-qwen-multiplication.md](../.agents/reference/label-rubric-qwen-multiplication.md).
+Every figure below inherits that number.
 
-| | |
-|---|---|
-| `FlamePanel` | the λ reference figure. λ-specific chrome (model badge, algorithm id, wall-clock) |
-| `CarryFlamePanel` | one carrychain trace. Percent axis, no minimap, annotation markers |
-| `ThreeTraces` | the figure: shared key, three panels, the crosscheck:recheck strip |
+`scheme` and `header` are both required, and neither used to be. Each defaulted
+to what the λ reference figure wanted, and that figure is gone. A default scheme
+would colour a carrychain trace with the wrong nine labels rather than failing,
+and the λ header is model-specific chrome — a model badge, an algorithm id, a
+wall-clock — built from fields carrychain traces do not carry, so it rendered
+empty. Rows are typed structurally (`AnyFlameRow`) rather than by a literal
+union: a chart needs a colour for the string it was handed, and a category the
+scheme is missing is a data bug, not something to catch by narrowing a component.
 
-Two things the carrychain panel does differently, both deliberate:
+One caller is left. `SyncedTrace` renders a `FlamePanel` as the top third of the
+opener and drives its playhead from the same character offsets the panes below it
+are streaming. The stack stays factored because the flame is worth its own file,
+not because a second figure is coming back.
 
-- **The x-axis is share of the trace, not absolute offset.** The three traces are
-  16k, 18k and 57k characters; on a shared absolute axis the two that finished
-  would be slivers. Real lengths stay in each header.
+**Two rows, and both are earned.** The container band is the OODA phase, the leaf
+is the move, and the band is computed from the leaves rather than supplied — a
+run of consecutive segments in one phase. Nothing hand-drawn sits between them.
+
+Two things that panel does differently, both deliberate:
+
+- **The x-axis is share of the trace, not absolute offset.** It is a timeline for
+  the run beside it, and a character count is not something a reader converts in
+  their head. The real length stays in the header.
 - **Container rows are muted.** A container's colour is the dominant category
   among its children, and that dominance can be a plurality as low as 34%. At
   full strength it reads as a claim about the whole phase; at half it reads as
@@ -176,6 +190,21 @@ Both exist in the neighbouring projects. Pick deliberately.
 
 Real foreshortening (quads, not transformed rects), tunable `CAM_DIST`, `ROT_X`,
 `ROT_Y`, and working hit-testing. **Read this before building the surface.**
+
+`viz/surface/project.ts` is this repo's version, and it has one trap worth
+knowing before the third caller hits it. Its divide is
+
+```ts
+scale = cam.dist / (cam.dist + depth * cam.zoom)
+```
+
+so **`dist` is compared against `depth * zoom` and is therefore in pixels, not
+in world units.** `SurfaceCanvas` uses `dist: 900` against `zoom: 26`; `Dogfight`
+uses `1300` against `~230`. Passing a camera distance that looks reasonable in
+normalized world coordinates — 3.4, say — puts the singular plane inside the
+scene, and every primitive crossing it is flung off the canvas. It does not look
+like a divide by zero. It looks like a broken transform, which is the wrong
+thing to go hunting for.
 
 **Isometric, in SVG** — `~/Projects/agent-capability-threshold/web/src/lib/rubiks/Cube.svelte`:
 `px = (x−y)/√2`, `py = (x+y−2z)/√6`. No perspective divide, no camera. Equal
@@ -215,7 +244,22 @@ python probe/segment_trace.py --uid <uid> -o derived/segments-X.json
 python probe/label_grind.py        # regenerates trace C's labels
 python probe/build_flame.py        # labels/ + derived/segments-*.json -> src/lib/data/
 python probe/build_surface.py      # runs/ -> src/lib/data/surface.ts
+
+node --experimental-strip-types scripts/dogfight-curve.mjs   # prints, writes nothing
 ```
+
+That last one is the exception to the sentence above it, and it is worth naming
+rather than leaving to be discovered: **nothing in it comes from `runs/`.** It is
+a simulation, not a reduction of a generation, and it no longer feeds the page
+at all — it prints a table. The figure it belongs to draws one fight, and the
+only thing it still inherits from the ensemble is `TAX`, pinned at the even-odds
+crossing.
+
+**The page does not say any of this.** The caption marking the figure as a model
+rather than a measurement was cut when the figure was simplified, so a reader
+meets a simulated dogfight among figures that are otherwise all measurements
+with nothing distinguishing it. That is a known gap, recorded here because
+nothing on the page records it.
 
 ## Writing
 

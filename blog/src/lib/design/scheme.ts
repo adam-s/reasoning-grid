@@ -3,11 +3,12 @@
  * metadata, passed to the chart instead of imported by it.
  *
  * The flame components arrived from the λ-bench post importing `categoryMeta`
- * directly, which meant they could only ever render λ's nine categories.
- * carrychain has a different nine (see carrychain-categories.ts), so the chart
- * has to take the scheme as an input. It is a prop with the λ scheme as the
- * default, so the reference figure renders exactly as it did before and no
- * existing call site changes.
+ * directly, which meant they could only ever render λ's nine categories. The
+ * chart takes the scheme as an input instead. `scheme` is REQUIRED, not
+ * defaulted: it was briefly defaulted to the λ scheme so the λ reference figure
+ * kept rendering without changes, and when that figure was dropped the default
+ * became a silent fallback that would colour a carrychain trace with the wrong
+ * nine labels rather than failing.
  *
  * Rows are typed structurally rather than by a literal union. A chart does not
  * need to know which nine strings are legal — it needs a colour for the string
@@ -62,14 +63,7 @@ export function metaFor(scheme: CategoryScheme, category: string): SchemeMeta {
   return scheme.meta[category] ?? scheme.fallback;
 }
 
-import { CATEGORIES, categoryMeta } from './categories';
 import { CARRY_CATEGORIES, carryCategoryMeta } from './carrychain-categories';
-
-export const LAMBDA_SCHEME: CategoryScheme = {
-  order: CATEGORIES,
-  meta: categoryMeta,
-  fallback: UNKNOWN,
-};
 
 export const CARRY_SCHEME: CategoryScheme = {
   order: CARRY_CATEGORIES,

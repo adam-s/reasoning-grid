@@ -7,7 +7,7 @@
    */
   import { scaleLinear } from 'd3-scale';
   import type { AnyFlameRow, AnyTrace, CategoryScheme } from '../../design/scheme';
-  import { LAMBDA_SCHEME, metaFor } from '../../design/scheme';
+  import { metaFor } from '../../design/scheme';
   import type { ChartViewport } from './ChartViewport.svelte';
   import { zoomable } from './zoomable.svelte';
 
@@ -15,8 +15,8 @@
 
   type Props = {
     trace: AnyTrace;
-    /** Which categories colour this chart. Defaults to the λ set. */
-    scheme?: CategoryScheme;
+    /** Which categories colour this chart. */
+    scheme: CategoryScheme;
     selectedIndex: number | null;
     hoveredIndex: number | null;
     /** Optional index of a segment to persistently mark as the root error.
@@ -50,7 +50,7 @@
 
   let {
     trace,
-    scheme = LAMBDA_SCHEME,
+    scheme,
     selectedIndex,
     hoveredIndex,
     errorIndex = null,

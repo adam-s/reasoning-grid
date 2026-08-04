@@ -1,0 +1,56 @@
+{
+ "pilot": 2,
+ "agreement": 0.95,
+ "passA": {
+  "37e13b3080": "SURVEY",
+  "4d0e9dcd49": "SUM",
+  "96dc044c42": "ABANDON",
+  "3e86cd230f": "COMMIT",
+  "e999ae35f8": "SCALE_CHECK",
+  "b28e7570e5": "CHECK_FLOATED",
+  "ab4bb1595e": "PRODUCT",
+  "9676cffae2": "SUM",
+  "c312c085f6": "SUM",
+  "815f50f17c": "PRODUCT",
+  "7147e3e910": "SUM",
+  "9e40385bff": "SUM",
+  "76aae2f258": "ALARM",
+  "1785b824bc": "REDERIVE",
+  "655f2f6eff": "REVISE",
+  "480cde13e7": "ALARM",
+  "cb1b139517": "STALL",
+  "e3b96d76e6": "STAND",
+  "f88a2b0ced": "REDERIVE",
+  "7f19b931b5": "PRODUCT"
+ },
+ "passB": {
+  "37e13b3080": "SURVEY",
+  "4d0e9dcd49": "SUM",
+  "96dc044c42": "ABANDON",
+  "3e86cd230f": "COMMIT",
+  "e999ae35f8": "SCALE_CHECK",
+  "b28e7570e5": "CHECK_FLOATED",
+  "ab4bb1595e": "PRODUCT",
+  "9676cffae2": "SUM",
+  "c312c085f6": "SUM",
+  "815f50f17c": "PRODUCT",
+  "7147e3e910": "SUM",
+  "9e40385bff": "SUM",
+  "76aae2f258": "ALARM",
+  "1785b824bc": "REDERIVE",
+  "655f2f6eff": "REVISE",
+  "480cde13e7": "ALARM",
+  "cb1b139517": "STALL",
+  "e3b96d76e6": "STAND",
+  "f88a2b0ced": "SURVEY",
+  "7f19b931b5": "PRODUCT"
+ },
+ "disagreements": [
+  {
+   "id": "f88a2b0ced",
+   "passA": "REDERIVE",
+   "passB": "SURVEY",
+   "selected_for": "control"
+  }
+ ]
+}

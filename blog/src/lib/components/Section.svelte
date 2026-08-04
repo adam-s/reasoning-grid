@@ -13,7 +13,10 @@
     title?: string;
     id?: string;
     width?: 'measure' | 'figure' | 'page';
-    children: Snippet;
+    /** Optional so a section can stand as a header alone -- a slot held open
+     *  while its prose is being written. The body div goes away with it, so an
+     *  empty section contributes no stray gap to the page flow. */
+    children?: Snippet;
   };
   let { eyebrow, title, id, width = 'measure', children }: Props = $props();
 </script>
@@ -21,11 +24,11 @@
 <section {id} class={width}>
   {#if eyebrow || title}
     <header>
-      {#if eyebrow}<div class="eyebrow mono">{eyebrow}</div>{/if}
+      {#if eyebrow}<div class="eyebrow">{eyebrow}</div>{/if}
       {#if title}<h2>{title}</h2>{/if}
     </header>
   {/if}
-  <div class="body">{@render children()}</div>
+  {#if children}<div class="body">{@render children()}</div>{/if}
 </section>
 
 <style>
@@ -49,10 +52,34 @@
      a phone. This is the whole fix; the max-widths above are only ceilings. */
   .body > :global(*) { min-width: 0; max-width: 100%; }
 
-  /* prose inside a wide section still reads at the measure */
+  /* Prose inside a wide section still reads at the measure, and sits in the SAME
+     column as the section's own header.
+     `align-self: start` put it against the left edge of the 880px figure block
+     while the header stayed centred at the 640px measure, so every heading was
+     indented 120px from the body text under it at 1440px wide -- the two text
+     columns simply did not line up. On the live posts every text block shares
+     one column, measured: left 400, width 640 at that viewport. */
   .figure .body :global(.prose),
-  .page   .body :global(.prose) { max-width: var(--maxw); align-self: start; }
+  .page   .body :global(.prose) { max-width: var(--maxw); align-self: center; }
 
-  .eyebrow { color: var(--ink-faint); font-size: 0.74rem; letter-spacing: 0.08em; text-transform: uppercase; }
-  h2 { margin: 0; font-size: clamp(1.5rem, 4vw, 2rem); }
+  /* Both sizes come from the shared scale. They were 0.74rem and a clamp whose
+     lower bound was --text-xl and upper bound --text-2xl; the clamp meant the
+     section title only reached the house size at wide viewports and silently
+     shrank a step below it everywhere else. The eyebrow's 0.74rem was a near
+     miss for --text-xs at 0.75rem. Letter-spacing and case stay here: those are
+     this component's voice, not the site's scale. */
+  /* Inter medium, not the mono face. Measured on the live reliably-incorrect
+     page: 12px / 20.4px, weight 500, letter-spacing 0.96px = 0.08em. This
+     carried a `mono` class, which set JetBrains Mono and made the eyebrow read
+     as code rather than as a label. */
+  .eyebrow {
+    font-family: var(--font-sans);
+    font-size: var(--text-xs);
+    font-weight: var(--weight-medium);
+    line-height: var(--leading-relaxed);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+  }
+  h2 { margin: 0; font-size: var(--text-2xl); }
 </style>

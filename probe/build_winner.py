@@ -50,6 +50,12 @@ export type WinnerData = {
   readonly generations: readonly [number, number];
   readonly overall: readonly [number, number];
   readonly cells: Readonly<Record<string, WinnerCell>>;
+  /** [B0, B1, B2] per model, for logit(p) = B0 + B1*(a+b) + B2*min(a,b).
+   *  Setting the logit to zero solves each model's 50% boundary in closed
+   *  form: two straight rays meeting on the diagonal at `halfAt`. Exported so
+   *  the boundary figure draws the fit that produced `halfAt` rather than a
+   *  second fit of its own that could drift away from it. */
+  readonly fits: readonly [readonly number[], readonly number[]];
   readonly findings: {
     /** cells where Phi's rate is strictly higher */
     readonly phiAhead: number;
@@ -122,6 +128,7 @@ def main():
         "overall": [round(gen[0] / gen[1], 4), round(gen[2] / gen[3], 4)],
         "cells": {f"{a}x{b}": {"n": n, "qwen": round(q, 4), "phi": round(p, 4)}
                   for (a, b), (q, p, n) in sorted(g.items())},
+        "fits": [[round(x, 6) for x in f] for f in fits],
         "findings": {
             "phiAhead": sum(1 for q, p, n in g.values() if p > q),
             "qwenLevelOrAhead": sum(1 for q, p, n in g.values() if q >= p),

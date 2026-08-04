@@ -1,50 +1,83 @@
 /**
- * The same nine categories collapsed onto Boyd's four phases.
+ * The sixteen categories collapsed onto Boyd's four phases.
  *
- * This exists to make an argument against itself. Coloured by OODA phase, the
- * run that got the right answer and the run that got the wrong one are almost
- * the same picture — observe ~40%, orient ~25%, act ~35% in both. The loop does
- * not distinguish them. You have to split OBSERVE into "re-derived it the same
- * way" and "checked it a way that could fail differently" before the difference
- * appears at all, and that split is one level below anything OODA names.
+ * The map is DERIVED from `carryCategoryMeta`, not written out a second time.
+ * The previous version maintained its own table beside the rubric's, the two
+ * disagreed about which phase one category belonged to, and that disagreement
+ * was what produced the post's headline. A map that cannot be edited separately
+ * cannot drift.
  *
- * So the four-colour view is the control, not the finding. It shows that the
- * vocabulary everyone reaches for is too coarse for the thing being measured.
+ * Each category has exactly one phase. `LOOP` has none, and that is a claim, not
+ * an omission: emitting the same sentence 276 times is not observing, orienting,
+ * deciding or acting. It is 69% of one trace, and scoring it as arithmetic — as
+ * the previous labels did — says that run spent its time doing sums.
  *
- * DECIDE is the other half of it. Across all 524 labelled segments it occurs
- * ZERO times. These models observe, orient and act; not once does one of them
- * decide to change a value it has already written down. A loop with no decide
- * phase cannot correct itself and cannot choose to stop — which is exactly how
- * the third trace ends.
+ * ## What each phase holds, and why
  *
- * It was one, until a blind reproduction of every label removed it: the single
- * ERROR_CORRECTION was a false alarm the model talked itself out of without
- * changing anything, and the rubric lists "ERROR_CORRECTION assigned where no
- * value changed" as a fail condition. All three traces raise exactly one false
- * alarm and all three resolve it without editing a digit.
+ * OBSERVE takes in what is there, INCLUDING the model's own output. All three
+ * kinds of check live here: re-deriving, testing by an independent method, and
+ * testing the size. Checking is looking, not deciding.
  *
- * STRATEGY is mapped to ORIENT, not split between orient and decide. The rubric
- * says the two are not separable in these traces because the model states a plan
- * and commits in the same breath; forcing a split would invent a boundary the
- * text does not have. That choice is why DECIDE holds only ERROR_CORRECTION.
+ * ORIENT makes sense of what came in. Weighing an option without taking it,
+ * naming a check without running it, and recognising that two values disagree
+ * are all interpretation. `ALARM` sits here rather than in OBSERVE because
+ * noticing a mismatch is a judgment about observations, not an observation.
+ *
+ * DECIDE chooses a course of action, INCLUDING choosing not to change anything.
+ * That inclusion is the whole repair. The previous scheme defined its only
+ * decide category as "changing a value already written down", which in long
+ * multiplication almost never happens — so the phase came back empty and the
+ * emptiness was reported as a property of the model rather than of the
+ * definition. Committing to a decomposition, abandoning one, revising a value,
+ * letting it stand, and failing to settle are all decisions.
+ *
+ * ACT carries it out: the partial products, the shifts, the sums, the answer.
+ *
+ * ## The judgment calls, stated
+ *
+ * Two placements are arguable and neither is hidden:
+ *
+ *   ALARM -> orient, not observe. Under the other reading OBSERVE gains 19
+ *   segments and ORIENT loses them; DECIDE is unchanged either way, so the
+ *   headline does not turn on it.
+ *
+ *   STALL -> decide, not observe. A stall is a decision that fails to complete,
+ *   and it re-checks while failing. Under the other reading DECIDE drops from 51
+ *   to 39 segments, 14.2% to 10.9% of the reasoning — smaller, still not empty.
+ *
+ * Neither call can empty a phase, which is the property the previous mapping
+ * lacked.
  */
+import { carryCategoryMeta, type CarryCategory, type Ooda } from './carrychain-categories';
 import type { CategoryScheme, SchemeMeta } from './scheme';
 
 export const OODA_PHASES = ['OBSERVE', 'ORIENT', 'DECIDE', 'ACT'] as const;
 export type OodaPhase = (typeof OODA_PHASES)[number];
 
-/** Category -> phase. Mirrors the mapping table in the rubric. */
-export const CATEGORY_PHASE: Record<string, OodaPhase> = {
-  TASK_SETUP: 'OBSERVE',
-  RECHECK: 'OBSERVE',
-  CROSSCHECK: 'OBSERVE',
-  STRATEGY: 'ORIENT',
-  STATE_TRACKING: 'ORIENT',
-  ERROR_CORRECTION: 'DECIDE',
-  PARTIAL_PRODUCT: 'ACT',
-  ACCUMULATE: 'ACT',
-  RESULT: 'ACT',
+/** Phase for a category that has one; null for the categories outside the loop. */
+const PHASE_OF: Record<Ooda, OodaPhase | null> = {
+  observe: 'OBSERVE',
+  orient: 'ORIENT',
+  decide: 'DECIDE',
+  act: 'ACT',
+  none: null,
 };
+
+/**
+ * Category -> phase, built from the category metadata so the two cannot
+ * disagree. Categories outside the loop are absent rather than mapped to a
+ * fallback: a caller that needs them must say what it wants done with them.
+ */
+export const CATEGORY_PHASE: Record<string, OodaPhase> = Object.fromEntries(
+  Object.entries(carryCategoryMeta)
+    .map(([cat, meta]) => [cat, PHASE_OF[meta.ooda]])
+    .filter((entry): entry is [CarryCategory, OodaPhase] => entry[1] !== null),
+);
+
+/** Categories deliberately outside the loop. */
+export const UNPHASED: readonly string[] = Object.entries(carryCategoryMeta)
+  .filter(([, meta]) => PHASE_OF[meta.ooda] === null)
+  .map(([cat]) => cat);
 
 const meta: Record<OodaPhase, SchemeMeta> = {
   OBSERVE: {
@@ -52,32 +85,38 @@ const meta: Record<OodaPhase, SchemeMeta> = {
     color: '#1f7d68',
     symbol: 'O',
     description:
-      'Reading the problem, and every kind of checking — both re-deriving a value the same way and validating it a way that could fail differently. The distinction that decides these runs lives inside this one band.',
+      'Reading the problem, and every kind of checking — re-deriving a value the same way, testing it a way that could fail differently, and testing its size. The distinction that decides these runs lives inside this one band.',
   },
   ORIENT: {
     label: 'Orient',
     color: '#b8925a',
     symbol: 'O',
     description:
-      'Choosing how to decompose the problem, and tracking where it is. A quarter of every trace.',
+      'Weighing an approach without taking it, naming a check without running it, and noticing that two values disagree.',
   },
   DECIDE: {
     label: 'Decide',
     color: '#c0392b',
     symbol: 'D',
     description:
-      'Changing a value already written down. Zero segments in 524 — the loop these models run has no decide phase at all.',
+      'Choosing a course of action, including choosing to change nothing: committing to a decomposition, abandoning one, revising a value, letting it stand, and failing to settle a conflict.',
   },
   ACT: {
     label: 'Act',
     color: '#3f5f92',
     symbol: 'A',
-    description: 'Computing a partial product, summing, stating the answer.',
+    description: 'Computing a partial product, applying a power of ten, summing, stating the answer.',
   },
 };
 
 export const OODA_SCHEME: CategoryScheme = {
   order: OODA_PHASES,
   meta,
-  fallback: { label: 'Unphased', color: '#b8b3a8', symbol: '?', description: 'Unmapped category.' },
+  fallback: {
+    label: 'Outside the loop',
+    color: '#dedad2',
+    symbol: '∞',
+    description:
+      'The same text again with no new content. Not a phase of the loop — a run that has stopped turning it.',
+  },
 };
