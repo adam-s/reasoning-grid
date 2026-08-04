@@ -168,6 +168,41 @@ p  { font-size: var(--text-base); line-height: var(--leading-relaxed); }
 
 a { color: var(--accent); }
 
+/* ---- ONE RHYTHM AROUND EVERY FIGURE --------------------------------------
+   Each figure had been given its own margins as it was built, so the page ran
+   0, 16/24, 24/24 and 40/40, and the gap between a figure and the sentence
+   under it came out anywhere from 24px to 72px depending on which figure it
+   was. None of them changed with the viewport either: a phone got the same
+   40px band as a 1440px desktop, on a third of the screen height.
+
+   Two tokens fix both. Every figure takes its block margin from `--fig-gap`
+   and every caption sits `--cap-gap` under the thing it describes, and both
+   shrink on a phone where vertical space is the scarce thing. A component that
+   needs different spacing changes the token for itself rather than setting a
+   margin nobody else knows about.
+
+   These are element selectors on purpose. A Svelte component's scoped rule
+   beats them, so any component still declaring its own figure margin will
+   quietly opt out -- which is why the per-figure margins were removed rather
+   than left to be overridden. */
+:root {
+  --fig-gap: var(--space-xl);
+  --cap-gap: var(--space-md);
+}
+@media (max-width: 700px) {
+  :root {
+    --fig-gap: var(--space-lg);
+    --cap-gap: var(--space-sm);
+  }
+}
+/* `margin-inline: 0` is not decoration. A browser's default for `figure` is
+   `margin: 1em 40px`, and every component here used to cancel the horizontal
+   half by accident, through a `margin: <v> 0` shorthand of its own. Replacing
+   those with `margin-block` alone handed the 40px back, and the wide figures
+   shifted right and hung off the edge of a phone. */
+figure { margin-block: var(--fig-gap); margin-inline: 0; }
+figcaption { margin-top: var(--cap-gap); }
+
 /* ---- CONTROLS ON A FINGER ------------------------------------------------
    Every control in the figures was built at mouse scale: the run tabs are 27px
    tall, the transport buttons 26px square, the eight moment links 27px, and the

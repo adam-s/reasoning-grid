@@ -1,7 +1,7 @@
 <script lang="ts">
   /**
-   * Two models, 288 measured cells, and the distance between where each one
-   * stops being right half the time.
+   * Two models over 144 measured cells -- 288 rates, one per model per cell --
+   * and the distance between where each one stops being right half the time.
    *
    * ## Why this figure and not the paired one
    *
@@ -31,8 +31,13 @@
    *
    * It shows in single cells without any fitting. At a total of 16, 2x14 needs
    * 28 operations and lands 57%, while 8x8 needs 64 and lands 85%. Less than
-   * half the work, worse result. So plotting against a+b here is not a
-   * convenience, it is the axis the data picks.
+   * half the work, worse result.
+   *
+   * THAT EXAMPLE IS FROM THE 196-CELL SURFACE POOL, NOT FROM `WINNER`. This
+   * file's data stops at 12 digits, so it holds no 2x14 at all, and its own 8x8
+   * Qwen rate is 0.8333 rather than 0.85. The point stands and the numbers are
+   * not this figure's to check -- said without the provenance, they read as
+   * something a reader could verify against the dots above, and they cannot.
    *
    * That contradicts the allocation caption in section 01 and the published
    * distribution chart, both of which are built on a*b. Neither is fixed by
@@ -160,6 +165,9 @@
   const gapTotal = (xQ - xP).toFixed(1);
   const gap = (QWEN_HALF - PHI_HALF).toFixed(2);
 
+  /** Half the gap between the two models' dots for one cell, in viewBox units. */
+  const DODGE = $derived((PW / (T_HI - T_LO)) * 0.075);
+
   const Y_TICKS = [0, 0.25, 0.5, 0.75, 1];
   const X_TICKS = [4, 8, 12, 16, 20, 24];
   const pct = (p: number) => `${Math.round(p * 100)}%`;
@@ -182,10 +190,18 @@
 
     <!-- Measured cells. Drawn under the fit so the fit reads as a claim about
          them rather than as a replacement for them. -->
+<!-- THE PAIR IS NUDGED APART. Both dots for a cell used to sit on the same
+         cx, so wherever a cell scored the same for both models the second dot
+         was drawn exactly on top of the first and one of the two vanished.
+         Across the grid that hid 166 of the 288, most of them along the 100%
+         line at the easy sizes, where a reader saw only red and could conclude
+         Qwen had not been measured there at all. The offset is a twentieth of a
+         step on an integer axis, which is too small to misread a total by and
+         enough to keep both dots on the page. -->
     {#each DOTS as d}
-      <circle cx={sx(d.t)} cy={sy(d.q)} r={d.n === 12 ? 3.4 : d.n === 6 ? 2.7 : 2}
+      <circle cx={sx(d.t) - DODGE} cy={sy(d.q)} r={d.n === 12 ? 3.4 : d.n === 6 ? 2.7 : 2}
               class="dot qwen" />
-      <circle cx={sx(d.t)} cy={sy(d.p)} r={d.n === 12 ? 3.4 : d.n === 6 ? 2.7 : 2}
+      <circle cx={sx(d.t) + DODGE} cy={sy(d.p)} r={d.n === 12 ? 3.4 : d.n === 6 ? 2.7 : 2}
               class="dot phi" />
     {/each}
 
@@ -213,10 +229,12 @@
   </svg>
 
   <figcaption>
-    Each dot is one of the {Object.keys(WINNER.cells).length} cells, scored on
-    {WINNER.problems.toLocaleString()} problems both models answered. Right half
-    the time at {QWEN_HALF} digits per factor for {QWEN_NAME} and {PHI_HALF} for
-    {PHI_NAME}. The bands are the fit across every problem shape at each total,
+    Every one of the {Object.keys(WINNER.cells).length} cells contributes two
+    dots, one per model, scored on {WINNER.problems.toLocaleString()} problems
+    both models answered. Cells that share a digit total sit in the same column,
+    so where several agree their dots land on each other and read as one. Right
+    half the time at {QWEN_HALF} digits per factor for {QWEN_NAME} and
+    {PHI_HALF} for {PHI_NAME}. The bands are the fit across every problem shape at each total,
     so their width is what shape is worth once the total is known. Of the
     {Object.keys(WINNER.cells).length} cells,
     {WINNER.findings.outsideNoise} differ by more than noise and
@@ -225,7 +243,7 @@
 </figure>
 
 <style>
-  figure { margin: 0; width: 100%; }
+  figure { width: 100%; }
   svg { display: block; width: 100%; height: auto; overflow: visible; }
 
   .grid { stroke: var(--line); stroke-width: 1; }

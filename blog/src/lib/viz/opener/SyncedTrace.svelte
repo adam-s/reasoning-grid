@@ -671,7 +671,6 @@
 </figure>
 
 <style>
-  .synced { margin: var(--space-md) 0 var(--space-lg); }
 
   .head {
     display: flex; align-items: baseline; justify-content: space-between;

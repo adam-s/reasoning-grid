@@ -144,18 +144,14 @@
     .hint-fine { display: none; }
     .hint-coarse { display: inline; }
   }
-  .alloc { margin: var(--space-lg) 0; }
 
-  /* Two halves, and they stack rather than shrink on a narrow screen. A 12 by
-     12 grid squeezed into half a phone is unreadable at any font size. */
+  /* Two halves on a wide screen: the table checks the rule, the grid shows it.
+     On a phone only the grid survives -- see the block at the end of the file. */
   .split {
     display: grid;
     grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
     gap: var(--space-xl);
     align-items: start;
-  }
-  @media (max-width: 760px) {
-    .split { grid-template-columns: minmax(0, 1fr); gap: var(--space-lg); }
   }
 
   .cap-label {
@@ -233,5 +229,26 @@
     font-size: var(--text-xs);
     line-height: var(--leading-snug);
     color: var(--ink-dim);
+  }
+
+  /* ---- ON A PHONE, THE CHART ONLY -------------------------------------
+     Two halves side by side was tried at phone width and both were too small
+     to be worth having: the table's rows wrapped onto two lines each, and it
+     still overflowed its track and ran under the grid's label. Shrinking the
+     type far enough to fit made a table nobody would read.
+
+     So the table goes. It is the same numbers as the grid's diagonal, laid out
+     for checking rather than for seeing, and the ridge -- which is what the
+     figure is for -- is entirely in the colour. The grid takes the full width
+     and the readout under it still names any cell that is tapped.
+
+     THIS BLOCK IS LAST IN THE FILE ON PURPOSE. Media queries add no
+     specificity, so a rule here only beats the base `.cell` and `th, td` rules
+     by coming after them. Written above those, the columns changed and none of
+     the type did. */
+  @media (max-width: 760px) {
+    .split { grid-template-columns: minmax(0, 1fr); gap: 0; }
+    .left { display: none; }
+    .right { min-width: 0; }
   }
 </style>

@@ -593,7 +593,6 @@
 
 <style>
   .surface {
-    margin: var(--space-md) 0 var(--space-lg);
     /* Aligning the figure's top to the viewport's top would push the walk
        button off the screen, and the reader who wants to press it again then
        has to hunt back up the page. This is roughly the button plus its own

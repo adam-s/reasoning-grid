@@ -181,7 +181,7 @@
 </figure>
 
 <style>
-  figure { margin: 0; width: 100%; }
+  figure { width: 100%; }
   svg { display: block; width: 100%; height: auto; overflow: visible; }
 
   .grid { stroke: var(--line); stroke-width: 1; }

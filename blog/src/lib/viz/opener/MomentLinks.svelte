@@ -148,8 +148,20 @@
     font-variant-numeric: tabular-nums;
   }
 
-  @media (max-width: 600px) {
-    .moments { gap: 6px; }
+  /* TWO AND TWO, NOT THREE AND ONE.
+     Wrapping is what a flex row does when it runs out of width, and what it
+     does is fit as many as it can and drop the remainder -- so four moments
+     came out as a row of three and an orphan, and the two rows of the figure
+     broke in different places from each other. A two-column grid puts the same
+     four buttons in a block, equal width, with the step numbers lining up
+     vertically. The label of the longest moment sets the column, so nothing is
+     truncated. */
+  @media (max-width: 700px) {
+    .moments {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 6px;
+    }
     button { font-size: var(--text-xs); padding: 5px 10px; }
   }
 </style>

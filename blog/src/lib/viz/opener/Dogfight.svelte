@@ -552,7 +552,11 @@
   });
 
   observeWidth(() => host, (width) => {
-    w = Math.max(300, Math.round(width));
+    // The floor was 300, which is wider than the content column on a 320px
+    // phone (270 after the page gutters), so the whole figure hung 32px past
+    // the right edge -- inside a canvas, so no scrollbar and nothing to drag.
+    // 260 fits the narrowest phone still in use and the scene scales to it.
+    w = Math.max(260, Math.round(width));
   });
 
   // --- paint --------------------------------------------------------------
@@ -673,7 +677,6 @@
     /* Explicit and symmetric. The section already puts --space-lg between its
        children; this is on top of that, so the figure has a defined band of air
        above and below rather than inheriting whatever its neighbours leave. */
-    margin: var(--space-xl) 0;
     padding: 0;
     display: flex;
     flex-direction: column;

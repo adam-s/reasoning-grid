@@ -428,7 +428,6 @@
     grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
     gap: var(--space-lg);
     align-items: stretch;
-    margin: var(--space-lg) 0;
   }
   @media (max-width: 720px) {
     .panels { grid-template-columns: minmax(0, 1fr); }
@@ -470,6 +469,38 @@
   /* And these are the ones that divide it. `height: 0` stops the viewBox from
      setting a floor the flexbox would then have to honour. */
   .right .panel svg { flex: 1 1 0; height: 0; min-height: 0; }
+
+  /* ---- STACKED, THERE IS NO SHARED HEIGHT LEFT TO DIVIDE -----------------
+     Below the breakpoint the two columns become one, so `.right` is a grid row
+     sized by its own content -- and a `1fr` track holding a `flex: 1 1 0;
+     height: 0` child resolves to nothing at all. Both funnel svgs measured
+     exactly 374x0 on a phone: the label, the axis numerals and the note all
+     rendered, and the curve they describe was clipped out of existence. The
+     panel that divides a column has to size itself once it is no longer in one.
+
+     The histogram is squared off the column width, which on a phone is a full
+     screen of a single chart before the reader has reached the two panels that
+     answer it. Wider than tall says the same thing in a third of the scroll. */
+  @media (max-width: 720px) {
+    .left svg { aspect-ratio: 3 / 2; }
+    /* THE TWO FUNNELS GO SIDE BY SIDE AND SMALL. They are the supporting half
+       of the figure -- the histogram is what the paragraph is about, and these
+       say "and it settles" -- so stacking them full width spent two more
+       screens of scroll on the part that matters least. Paired, they also read
+       as the comparison they are, reasoning on against reasoning off, which
+       one above the other never quite did. */
+    .right {
+      grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+      grid-template-rows: auto;
+      gap: var(--space-md);
+    }
+    .right .panel svg {
+      flex: 0 0 auto;
+      height: auto;
+      min-height: 0;
+      aspect-ratio: 3 / 2;
+    }
+  }
 
   .lab {
     display: flex;
