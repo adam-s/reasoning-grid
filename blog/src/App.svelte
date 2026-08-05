@@ -375,24 +375,26 @@
         />
       </Figure>
       <Prose>
-        <MomentLinks
-          label="the loop catching its own mistake"
-          moments={CAUGHT_MOMENTS}
-          active={moment}
-          busy={momentBusy}
-          cueOn={cueTarget}
-          {cueText}
-          onPick={play}
-        />
-        <MomentLinks
-          label="the same loop carrying one instead"
-          moments={WRONG_MOMENTS}
-          active={moment}
-          busy={momentBusy}
-          cueOn={cueTarget}
-          {cueText}
-          onPick={play}
-        />
+        {#if interactive}
+          <MomentLinks
+            label="the loop catching its own mistake"
+            moments={CAUGHT_MOMENTS}
+            active={moment}
+            busy={momentBusy}
+            cueOn={cueTarget}
+            {cueText}
+            onPick={play}
+          />
+          <MomentLinks
+            label="the same loop carrying one instead"
+            moments={WRONG_MOMENTS}
+            active={moment}
+            busy={momentBusy}
+            cueOn={cueTarget}
+            {cueText}
+            onPick={play}
+          />
+        {/if}
         <p>
           Both rows run the same loop. The difference is what the model does when it
           checks.

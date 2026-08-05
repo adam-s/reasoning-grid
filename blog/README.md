@@ -332,12 +332,27 @@ node scripts/verify-deploy.mjs http://localhost:4173/
 node scripts/verify-deploy.mjs https://adamsohn.com/reasoning-grid/   # after deploy
 ```
 
-Four checks: the prose is in the HTML without a browser, every figure mounts
-with a clean console, CLS stays under 0.1 at phone, tablet and desktop widths,
-and every reserved box lands within 24px of its figure. Run it against a local
-preview before shipping and against the live URL after, because a production
-build differs from dev in ways that matter — idle rAF on this page is 117/sec in
-dev and 0/sec built.
+Six groups of checks: the essay is in the raw HTML (a canary from the opening,
+one from the closing, and a length floor, because one canary near the top passed
+happily on a page that dropped the other 93%); the og tags sit under the URL
+being served; the no-trailing-slash form redirects; every reserved box is
+compared against its figure measured with the reservation forced off, across 28
+widths the fitter never sampled; every figure mounts, draws something, keeps the
+console clean and stays under 0.1 CLS at three widths; and the whole page is
+loaded once with JavaScript disabled.
+
+**Every check in here must be able to fail, and that is not automatic.** The
+first version compared each box's height at `domcontentloaded` against its
+height after load. Module scripts are deferred, so both readings were the same
+post-hydration DOM: the delta was exactly zero for all nine figures at all three
+widths, and deleting the entire stylesheet it existed to guard still printed
+`ok`. Two independent reviews caught it, both by trying to make it fail rather
+than by reading it. The fixed version, run against that same broken page,
+reports nine short boxes and triple the CLS budget.
+
+Run it against a local preview before shipping and against the live URL after,
+because a production build differs from dev in ways that matter — idle rAF on
+this page is 117/sec in dev and 0/sec built.
 
 When CLS fails, `scripts/cls-blame.mjs <url> [width]` names the element that
 moved and by how much.

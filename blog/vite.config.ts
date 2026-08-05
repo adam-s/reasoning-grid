@@ -7,5 +7,8 @@ import { svelte } from '@sveltejs/vite-plugin-svelte';
 export default defineConfig({
   plugins: [svelte()],
   base: './',
-  server: { port: 5175 },
+  // strictPort so the sweep has a deterministic target. measure-figures.mjs
+  // defaults to 5175, and when Vite silently fell through to 5177 the default
+  // pointed at whatever project happened to hold that port.
+  server: { port: 5175, strictPort: true },
 });

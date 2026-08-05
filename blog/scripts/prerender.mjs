@@ -40,9 +40,16 @@ if (!html.includes(marker)) {
   process.exit(1);
 }
 
+// Function replacements, not string ones. With a string replacement the `$`
+// sequences in the REPLACEMENT are still special, so a `$'` anywhere in the
+// rendered essay would splice the rest of index.html back in after the match,
+// and `$&` would inline the marker. The canary is checked before this line, so
+// the build would have exited 0 on a corrupted page. There is no `$` in the
+// prose today; this repo writes about the cost of rented compute, so there
+// will be.
 const out = html
-  .replace('</head>', `${head}\n  </head>`)
-  .replace(marker, `<div id="app">${body}</div>`);
+  .replace('</head>', () => `${head}\n  </head>`)
+  .replace(marker, () => `<div id="app">${body}</div>`);
 
 writeFileSync(DIST, out);
 

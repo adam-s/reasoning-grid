@@ -16,7 +16,7 @@
 import { chromium } from '@playwright/test';
 import { readFileSync, writeFileSync } from 'node:fs';
 
-const TARGET = process.argv[2] || 'http://localhost:5177/';
+const TARGET = process.argv[2] || 'http://localhost:5175/';
 const CHECK = process.argv.includes('--check');
 const OUT = new URL('../src/lib/viz/figure-heights.css', import.meta.url);
 
@@ -24,8 +24,9 @@ const OUT = new URL('../src/lib/viz/figure-heights.css', import.meta.url);
 // 900), so sweep either side of each one rather than on a regular grid. A
 // regular sweep straddles a breakpoint and averages across it.
 const WIDTHS = [
-  320, 360, 390, 430, 480, 540, 559, 561, 599, 601, 619, 621, 639, 641,
-  699, 701, 719, 721, 759, 761, 820, 899, 901, 1024, 1200, 1440,
+  240, 280, 300, 320, 360, 390, 430, 480, 540, 559, 561, 599, 601, 619, 621,
+  639, 641, 699, 701, 719, 721, 759, 761, 820, 899, 901, 1024, 1200, 1440,
+  1600, 1920, 2560,
 ];
 
 // Two heights this close are the same height. Below this, rounding and font
@@ -34,8 +35,46 @@ const WIDTHS = [
 const TOL = 8;
 
 // A height change this big between two widths is a reflow, not a slope, and
-// the sweep goes looking for exactly where it happens.
-const JUMP = 40;
+// the sweep goes looking for exactly where it happens. Low, because the cost of
+// missing one is a steep fitted line standing in for a step: at 40 the 33px
+// step synced-trace takes between 549 and 559 was never bisected and became
+// `calc(2750.7px + -330.000vw)`, which under-reserved by 7px on one side of it
+// and wasted 20px on the other.
+const JUMP = 12;
+
+/**
+ * Scrollbar gutter, in px, assumed for the widest desktop case.
+ *
+ * `100vw` is the window width. The figures are laid out in the content box,
+ * which is the window minus the scrollbar on every platform that reserves one
+ * -- Windows and Linux Chrome, Firefox everywhere, macOS set to always show
+ * them. Headless Chromium has no gutter, so the sweep and the verifier agree
+ * with each other and both disagree with those readers by `slope * 15`.
+ *
+ * Media queries are unaffected: Chrome matches them against the content width,
+ * the same basis as layout. Only the `calc(... + Nvw)` terms drift.
+ *
+ * A negative slope drifts DOWNWARD, which under-reserves, which shifts the
+ * page. So negative slopes carry the gutter as a pad. Positive slopes drift
+ * upward into dead space, which costs nothing and needs no correction.
+ */
+const SCROLLBAR = 15;
+
+/**
+ * Padding added to every reserved height, in px.
+ *
+ * The greedy fit promises to pass within TOL of every SAMPLED width. It
+ * promises nothing between samples, and the sweep only looks at about sixty of
+ * them. Verified against 28 widths the fitter has never seen, seven of the nine
+ * figures came out short -- thinking-mix by 17px at a 380px viewport -- and a
+ * box shorter than its figure is the shift this whole file exists to prevent.
+ *
+ * The two errors are not symmetric. Reserving too much leaves cream under a
+ * figure, which nobody notices. Reserving too little moves the page. So the fit
+ * is biased upward by more than its own worst observed miss, and the price is
+ * about twenty pixels of air per figure.
+ */
+const FIT_PAD = 24;
 
 const b = await chromium.launch();
 const page = await b.newPage({ viewport: { width: 1440, height: 1000 } });
@@ -92,7 +131,7 @@ for (const w of WIDTHS) await measure(w);
  * pair of samples with a jump between them gets bisected until the two sides of
  * the step are one pixel apart, wherever the step came from.
  */
-for (let pass = 0; pass < 40; pass++) {
+for (let pass = 0; pass < 160; pass++) {
   const ws = [...at.keys()].sort((x, y) => x - y);
   let found = null;
   for (let i = 0; i < ws.length - 1; i++) {
@@ -100,7 +139,12 @@ for (let pass = 0; pass < 40; pass++) {
     if (w1 - w0 <= 1) continue;
     const [a, c] = [at.get(w0), at.get(w1)];
     const worst = Math.max(...Object.keys(a).map((k) => Math.abs(c[k] - a[k])));
-    if (worst > JUMP) {
+    // Big in absolute terms AND big for the distance covered. The second test
+    // is what separates a step from a slope: the steepest honest slope on this
+    // page is about a pixel of height per pixel of width, so a plain `worst >
+    // JUMP` sent the bisector chasing every wide gap on every sloping figure
+    // and it never converged. A step is large no matter how narrow the gap.
+    if (worst > JUMP && worst > 1.6 * (w1 - w0)) {
       found = [w0, w1, worst];
       break;
     }
@@ -110,6 +154,9 @@ for (let pass = 0; pass < 40; pass++) {
   const mid = Math.floor((w0 + w1) / 2);
   await measure(mid);
   console.error(`  bisect ${w0}-${w1} (${worst}px jump) -> probed ${mid}`);
+  // Exhausting the passes silently would publish the remaining steps as slopes,
+  // which is the defect JUMP was lowered to avoid. Say so.
+  if (pass === 159) console.error('  *** bisection budget exhausted; some steps are still fitted as slopes');
 }
 
 /** @type {Record<string, Array<{w: number, h: number}>>} */
@@ -210,8 +257,10 @@ function line(seg) {
   // pixel. It holds until the next rule takes over, so it is a flat height.
   if (seg.to === seg.from) return `${seg.h0}px`;
   const slope = (seg.h1 - seg.h0) / (seg.to - seg.from);
-  if (Math.abs(slope) < 0.002) return `${Math.max(seg.h0, seg.h1)}px`;
-  const intercept = seg.h0 - slope * seg.from;
+  if (Math.abs(slope) < 0.002) return `${Math.max(seg.h0, seg.h1) + FIT_PAD}px`;
+  // See SCROLLBAR: a falling line evaluated against a window width that is
+  // wider than the content box lands short, so carry the gutter.
+  const intercept = seg.h0 - slope * seg.from + Math.max(0, -slope) * SCROLLBAR + FIT_PAD;
   // 100vw is the viewport width, so a slope per px becomes a coefficient on vw.
   return `calc(${intercept.toFixed(1)}px + ${(slope * 100).toFixed(3)}vw)`;
 }
@@ -245,17 +294,38 @@ for (const name of names) {
   // emitted `min-height: 229px` eighteen times for grid-key, and gave
   // allocation two rules a pixel apart that disagreed by 15px -- measurement
   // noise across a re-layout, published as if it were a breakpoint.
-  let last = null;
-  segs.forEach((seg, i) => {
+  /**
+   * CLAMP BOTH ENDS. A fitted line has no idea the samples ran out.
+   *
+   * Above the last sample the slope kept climbing: rings reserved 575px at a
+   * 1920 window and 652px at 2560 for a figure that is flat at 517px, because
+   * its content box caps at 880 and nothing told the line so. Being a
+   * min-height that never shifts, no CLS check could see it -- just 135px of
+   * dead cream under the figure on the commonest desktop width there is.
+   *
+   * Below the first sample it ran the other way, and that direction does shift:
+   * the base line under-reserved rings by 38px at a 280px viewport, which is a
+   * folding phone's cover screen, and also a 390px phone at 140% zoom.
+   *
+   * So the narrowest and widest measurements become flat floors, and the fitted
+   * lines only apply between the widths that were actually looked at.
+   */
+  const first = pts[0];
+  const lastPt = pts[pts.length - 1];
+  lines.push(`[data-fig='${name}'] { min-height: ${first.h + FIT_PAD}px; }`);
+
+  let last = `${first.h + FIT_PAD}px`;
+  segs.forEach((seg) => {
     const value = line(seg);
     if (value === last) return;
     last = value;
-    const sel = `[data-fig='${name}'] { min-height: ${value}; }`;
-    // Below the first sample the first rule's line still applies; above the
-    // last, the last one holds. Neither end extrapolates far enough at any real
-    // viewport width to need a clamp.
-    lines.push(i === 0 ? sel : `@media (min-width: ${seg.from}px) { ${sel} }`);
+    lines.push(`@media (min-width: ${seg.from}px) { [data-fig='${name}'] { min-height: ${value}; } }`);
   });
+
+  const flatTop = `${lastPt.h + FIT_PAD}px`;
+  if (flatTop !== last) {
+    lines.push(`@media (min-width: ${lastPt.w}px) { [data-fig='${name}'] { min-height: ${flatTop}; } }`);
+  }
   lines.push('');
 }
 
