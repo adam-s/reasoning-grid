@@ -297,7 +297,20 @@ connection watches a blank screen until the bundle executes.
 **The figures still mount on the client.** They are canvas, rAF and matchMedia,
 so they cannot render on a server. Each one is wrapped in
 `lib/components/Figure.svelte`, which gives it a `data-fig` name, a reserved
-height, and a `<noscript>` description for readers who will never see it.
+height, and a `<noscript>` block holding a picture of the figure and a sentence
+saying what it shows.
+
+```sh
+npm run figures    # rebuild public/figures/ from the preview
+```
+
+`scripts/build-figure-stills.mjs` captures ten frames of each figure and
+compares them: identical means a PNG, different means a GIF built through
+ffmpeg. Nothing decides which from a list, so a figure that gains or loses
+motion is handled without anyone remembering. About a megabyte in total, and
+nobody but a reader with JavaScript off ever fetches it — markup inside
+`<noscript>` is not parsed when scripting is on, so the images are never
+requested.
 
 `prerender.mjs` fails the build if the rendered body does not contain a known
 sentence. That check is not optional: a page that prerendered nothing still

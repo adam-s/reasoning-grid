@@ -10,7 +10,8 @@
     "prepare-data": "python3 scripts/prepare.py",
     "measure:figures": "node scripts/measure-figures.mjs http://localhost:5175/",
     "verify": "node scripts/verify-deploy.mjs",
-    "og": "node scripts/build-og-source.mjs && node scripts/build-og-card.mjs"
+    "og": "node scripts/build-og-source.mjs && node scripts/build-og-card.mjs",
+    "figures": "node scripts/build-figure-stills.mjs"
   },
   "devDependencies": {
     "@playwright/test": "^1.62.1",

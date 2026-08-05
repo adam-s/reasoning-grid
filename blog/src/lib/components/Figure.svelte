@@ -20,9 +20,18 @@
    * and verifying scripts use. It has to stay stable.
    */
   import { onMount, type Snippet } from 'svelte';
+  import { FIGURE_STILLS } from '../viz/figure-stills';
 
   type Props = { name: string; alt: string; children: Snippet };
   let { name, alt, children }: Props = $props();
+
+  /**
+   * A picture of the figure, for the reader who is never getting the figure.
+   * Animated where the figure animates. `./` rather than `/`, because the site
+   * is served from a subpath and every other asset on this page is relative for
+   * the same reason.
+   */
+  const still = $derived(FIGURE_STILLS[name]);
 
   /**
    * Not `typeof window !== 'undefined'`. That is true on the very first client
@@ -40,10 +49,16 @@
   {#if mounted}{@render children()}{/if}
   <!-- No spinner. With JavaScript on this box is empty for about a tenth of a
        second, and anything drawn there would flash rather than reassure. With
-       JavaScript off the figure never arrives at all, and an unexplained blank
-       the height of a phone screen reads as a broken page — so that is the case
-       worth answering, and <noscript> answers exactly it. -->
-  <noscript><p class="alt">{alt}</p></noscript>
+       JavaScript off the figure never arrives at all, so that reader gets a
+       picture of it and the sentence that says what it shows.
+
+       Nothing in here is fetched by anybody else. Markup inside <noscript> is
+       not parsed as markup when scripting is on, so the image is never
+       requested and a megabyte of animation costs the normal reader nothing. -->
+  <noscript>
+    {#if still}<img class="still" src="./figures/{still}" {alt} loading="lazy" />{/if}
+    <p class="alt">{alt}</p>
+  </noscript>
 </div>
 
 <style>
@@ -58,6 +73,15 @@
      treatment of a footnote. Centring it also wanted `display: flex` on .fig,
      which was not free: it re-sized GridKey from 229px to 293px, and
      `measure-figures.mjs --check` was the only thing that noticed. */
+  .still {
+    display: block;
+    width: 100%;
+    height: auto;
+    /* Captured at 900px. Letting it stretch past that on a wide screen would
+       show a reader a blurrier picture than the one that was taken. */
+    max-width: 900px;
+  }
+
   .alt {
     margin: 0;
     max-width: var(--maxw);

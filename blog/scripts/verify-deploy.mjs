@@ -264,6 +264,12 @@ for (const [w, h, label] of VIEWPORTS) {
   const r = await page.evaluate(() => ({
     docHeight: document.documentElement.scrollHeight,
     alts: document.querySelectorAll('[data-fig] .alt').length,
+    // naturalWidth, not the count of <img> tags. A broken src still renders an
+    // element, and a figure standing in for a figure is the one asset here
+    // whose 404 nobody would ever see.
+    stills: document.querySelectorAll('[data-fig] img.still').length,
+    stillsLoaded: [...document.querySelectorAll('[data-fig] img.still')]
+      .filter((i) => i.naturalWidth > 0).length,
     buttons: [...document.querySelectorAll('button')].length,
     // The box's own height is not the test: with the reservation released it
     // still stands as tall as the description inside it. Ask the CSSOM whether
@@ -277,6 +283,10 @@ for (const [w, h, label] of VIEWPORTS) {
   else bad(`only ${r.text} characters readable without JavaScript`);
   if (r.alts === FIGURE_COUNT) ok(`all ${FIGURE_COUNT} figures carry a written description`);
   else bad(`${r.alts} of ${FIGURE_COUNT} figures have a description`);
+  if (r.stills === FIGURE_COUNT) ok(`all ${FIGURE_COUNT} figures carry a picture`);
+  else bad(`${r.stills} of ${FIGURE_COUNT} figures have a picture`);
+  if (r.stillsLoaded === r.stills) ok(`all ${r.stills} pictures loaded`);
+  else bad(`${r.stills - r.stillsLoaded} picture(s) failed to load — check the paths under ./figures/`);
   if (r.reserved === 0) ok('no figure holds empty space open');
   else bad(`${r.reserved} figure box(es) still reserve height for a figure that cannot arrive`);
   if (r.buttons === 0) ok('no controls offered that cannot work');
