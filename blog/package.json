@@ -9,7 +9,8 @@
     "check": "svelte-check --tsconfig ./tsconfig.json",
     "prepare-data": "python3 scripts/prepare.py",
     "measure:figures": "node scripts/measure-figures.mjs http://localhost:5175/",
-    "verify": "node scripts/verify-deploy.mjs"
+    "verify": "node scripts/verify-deploy.mjs",
+    "og": "node scripts/build-og-source.mjs && node scripts/build-og-card.mjs"
   },
   "devDependencies": {
     "@playwright/test": "^1.62.1",
