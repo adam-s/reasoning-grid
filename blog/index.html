@@ -15,15 +15,17 @@
          cannot: a scraper resolves them against nothing. If the deploy path
          ever moves off /reasoning-grid/, these are the lines that break, and
          they break silently -- the page still works and the preview just goes
-         blank. `scripts/build-og-card.mjs` regenerates og.png. -->
+         blank. `scripts/build-og-card.mjs` regenerates og.png; the width and
+         height below are the card's real pixels (2x a 1200x630 layout), not
+         the size it gets displayed at, so they change when that script does. -->
     <meta property="og:type" content="article" />
     <meta property="og:site_name" content="adamsohn.com" />
     <meta property="og:url" content="https://adamsohn.com/reasoning-grid/" />
     <meta property="og:title" content="Model Reasoning Mapped to an OODA Loop" />
     <meta property="og:description" content="Two reasoning models from different companies, measured to find where each stops being reliable." />
     <meta property="og:image" content="https://adamsohn.com/reasoning-grid/og.png" />
-    <meta property="og:image:width" content="1200" />
-    <meta property="og:image:height" content="630" />
+    <meta property="og:image:width" content="2400" />
+    <meta property="og:image:height" content="1260" />
     <meta property="og:image:alt" content="A 3D surface of the probability a model returns the exactly correct product, falling from a high plateau at small digit counts to near zero at large ones." />
 
     <meta name="twitter:card" content="summary_large_image" />
