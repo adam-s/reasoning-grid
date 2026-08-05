@@ -225,9 +225,29 @@
         one sprint takes slows every sprint after it, and slows them by more each time.
       </p>
       <p>
-        A reasoning model works the same way. It reads
-        what is in front of it, settles on a next step, writes that step down, and what
-        it wrote becomes part of what it reads on the next pass. I ran thousands of
+        A reasoning model works the same way. It reads every token in front of it,
+        works out a probability for each token that could come next, picks one, and
+        adds it to what it reads on the next pass. That is the whole mechanism, and
+        nothing in it knows what a step is.
+      </p>
+      <p>
+        What comes out is natural language, and that language is Boyd's list. Here is one run,
+        in order. <em>Okay, so I need to calculate the exact product of 2053896 and
+        30957123778</em> is observe.
+        <em>Alternatively, maybe I can use some algebraic manipulation</em> is
+        orient, and lines that open that way are the most common thing in these
+        traces. <em>Let me think of 30,957,123,778 as 30,000,000,000 +
+        957,123,778</em> is decide. Then comes the arithmetic, which is act and the
+        only one of the four that is not a phrase. Thirty segments later,
+        <em>Wait, let me check the addition steps again</em>. That looks like a
+        fifth step and it is not one. Checking the sum is observe, run a second time
+        and pointed at what the model wrote instead of at the problem it was handed.
+        Boyd's pilot has to look again because the other aircraft moved while he
+        decided. The model has to look again because it wrote something while it
+        decided, and what it wrote is now part of what it reads.
+      </p>
+      <p>
+        I ran thousands of
         multiplication problems through these models, and
         <a
           href="https://adamsohn.com/reliably-incorrect/"
