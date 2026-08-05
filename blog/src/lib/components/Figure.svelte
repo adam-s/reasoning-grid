@@ -52,19 +52,19 @@
     max-width: 100%;
   }
 
-  /* The fallback sits at the top of the box, not the middle of it. Centring it
-     wanted `display: flex` on .fig, and that is not free: it re-sized GridKey
-     from 229px to 293px, which `measure-figures.mjs --check` caught. A layout
-     change on the page everybody sees is a bad trade for tidier placement of a
-     line only readers with JavaScript off will ever read. */
+  /* Set like a caption, because that is what it is. It stands in for the whole
+     figure for a reader who will never see one, so it takes the same alignment,
+     size and ink as a real figcaption rather than the smaller, fainter, centred
+     treatment of a footnote. Centring it also wanted `display: flex` on .fig,
+     which was not free: it re-sized GridKey from 229px to 293px, and
+     `measure-figures.mjs --check` was the only thing that noticed. */
   .alt {
-    margin: 0 auto;
-    max-width: 30em;
-    padding: var(--space-lg) var(--space-md);
-    text-align: center;
+    margin: 0;
+    max-width: var(--maxw);
+    padding-bottom: var(--space-md);
     font-family: var(--font-sans);
-    font-size: var(--text-xs);
+    font-size: var(--text-sm);
     line-height: var(--leading-snug);
-    color: var(--ink-faint);
+    color: var(--ink-dim);
   }
 </style>

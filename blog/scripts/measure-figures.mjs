@@ -166,18 +166,28 @@ function segments(points) {
 }
 
 /**
- * Cut the series wherever two samples sit a couple of pixels apart.
+ * Cut the series where this figure actually steps.
  *
- * Those pairs are the deliberate probes either side of a breakpoint, so the
- * height between them does not slope, it jumps. Fitting a line across a 2px gap
- * gives a slope like -16500vw: numerically right over the two pixels it covers
- * and nonsense as a rule. Splitting there turns each breakpoint back into the
- * step change it actually is.
+ * Two conditions, and both are needed. The samples must be a couple of pixels
+ * apart, which marks them as the deliberate probes either side of a breakpoint
+ * rather than points on a slope -- fitting a line across a 2px gap gives a
+ * slope like -16500vw, numerically right over the two pixels it covers and
+ * nonsense as a rule. And the height must actually jump.
+ *
+ * The height test is what makes this per figure. The sweep probes either side
+ * of every breakpoint ANY figure has, and bisection adds more, so a figure that
+ * does not care about a given width still has a sample pair sitting there.
+ * Splitting on the width gap alone published those as steps: allocation ended
+ * up with 711px at 542 and 696px at 543, a 15px disagreement one pixel apart
+ * that is measurement noise across a re-layout, not a breakpoint. A reader
+ * resizing through 542 would have watched the box twitch for no reason.
  */
 function split(points) {
   const groups = [[points[0]]];
   for (let i = 1; i < points.length; i++) {
-    if (points[i].w - points[i - 1].w <= 4) groups.push([points[i]]);
+    const closeInWidth = points[i].w - points[i - 1].w <= 4;
+    const jumps = Math.abs(points[i].h - points[i - 1].h) > TOL;
+    if (closeInWidth && jumps) groups.push([points[i]]);
     else groups[groups.length - 1].push(points[i]);
   }
   return groups;
@@ -229,8 +239,18 @@ for (const name of names) {
     `/* ${name}: ${pts[0].h}px at ${pts[0].w} wide, ${pts[pts.length - 1].h}px at ${pts[pts.length - 1].w}, ` +
       `${segs.length} rule${segs.length === 1 ? '' : 's'} */`,
   );
+  // A rule that restates the one before it is noise. The sweep probes either
+  // side of every breakpoint ANY figure has, so a figure that does not care
+  // about a given breakpoint still gets a sample pair there. Left alone that
+  // emitted `min-height: 229px` eighteen times for grid-key, and gave
+  // allocation two rules a pixel apart that disagreed by 15px -- measurement
+  // noise across a re-layout, published as if it were a breakpoint.
+  let last = null;
   segs.forEach((seg, i) => {
-    const sel = `[data-fig='${name}'] { min-height: ${line(seg)}; }`;
+    const value = line(seg);
+    if (value === last) return;
+    last = value;
+    const sel = `[data-fig='${name}'] { min-height: ${value}; }`;
     // Below the first sample the first rule's line still applies; above the
     // last, the last one holds. Neither end extrapolates far enough at any real
     // viewport width to need a clamp.

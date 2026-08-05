@@ -6,6 +6,7 @@
   import Section from './lib/components/Section.svelte';
   import Prose from './lib/components/Prose.svelte';
   import Figure from './lib/components/Figure.svelte';
+  import { onMount } from 'svelte';
   import IterationRings from './lib/viz/opener/IterationRings.svelte';
   import Dogfight from './lib/viz/opener/Dogfight.svelte';
   import SyncedTrace from './lib/viz/opener/SyncedTrace.svelte';
@@ -49,6 +50,18 @@
     { id: 'c-slip', run: CAUGHT_RUN, at: 16808, label: 'it finds the slip' },
     { id: 'c-answer', run: CAUGHT_RUN, at: 19604, label: 'it answers correctly' },
   ];
+
+  /**
+   * Both "Walk it from the start" buttons drive a figure, and both figures need
+   * JavaScript to exist. Prerendering means the prose ships without it, so
+   * without this flag a reader with JavaScript off gets the navy button and its
+   * hand-drawn cue sitting above an empty box -- the loudest ink on the screen
+   * pointing at the one thing that cannot happen.
+   */
+  let interactive = $state(false);
+  onMount(() => {
+    interactive = true;
+  });
 
   /** Owned here, not in the figure: the figure reports, the prose renders. */
   let synced: ReturnType<typeof SyncedTrace> | null = $state(null);
@@ -183,7 +196,7 @@
        title, the way the cubes do on reliably-incorrect. The heading that names
        the argument comes after it, with the prose it belongs to. -->
   <Section width="figure">
-    <Figure name="rings" alt="Three reasoning runs drawn as rings, each arc a segment of the model’s thinking, coloured by what it was doing there."><IterationRings /></Figure>
+    <Figure name="rings" alt="Four reasoning runs drawn as rings, each arc a stretch of the model’s thinking, coloured by which phase of the loop it was in. Three of them finish and stop. The fourth is still turning."><IterationRings /></Figure>
   </Section>
 
   <!-- `figure`, not `measure`: the dogfight is a chart and belongs at the same
@@ -214,7 +227,7 @@
       </p>
     </Prose>
 
-    <Figure name="dogfight" alt="Two aircraft turning against each other, showing how a small loss per cycle compounds into an unrecoverable one."><Dogfight /></Figure>
+    <Figure name="dogfight" alt="Two aircraft turning against each other. A small loss on each turn compounds into one the pilot cannot recover from."><Dogfight /></Figure>
 
     <Prose>
       <p>
@@ -235,14 +248,17 @@
         What comes out is natural language, and that language is Boyd's list. Here is one run,
         in order. <em>Okay, so I need to calculate the exact product of 2053896 and
         30957123778</em> is observe.
-        <em>Alternatively, maybe I can use some algebraic manipulation</em> is
-        orient, and lines that open that way are the most common thing in these
-        traces. <em>Let me think of 30,957,123,778 as 30,000,000,000 +
+        <em>Alternatively, maybe use the calculator approach? But since I can't
+        use a calculator, I need to do it manually</em> is orient. In the run that
+        came out wrong, floating an idea like that and then dropping it is the
+        commonest move the model makes, and not one of them produces any work.
+        <em>Let me think of 30,957,123,778 as 30,957,123,778 = 30,000,000,000 +
         957,123,778</em> is decide. Then comes the arithmetic, which is act and the
-        only one of the four that is not a phrase. Thirty segments later,
-        <em>Wait, let me check the addition steps again</em>. That looks like a
-        fifth step and it is not one. Checking the sum is observe, run a second time
-        and pointed at what the model wrote instead of at the problem it was handed.
+        only one of the four with no line to quote. Thirty passages of thinking
+        later, <em>Wait, let me check the addition steps again</em>. That looks
+        like a fifth step and it is not one. Checking the sum is observe again, and
+        the second time it points at what the model wrote rather than at the
+        problem it was handed.
         Boyd's pilot has to look again because the other aircraft moved while he
         decided. The model has to look again because it wrote something while it
         decided, and what it wrote is now part of what it reads.
@@ -300,7 +316,7 @@
          models differ in the way they think, because it only ever looks at one.
          These labels were already published, so the page can borrow them rather
          than claim them. -->
-    <Figure name="thinking-mix" alt="The mix of reasoning moves across labelled traces, by model."><ThinkingMix /></Figure>
+    <Figure name="thinking-mix" alt="How Claude Haiku, Opus and Sonnet each spend their thinking across nine kinds of reasoning move. The proportions do not agree."><ThinkingMix /></Figure>
 
     <Prose>
       <p>
@@ -318,7 +334,7 @@
       <!-- The grid at thumbnail size and deliberately empty. Section 02 draws
            the same lattice with a rate in every cell; a shaded one here would
            read as that measurement arriving early. -->
-      <Figure name="grid-key" alt="The problem grid at thumbnail size: digits of one factor against digits of the other, deliberately empty."><GridKey /></Figure>
+      <Figure name="grid-key" alt="The fourteen by fourteen grid of problem sizes, digits of one factor against digits of the other. It carries no data, and the one marked cell is a single digit against nine."><GridKey /></Figure>
 
       <p>
         None of this can be memorised. Every problem size gets a cell of its own, digits
@@ -341,7 +357,7 @@
          reader meeting the failing one first concludes that reasoning is what
          breaks the model. It is what saves it three runs out of four. -->
     <div class="moment-group" bind:this={momentGroup}>
-      <Figure name="synced-trace" alt="Two runs of the same loop side by side, one catching its mistake and one carrying it to the end.">
+      <Figure name="synced-trace" alt="One reasoning run at a time, its shape on top and its thinking and its arithmetic below, with three more to switch to. One catches its mistake, one carries it to the end, and one never finishes.">
         <SyncedTrace
           bind:this={synced}
           scrollTarget={momentGroup}
@@ -391,12 +407,14 @@
           same wrong number, finds no conflict, and carries that number to the end.
         </p>
         <p>A check only helps when it could have failed differently.</p>
-        <div class="tour-start">
-          {#if cueTarget === 'start'}<Cue text={cueText} />{/if}
-          <button type="button" disabled={momentBusy} onclick={startTour}>
-            Walk it from the start
-          </button>
-        </div>
+        {#if interactive}
+          <div class="tour-start">
+            {#if cueTarget === 'start'}<Cue text={cueText} />{/if}
+            <button type="button" disabled={momentBusy} onclick={startTour}>
+              Walk it from the start
+            </button>
+          </div>
+        {/if}
       </Prose>
     </div>
 
@@ -436,7 +454,7 @@
       </p>
     </Prose>
 
-    <Figure name="allocation" alt="How many runs each cell of the grid was given, under cost-weighted Neyman allocation."><AllocationGrid /></Figure>
+    <Figure name="allocation" alt="How many runs each problem size was given. Sizes that always solve and sizes that always fail settle quickly, so most of the runs go to the uncertain middle."><AllocationGrid /></Figure>
 
     <Prose>
       <p>
@@ -481,25 +499,27 @@
         advantage. Measuring where the model's reliability falls off, even as a
         probability rather than a verdict, gives us a way to forecast results.
       </p>
-      <div class="tour-start">
-        {#if surfaceCued && !surfaceWalking}<Cue text="press here" />{/if}
-        <button
-          type="button"
-          disabled={surfaceWalking}
-          onclick={() => { surfaceCued = false; surface?.walk(); }}
-        >
-          Walk it from the start
-        </button>
-      </div>
+      {#if interactive}
+        <div class="tour-start">
+          {#if surfaceCued && !surfaceWalking}<Cue text="press here" />{/if}
+          <button
+            type="button"
+            disabled={surfaceWalking}
+            onclick={() => { surfaceCued = false; surface?.walk(); }}
+          >
+            Walk it from the start
+          </button>
+        </div>
+      {/if}
     </Prose>
-    <Figure name="surface" alt="The reliability surface: digits of a by digits of b by the probability of an exactly correct product, redrawn at every trial count.">
+    <Figure name="surface" alt="The reliability surface. Digits of a on one axis, digits of b on the other, height is the share of runs that landed the exact product. It redraws as the trial count rises.">
       <SurfaceCanvas
         bind:this={surface}
         onWalkChange={(b) => (surfaceWalking = b)}
         onReaderDrive={() => (surfaceCued = false)}
       />
     </Figure>
-    <Figure name="distribution" alt="The spread of outcomes behind two cells of the grid."><DistributionPanels /></Figure>
+    <Figure name="distribution" alt="Three panels. A histogram of 500 twelve-problem scores of the 11 by 8 cell, and beside it the running estimate for two runs, 11 by 8 with reasoning on and 5 by 5 with it off, each with its 95% band."><DistributionPanels /></Figure>
   </Section>
 
   <!-- The PAIRED claim that used to live here is pulled. It said Phi solves
@@ -554,7 +574,7 @@
         inheritance.
       </p>
     </Prose>
-    <Figure name="boundary" alt="Where each model stops being reliable, as a wedge across the grid."><BoundaryWedge /></Figure>
+    <Figure name="boundary" alt="Reliability against the total digit count, one dot per cell per model, with a fitted band. Qwen falls to a coin flip at 9.24 digits and Phi at 8.39."><BoundaryWedge /></Figure>
   </Section>
 
   <!-- Sections 04 through 06 held placeholders for convergence, the reasoning
