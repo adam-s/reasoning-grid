@@ -188,7 +188,7 @@
 <Layout>
   <Section width="measure">
     <Prose>
-      <h1>Model Reasoning Mapped to an OODA Loop</h1>
+      <h1>A probability grid of a model whose chain-of-thought runs Boyd's OODA loop</h1>
     </Prose>
   </Section>
 

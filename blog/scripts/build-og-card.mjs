@@ -20,7 +20,7 @@ const here = dirname(fileURLToPath(import.meta.url));
 const SOURCE = join(here, '../assets/og-source-surface.png');
 const OUT = join(here, '../public/og.png');
 
-const TITLE = 'Model Reasoning Mapped to an OODA Loop';
+const TITLE = "A probability grid of a model whose chain-of-thought runs Boyd's OODA loop";
 const DEK =
   "Reasoning models map cleanly onto Boyd's law of iteration. This measures where LLMs stop being reliable.";
 
