@@ -21,4 +21,7 @@ derived/
 # here -- ~/Projects/blog holds built dist/ copies and is the deploy manifest.
 blog/node_modules/
 blog/dist/
+# The SSR half of the build. scripts/prerender.mjs imports it to produce
+# dist/index.html and nothing ships it; sync-app.sh only copies dist/.
+blog/dist-ssr/
 blog/.svelte-kit/

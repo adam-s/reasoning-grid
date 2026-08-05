@@ -15,6 +15,12 @@
  * Two things fix it. Ignoring deliveries whose width is unchanged means a height
  * echo is not treated as a resize, and doing the write in a frame callback moves
  * the layout change out of the delivery so there is no cycle to break.
+ *
+ * A figure must not paint before its first delivery arrives. Exempting that
+ * first one from the frame callback was tried and reverted: it reintroduced the
+ * undelivered-notifications error above and did not fix the shift anyway. The
+ * fix belongs in the figure -- start from no width and render nothing until
+ * this reports, as IterationRings does.
  */
 export function observeWidth(
   getEl: () => Element | null | undefined,

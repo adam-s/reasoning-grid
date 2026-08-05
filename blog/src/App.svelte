@@ -5,6 +5,7 @@
   import Layout from './lib/components/Layout.svelte';
   import Section from './lib/components/Section.svelte';
   import Prose from './lib/components/Prose.svelte';
+  import Figure from './lib/components/Figure.svelte';
   import IterationRings from './lib/viz/opener/IterationRings.svelte';
   import Dogfight from './lib/viz/opener/Dogfight.svelte';
   import SyncedTrace from './lib/viz/opener/SyncedTrace.svelte';
@@ -182,7 +183,7 @@
        title, the way the cubes do on reliably-incorrect. The heading that names
        the argument comes after it, with the prose it belongs to. -->
   <Section width="figure">
-    <IterationRings />
+    <Figure name="rings" alt="Three reasoning runs drawn as rings, each arc a segment of the model’s thinking, coloured by what it was doing there."><IterationRings /></Figure>
   </Section>
 
   <!-- `figure`, not `measure`: the dogfight is a chart and belongs at the same
@@ -213,7 +214,7 @@
       </p>
     </Prose>
 
-    <Dogfight />
+    <Figure name="dogfight" alt="Two aircraft turning against each other, showing how a small loss per cycle compounds into an unrecoverable one."><Dogfight /></Figure>
 
     <Prose>
       <p>
@@ -299,7 +300,7 @@
          models differ in the way they think, because it only ever looks at one.
          These labels were already published, so the page can borrow them rather
          than claim them. -->
-    <ThinkingMix />
+    <Figure name="thinking-mix" alt="The mix of reasoning moves across labelled traces, by model."><ThinkingMix /></Figure>
 
     <Prose>
       <p>
@@ -317,7 +318,7 @@
       <!-- The grid at thumbnail size and deliberately empty. Section 02 draws
            the same lattice with a rate in every cell; a shaded one here would
            read as that measurement arriving early. -->
-      <GridKey />
+      <Figure name="grid-key" alt="The problem grid at thumbnail size: digits of one factor against digits of the other, deliberately empty."><GridKey /></Figure>
 
       <p>
         None of this can be memorised. Every problem size gets a cell of its own, digits
@@ -340,21 +341,23 @@
          reader meeting the failing one first concludes that reasoning is what
          breaks the model. It is what saves it three runs out of four. -->
     <div class="moment-group" bind:this={momentGroup}>
-      <SyncedTrace
-        bind:this={synced}
-        scrollTarget={momentGroup}
-        onBusyChange={(b) => (momentBusy = b)}
-        onMoment={(m) => {
-          moment = m;
-          // A clear while busy belongs to a present that is just starting. A
-          // clear while idle is the reader taking the cursor back.
-          if (m === null) {
-            if (!momentBusy) tour = { kind: 'off' };
-            return;
-          }
-          arrived(m);
-        }}
-      />
+      <Figure name="synced-trace" alt="Two runs of the same loop side by side, one catching its mistake and one carrying it to the end.">
+        <SyncedTrace
+          bind:this={synced}
+          scrollTarget={momentGroup}
+          onBusyChange={(b) => (momentBusy = b)}
+          onMoment={(m) => {
+            moment = m;
+            // A clear while busy belongs to a present that is just starting. A
+            // clear while idle is the reader taking the cursor back.
+            if (m === null) {
+              if (!momentBusy) tour = { kind: 'off' };
+              return;
+            }
+            arrived(m);
+          }}
+        />
+      </Figure>
       <Prose>
         <MomentLinks
           label="the loop catching its own mistake"
@@ -433,7 +436,7 @@
       </p>
     </Prose>
 
-    <AllocationGrid />
+    <Figure name="allocation" alt="How many runs each cell of the grid was given, under cost-weighted Neyman allocation."><AllocationGrid /></Figure>
 
     <Prose>
       <p>
@@ -489,12 +492,14 @@
         </button>
       </div>
     </Prose>
-    <SurfaceCanvas
-      bind:this={surface}
-      onWalkChange={(b) => (surfaceWalking = b)}
-      onReaderDrive={() => (surfaceCued = false)}
-    />
-    <DistributionPanels />
+    <Figure name="surface" alt="The reliability surface: digits of a by digits of b by the probability of an exactly correct product, redrawn at every trial count.">
+      <SurfaceCanvas
+        bind:this={surface}
+        onWalkChange={(b) => (surfaceWalking = b)}
+        onReaderDrive={() => (surfaceCued = false)}
+      />
+    </Figure>
+    <Figure name="distribution" alt="The spread of outcomes behind two cells of the grid."><DistributionPanels /></Figure>
   </Section>
 
   <!-- The PAIRED claim that used to live here is pulled. It said Phi solves
@@ -549,7 +554,7 @@
         inheritance.
       </p>
     </Prose>
-    <BoundaryWedge />
+    <Figure name="boundary" alt="Where each model stops being reliable, as a wedge across the grid."><BoundaryWedge /></Figure>
   </Section>
 
   <!-- Sections 04 through 06 held placeholders for convergence, the reasoning

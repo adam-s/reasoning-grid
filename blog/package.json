@@ -4,10 +4,11 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "vite build",
+    "build": "vite build && vite build --ssr src/entry-server.ts --outDir dist-ssr && node scripts/prerender.mjs",
     "preview": "vite preview",
     "check": "svelte-check --tsconfig ./tsconfig.json",
-    "prepare-data": "python3 scripts/prepare.py"
+    "prepare-data": "python3 scripts/prepare.py",
+    "measure:figures": "node scripts/measure-figures.mjs"
   },
   "devDependencies": {
     "@playwright/test": "^1.62.1",

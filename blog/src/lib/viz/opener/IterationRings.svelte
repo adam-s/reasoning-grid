@@ -183,7 +183,17 @@
   const visible = onscreen(() => host);
   let ringsEl: HTMLCanvasElement | null = $state(null);
   let headEl: HTMLCanvasElement | null = $state(null);
-  let w = $state(880);
+  /**
+   * 0 until the element says otherwise, and nothing draws until it does.
+   *
+   * This used to start at 880, the desktop width, because the figure has to put
+   * a number somewhere before the ResizeObserver reports. On a 390px phone that
+   * laid the rings out five across, put `.cards` 300px below where they belong,
+   * and corrected on the next frame -- 0.18 of layout shift, which was most of
+   * the page's total. Waiting costs one empty frame inside a box whose height
+   * is already reserved by figure-heights.css, so the reader sees nothing move.
+   */
+  let w = $state(0);
   let elapsed = $state(0);
   let playing = $state(true);
   let runId = $state(0);
@@ -544,33 +554,32 @@
   style:--cell-h="{CELL_H}px"
   style:--label-h="{LABEL_H}px"
 >
-  <div class="stage" style:height="{H}px">
-    <canvas bind:this={ringsEl} style:width="{w}px" style:height="{H}px"></canvas>
-    <canvas class="over" bind:this={headEl} style:width="{w}px" style:height="{H}px"></canvas>
-  </div>
+  {#if w > 0}
+    <div class="stage" style:height="{H}px">
+      <canvas bind:this={ringsEl} style:width="{w}px" style:height="{H}px"></canvas>
+      <canvas class="over" bind:this={headEl} style:width="{w}px" style:height="{H}px"></canvas>
+    </div>
 
-  <ul class="cards">
-    {#each RINGS as ring, i (ring.key)}
-      <!-- ONE WORD, and it changes meaning when the run ends. While the ring is
-           drawing it names the phase the model is in; once the trace is spent it
-           names how the run came out. Two labels side by side said the same
-           thing twice, and a placeholder like "stopped" spent the most legible
-           line in the figure on nothing. -->
-      <li class="card" class:settled={counts[i].done}>
-        <span
-          class="word"
-          style:color={counts[i].done
-            ? 'var(--ink)'
-            : counts[i].phase
-              ? COLOR[counts[i].phase]
-              : 'var(--ink-faint)'}
-        >{counts[i].done ? ring.verdict : phaseWord(counts[i].phase)}</span>
-      </li>
-    {/each}
-  </ul>
-
-
-
+    <ul class="cards">
+      {#each RINGS as ring, i (ring.key)}
+        <!-- ONE WORD, and it changes meaning when the run ends. While the ring is
+             drawing it names the phase the model is in; once the trace is spent it
+             names how the run came out. Two labels side by side said the same
+             thing twice, and a placeholder like "stopped" spent the most legible
+             line in the figure on nothing. -->
+        <li class="card" class:settled={counts[i].done}>
+          <span
+            class="word"
+            style:color={counts[i].done
+              ? 'var(--ink)'
+              : counts[i].phase
+                ? COLOR[counts[i].phase]
+                : 'var(--ink-faint)'}
+          >{counts[i].done ? ring.verdict : phaseWord(counts[i].phase)}</span>
+        </li>
+        {/each}
+    </ul>
+  {/if}
 </figure>
 
 <style>

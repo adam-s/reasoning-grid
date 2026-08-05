@@ -280,3 +280,64 @@ cd blog
 npm install
 npm run dev        # http://localhost:5175
 ```
+
+## The page is prerendered, and the figures are not
+
+`npm run build` runs three steps: the client build, an SSR build of
+`src/entry-server.ts`, then `scripts/prerender.mjs`, which renders the page to
+HTML and writes it into `dist/index.html`. That file goes from 2.7KB to ~24KB
+and carries the whole essay as text.
+
+The reason is the deploy target. This ships to S3 behind CloudFront as static
+files, so without the prerender step the HTML is an empty `<div id="app">` and
+every word lives inside ~220KB of gzipped JavaScript. Crawlers that do not run
+JS, reader-mode tools and `curl` all get nothing, and a reader on a slow
+connection watches a blank screen until the bundle executes.
+
+**The figures still mount on the client.** They are canvas, rAF and matchMedia,
+so they cannot render on a server. Each one is wrapped in
+`lib/components/Figure.svelte`, which gives it a `data-fig` name, a reserved
+height, and a `<noscript>` description for readers who will never see it.
+
+`prerender.mjs` fails the build if the rendered body does not contain a known
+sentence. That check is not optional: a page that prerendered nothing still
+looks perfect in a browser, so nothing else would catch it.
+
+### Reserved heights are measured, never guessed
+
+```sh
+node scripts/measure-figures.mjs http://localhost:5175/           # rewrite
+node scripts/measure-figures.mjs http://localhost:5175/ --check   # fail if stale
+```
+
+This sweeps the real page across 26 widths, bisects to find every reflow to the
+pixel, fits each figure's height as straight segments, and writes
+`src/lib/viz/figure-heights.css`. Rerun it after changing any figure's layout.
+
+Guessing does not work here. These figures do not share breakpoints and do not
+scale by aspect ratio: the opener is 510px tall on a phone and 517px on a
+desktop three times as wide, while the trace figure gets *shorter* as the screen
+widens. One of them picks its column count in JavaScript, so its breakpoint
+appears in no stylesheet — which is why the script bisects rather than reading
+the CSS.
+
+`--check` earns its place. Adding `display: flex` to the figure wrapper resized
+GridKey from 229px to 293px, and that is the only thing that noticed.
+
+### Verifying a deploy
+
+```sh
+npm run preview
+node scripts/verify-deploy.mjs http://localhost:4173/
+node scripts/verify-deploy.mjs https://adamsohn.com/reasoning-grid/   # after deploy
+```
+
+Four checks: the prose is in the HTML without a browser, every figure mounts
+with a clean console, CLS stays under 0.1 at phone, tablet and desktop widths,
+and every reserved box lands within 24px of its figure. Run it against a local
+preview before shipping and against the live URL after, because a production
+build differs from dev in ways that matter — idle rAF on this page is 117/sec in
+dev and 0/sec built.
+
+When CLS fails, `scripts/cls-blame.mjs <url> [width]` names the element that
+moved and by how much.
