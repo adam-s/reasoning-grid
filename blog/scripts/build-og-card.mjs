@@ -22,7 +22,7 @@ const OUT = join(here, '../public/og.png');
 
 const TITLE = 'Model Reasoning Mapped to an OODA Loop';
 const DEK =
-  "Reasoning models map cleanly onto Boyd's law of iteration.";
+  "Reasoning models map cleanly onto Boyd's law of iteration. This measures where LLMs stop being reliable.";
 
 const img = `data:image/png;base64,${readFileSync(SOURCE).toString('base64')}`;
 
