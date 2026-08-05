@@ -32,7 +32,13 @@ export function observeWidth(
 
     let seen = -1;
     let raf = 0;
-    const ro = new ResizeObserver(([entry]) => {
+    // The last entry, for the same reason the IntersectionObserver in
+    // onscreen.svelte.ts takes the last one: a delivery can carry more than one
+    // record and they are in time order. Reading entries[0] means acting on the
+    // oldest width in the batch, which here would size a figure to whatever it
+    // was two layouts ago.
+    const ro = new ResizeObserver((entries) => {
+      const entry = entries[entries.length - 1];
       const width = entry.contentRect.width;
       if (Math.abs(width - seen) < 0.5) return; // a height echo, not a resize
       seen = width;

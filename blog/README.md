@@ -369,3 +369,21 @@ this page is 117/sec in dev and 0/sec built.
 
 When CLS fails, `scripts/cls-blame.mjs <url> [width]` names the element that
 moved and by how much.
+
+### Does anything freeze on reload
+
+```sh
+node scripts/check-reload-freeze.mjs http://localhost:4173/
+```
+
+Fourteen reloads that land scrolled down, at a 6x CPU throttle, checking that
+the opener still animates after scrolling back up. It exists because that broke
+and nothing else could see it: `onscreen.svelte.ts` read `entries[0]` from its
+IntersectionObserver, and one delivery can carry two records for the same
+element. Reloading scrolled down produced exactly that — 205px and off screen,
+then 508px and on screen — so the stale record won and the figure sat frozen at
+two percent of its first lap, about one reload in three.
+
+The tell is requestAnimationFrame throughput rather than a screenshot, because a
+frozen figure looks the same as one that has not started. Four loops is ~360/sec;
+one dead loop is ~240.

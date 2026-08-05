@@ -41,6 +41,26 @@
          5,000px of empty cream to scroll past. Each box keeps only its one-line
          description. -->
     <noscript><style>[data-fig] { min-height: 0 !important; }</style></noscript>
+
+    <link rel="canonical" href="https://adamsohn.com/reasoning-grid/" />
+
+    <!-- PUT THE TRAILING SLASH BACK, BEFORE ANYTHING ELSE LOADS.
+         Every asset path on this page is relative, because `base: './'` in
+         vite.config.ts lets the same build work at any subpath. Relative
+         resolves against the URL's DIRECTORY, so at /reasoning-grid the
+         bundle and the stylesheet resolve to /assets/... and 403.
+
+         CloudFront answers that URL with 200 and this prerendered essay, so
+         the result is not a broken page, it is the whole article with no
+         styles and no JavaScript. That reads as working to every crawler and
+         uptime check there is, which is why it needs fixing here rather than
+         being left to look after itself. Inline, because an external script is
+         exactly what is not loading. -->
+    <script>
+      if (location.pathname.length > 1 && !location.pathname.endsWith('/')) {
+        location.replace(location.pathname + '/' + location.search + location.hash);
+      }
+    </script>
   </head>
   <body>
     <div id="app"></div>

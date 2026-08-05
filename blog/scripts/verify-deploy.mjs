@@ -130,12 +130,13 @@ if (!LOCAL && ogImage?.startsWith(expectedPrefix)) {
 // resolves ./assets/x.js to /assets/x.js and 404s the bundle and the
 // stylesheet. Now that the prose is prerendered the page still paints, as an
 // unstyled wall of serif text, which reads as "up" to anything automated.
-if (base.pathname !== '/' && base.pathname.endsWith('/')) {
-  const bare = `${base.origin}${base.pathname.replace(/\/$/, '')}`;
-  const r = await fetch(bare, { redirect: 'manual' }).catch(() => null);
-  if (r && r.status >= 300 && r.status < 400) ok(`${bare} redirects (${r.status})`);
-  else bad(`${bare} returned ${r ? r.status : 'nothing'} instead of a redirect to the slashed form`);
-}
+// Checked in a browser rather than with fetch, because the fix is a redirect
+// the page performs itself. CloudFront answers the bare URL with 200 and the
+// prerendered essay, so a status code says nothing: the question is whether a
+// reader who lands there ends up on a working page.
+const BARE = base.pathname !== '/' && base.pathname.endsWith('/')
+  ? `${base.origin}${base.pathname.replace(/\/$/, '')}`
+  : null;
 
 const browser = await chromium.launch();
 
@@ -292,6 +293,25 @@ for (const [w, h, label] of VIEWPORTS) {
   if (r.buttons === 0) ok('no controls offered that cannot work');
   else bad(`${r.buttons} button(s) rendered that do nothing without JavaScript`);
   await ctx.close();
+}
+
+// ---- 7. the URL without its trailing slash ------------------------------
+if (BARE) {
+  const page = await browser.newPage({ viewport: { width: 1440, height: 900 } });
+  await page.goto(BARE, { waitUntil: 'networkidle' });
+  await page.waitForTimeout(1200);
+  const r = await page.evaluate(() => ({
+    path: location.pathname,
+    styled: getComputedStyle(document.body).backgroundColor,
+    mounted: document.querySelectorAll('[data-fig].pending').length,
+    figs: document.querySelectorAll('[data-fig]').length,
+  }));
+  console.log(`\n--- ${BARE} (no trailing slash) ---`);
+  if (r.path.endsWith('/')) ok(`lands on ${r.path}`);
+  else bad(`stays on ${r.path}, where every relative asset resolves to the site root`);
+  if (r.figs > 0 && r.mounted === 0) ok('the page works from there');
+  else bad(`${r.mounted} of ${r.figs} figures unmounted — the bundle did not load`);
+  await page.close();
 }
 
 await browser.close();

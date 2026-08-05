@@ -33,8 +33,19 @@ export function onscreen(
   $effect(() => {
     const el = getEl();
     if (!el) return;
+    // THE LAST ENTRY, NOT THE FIRST. One delivery can carry several records for
+    // the same element, and they are in time order, so entries[0] is the oldest
+    // thing the observer saw and the only one that is definitely stale.
+    //
+    // Taking the first froze the opener. Reload the page scrolled down and
+    // scroll back up: the figure reports 205px tall and off screen, then 508px
+    // and on screen once it has sized itself, and when those two land in one
+    // delivery the 205px record won. `near` stayed false, the frame loop never
+    // restarted, and the rings sat at two percent of their first lap forever.
+    // It reproduced about one reload in three, which is what a batching race
+    // looks like from the outside.
     const io = new IntersectionObserver(
-      ([e]) => { near = e.isIntersecting; },
+      (entries) => { near = entries[entries.length - 1].isIntersecting; },
       { rootMargin },
     );
     io.observe(el);
