@@ -6,6 +6,30 @@
     <link rel="icon" href="./favicon.svg" />
     <title>Model Reasoning Mapped to an OODA Loop</title>
     <meta name="description" content="Two reasoning models from different companies, measured on 7,554 long multiplications, to find where each stops being reliable and whether they stop in the same places." />
+
+    <!-- ---- THE CARD THAT SHOWS WHEN THIS IS PASTED SOMEWHERE --------------
+         Facebook, iMessage, Slack and the rest read these, and every one of
+         them requires an ABSOLUTE url for the image. `base: './'` in
+         vite.config.ts makes every other asset on this page relative so the
+         build works at any subpath, and these four tags are the exception that
+         cannot: a scraper resolves them against nothing. If the deploy path
+         ever moves off /reasoning-grid/, these are the lines that break, and
+         they break silently -- the page still works and the preview just goes
+         blank. `scripts/build-og-card.mjs` regenerates og.png. -->
+    <meta property="og:type" content="article" />
+    <meta property="og:site_name" content="adamsohn.com" />
+    <meta property="og:url" content="https://adamsohn.com/reasoning-grid/" />
+    <meta property="og:title" content="Model Reasoning Mapped to an OODA Loop" />
+    <meta property="og:description" content="Two reasoning models from different companies, measured to find where each stops being reliable." />
+    <meta property="og:image" content="https://adamsohn.com/reasoning-grid/og.png" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content="A 3D surface of the probability a model returns the exactly correct product, falling from a high plateau at small digit counts to near zero at large ones." />
+
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Model Reasoning Mapped to an OODA Loop" />
+    <meta name="twitter:description" content="Two reasoning models from different companies, measured to find where each stops being reliable." />
+    <meta name="twitter:image" content="https://adamsohn.com/reasoning-grid/og.png" />
   </head>
   <body>
     <div id="app"></div>
