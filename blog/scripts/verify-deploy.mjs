@@ -96,6 +96,12 @@ const figsInHtml = [...html.matchAll(/data-fig="([^"]+)"/g)].map((m) => m[1]);
 if (figsInHtml.length === FIGURE_COUNT) ok(`${FIGURE_COUNT} figure boxes reserved: ${figsInHtml.join(', ')}`);
 else bad(`${figsInHtml.length} figure boxes, expected exactly ${FIGURE_COUNT}: ${figsInHtml.join(', ') || 'none'}`);
 
+// The fragment target has to be in the HTML. A browser resolves a fragment
+// while parsing; an anchor that only appears after hydration is one the reader
+// never reaches, and the page looks like it ignored the link.
+if (html.includes('id="walk-the-surface"')) ok('#walk-the-surface is in the prerendered HTML');
+else bad('#walk-the-surface is missing from the HTML — a link to it will do nothing');
+
 // ---- 2. the link preview, which fails where nobody can see it -----------
 //
 // index.html says these break silently if the deploy subpath moves: the page
@@ -271,7 +277,12 @@ for (const [w, h, label] of VIEWPORTS) {
     stills: document.querySelectorAll('[data-fig] img.still').length,
     stillsLoaded: [...document.querySelectorAll('[data-fig] img.still')]
       .filter((i) => i.naturalWidth > 0).length,
-    buttons: [...document.querySelectorAll('button')].length,
+    // Visible ones, not every button in the DOM. The controls now ship in the
+    // HTML so that the layout is final at first paint and #walk-the-surface is
+    // a real fragment target, and a <noscript> rule hides them. Counting the
+    // DOM would fail on a page that is behaving correctly.
+    buttons: [...document.querySelectorAll('button')]
+      .filter((b) => b.getBoundingClientRect().height > 0).length,
     // The box's own height is not the test: with the reservation released it
     // still stands as tall as the description inside it. Ask the CSSOM whether
     // anything is being held open.

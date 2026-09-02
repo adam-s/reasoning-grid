@@ -40,7 +40,15 @@
          is never getting the figure, so those nine reservations are about
          5,000px of empty cream to scroll past. Each box keeps only its one-line
          description. -->
-    <noscript><style>[data-fig] { min-height: 0 !important; }</style></noscript>
+    <noscript><style>
+      [data-fig] { min-height: 0 !important; }
+      /* Every control on this page drives a figure, and no figure runs without
+         JavaScript. They ship in the HTML so the layout is final at first paint
+         and so #walk-the-surface is a real target before any script runs; this
+         is what keeps them from being offered to the one reader who cannot use
+         them. */
+      .tour-start, .moments, .row-label { display: none !important; }
+    </style></noscript>
 
     <link rel="canonical" href="https://adamsohn.com/reasoning-grid/" />
 
@@ -64,6 +72,34 @@
   </head>
   <body>
     <div id="app"></div>
+
+    <!-- SCROLL TO THE FRAGMENT NOW, NOT AT LOAD.
+         Chrome defers its own fragment scroll until the load event, and load
+         waits for the deferred module bundle below. On a 400kbps line that is
+         eight seconds of sitting at the top of the page and then being thrown
+         down it, which is what this looked like when it was reported as the
+         page not rendering.
+
+         This runs earlier than that for two reasons that both depend on where
+         it sits. It is inline and after the content, so the target has been
+         parsed. And a stylesheet blocks the execution of any script after it,
+         so by the time this runs the CSS has applied and the position it
+         measures is the real one. The module bundle is deferred and runs later
+         still, so nothing here waits on it.
+
+         Instant, not smooth. At this point the reader has had the page for
+         about a second and has not started reading; animating a scroll through
+         eight thousand pixels would be a performance, not a courtesy. -->
+    <script>
+      (function () {
+        if (!location.hash) return;
+        try {
+          var el = document.getElementById(decodeURIComponent(location.hash.slice(1)));
+          if (el) el.scrollIntoView();
+        } catch (e) {}
+      })();
+    </script>
+
     <script type="module" src="/src/main.ts"></script>
   </body>
 </html>

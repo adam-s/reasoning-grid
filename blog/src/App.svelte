@@ -6,7 +6,6 @@
   import Section from './lib/components/Section.svelte';
   import Prose from './lib/components/Prose.svelte';
   import Figure from './lib/components/Figure.svelte';
-  import { onMount } from 'svelte';
   import IterationRings from './lib/viz/opener/IterationRings.svelte';
   import Dogfight from './lib/viz/opener/Dogfight.svelte';
   import SyncedTrace from './lib/viz/opener/SyncedTrace.svelte';
@@ -52,16 +51,19 @@
   ];
 
   /**
-   * Both "Walk it from the start" buttons drive a figure, and both figures need
-   * JavaScript to exist. Prerendering means the prose ships without it, so
-   * without this flag a reader with JavaScript off gets the navy button and its
-   * hand-drawn cue sitting above an empty box -- the loudest ink on the screen
-   * pointing at the one thing that cannot happen.
+   * WHY THESE CONTROLS ARE NOT GATED ON MOUNT.
+   *
+   * Every control here drives a figure, and no figure exists without
+   * JavaScript, so for a while they were rendered only after mount. That was
+   * wrong twice over. It made them appear at hydration, growing the page under
+   * a reader who had already started reading, and it kept #walk-the-surface out
+   * of the prerendered HTML, where a fragment has to be for the browser to
+   * resolve it.
+   *
+   * They render always, and a <noscript> rule in index.html hides them from the
+   * one reader who cannot use them. Nothing moves, and the anchor is real
+   * before a byte of script runs.
    */
-  let interactive = $state(false);
-  onMount(() => {
-    interactive = true;
-  });
 
   /** Owned here, not in the figure: the figure reports, the prose renders. */
   let synced: ReturnType<typeof SyncedTrace> | null = $state(null);
@@ -376,8 +378,7 @@
         />
       </Figure>
       <Prose>
-        {#if interactive}
-          <MomentLinks
+        <MomentLinks
             label="the loop catching its own mistake"
             moments={CAUGHT_MOMENTS}
             active={moment}
@@ -395,7 +396,6 @@
             {cueText}
             onPick={play}
           />
-        {/if}
         <p>
           Both rows run the same loop. The difference is what the model does when it
           checks.
@@ -410,14 +410,12 @@
           same wrong number, finds no conflict, and carries that number to the end.
         </p>
         <p>A check only helps when it could have failed differently.</p>
-        {#if interactive}
-          <div class="tour-start">
-            {#if cueTarget === 'start'}<Cue text={cueText} />{/if}
-            <button type="button" disabled={momentBusy} onclick={startTour}>
-              Walk it from the start
-            </button>
-          </div>
-        {/if}
+        <div class="tour-start">
+          {#if cueTarget === 'start'}<Cue text={cueText} />{/if}
+          <button type="button" disabled={momentBusy} onclick={startTour}>
+            Walk it from the start
+          </button>
+        </div>
       </Prose>
     </div>
 
@@ -502,18 +500,23 @@
         advantage. Measuring where the model's reliability falls off, even as a
         probability rather than a verdict, gives us a way to forecast results.
       </p>
-      {#if interactive}
-        <div class="tour-start">
-          {#if surfaceCued && !surfaceWalking}<Cue text="press here" />{/if}
-          <button
-            type="button"
-            disabled={surfaceWalking}
-            onclick={() => { surfaceCued = false; surface?.walk(); }}
-          >
-            Walk it from the start
-          </button>
-        </div>
-      {/if}
+      <!-- #walk-the-surface aims a pasted URL here. The id has to be on markup
+           that EXISTS BEFORE JAVASCRIPT, because a browser resolves a fragment
+           once, while parsing, and never retries. Gating this control on mount
+           put the target outside the prerendered HTML: the scroll found
+           nothing, the page sat at the top, and a handler then threw the reader
+           8311px down once the bundle executed, which on a slow connection was
+           eight seconds after they started reading. -->
+      <div class="tour-start" id="walk-the-surface">
+        {#if surfaceCued && !surfaceWalking}<Cue text="press here" />{/if}
+        <button
+          type="button"
+          disabled={surfaceWalking}
+          onclick={() => { surfaceCued = false; surface?.walk(); }}
+        >
+          Walk it from the start
+        </button>
+      </div>
     </Prose>
     <Figure name="surface" alt="The reliability surface. Digits of a on one axis, digits of b on the other, height is the share of runs that landed the exact product. It redraws as the trial count rises.">
       <SurfaceCanvas
@@ -682,6 +685,11 @@
   .tour-start {
     position: relative;
     display: inline-flex;
+    /* The cue hangs above this box and outside it, so a fragment landing the
+       box flush against the viewport top puts the arrow off screen, which is
+       the one thing a link here exists to show. 96px clears the arrow, its
+       label and its 10px margin. */
+    scroll-margin-top: var(--space-3xl);
     /* SPACE BELONGS TO THE CONTAINER, NOT THE BUTTON. Padding on the control
        would grow the control, and 9px by 16px is already the right size for a
        hit target -- separation from the paragraph is not the button's job.
