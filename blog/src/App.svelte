@@ -6,7 +6,7 @@
   import Section from './lib/components/Section.svelte';
   import Prose from './lib/components/Prose.svelte';
   import Figure from './lib/components/Figure.svelte';
-  import { onMount, tick } from 'svelte';
+  import { onMount } from 'svelte';
   import IterationRings from './lib/viz/opener/IterationRings.svelte';
   import Dogfight from './lib/viz/opener/Dogfight.svelte';
   import SyncedTrace from './lib/viz/opener/SyncedTrace.svelte';
@@ -59,24 +59,8 @@
    * pointing at the one thing that cannot happen.
    */
   let interactive = $state(false);
-  onMount(async () => {
+  onMount(() => {
     interactive = true;
-
-    /**
-     * Re-aim a #fragment after the gated controls arrive.
-     *
-     * The browser resolves the fragment against the prerendered document, which
-     * does not contain either "Walk it from the start" control -- both are
-     * behind `interactive`. So the target either does not exist yet, or it
-     * exists and everything above it is about to grow by a button and its
-     * margins, leaving the reader short of where they asked to be.
-     *
-     * Only runs when there is a hash, so it never fights the browser's own
-     * scroll restoration on an ordinary reload.
-     */
-    if (!location.hash) return;
-    await tick();
-    document.getElementById(location.hash.slice(1))?.scrollIntoView();
   });
 
   /** Owned here, not in the figure: the figure reports, the prose renders. */
@@ -519,14 +503,7 @@
         probability rather than a verdict, gives us a way to forecast results.
       </p>
       {#if interactive}
-        <!-- Linkable. #walk-the-surface aims a pasted URL at this control.
-             The id sits on the control and not on a wrapper outside the gate on
-             purpose: without JavaScript there is no button here to walk anyone
-             through, so an anchor pointing at empty space would be worse than a
-             fragment that quietly does nothing. `interactive` is what makes the
-             element exist, which is also why the scroll has to be re-aimed after
-             mount -- see onMount. -->
-        <div class="tour-start" id="walk-the-surface">
+        <div class="tour-start">
           {#if surfaceCued && !surfaceWalking}<Cue text="press here" />{/if}
           <button
             type="button"
@@ -705,11 +682,6 @@
   .tour-start {
     position: relative;
     display: inline-flex;
-    /* The cue is absolutely positioned above this box and overhangs it
-       entirely, so a fragment landing this box on the viewport's top edge puts
-       the arrow off screen -- the one thing a link here exists to show. 96px
-       clears the arrow, its label and its 10px margin with room to spare. */
-    scroll-margin-top: var(--space-3xl);
     /* SPACE BELONGS TO THE CONTAINER, NOT THE BUTTON. Padding on the control
        would grow the control, and 9px by 16px is already the right size for a
        hit target -- separation from the paragraph is not the button's job.
